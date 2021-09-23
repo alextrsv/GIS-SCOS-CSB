@@ -17,6 +17,12 @@
         <java.version>11</java.version>
     </properties>
     <dependencies>
+        <!-- Starter for building web, including RESTful, applications using Spring MVC.
+        Uses Tomcat as the default embedded container -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
         <!-- DataBase support -->
         <dependency>
