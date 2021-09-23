@@ -55,7 +55,7 @@ public class PassRequestServiceImpl implements PassRequestService {
      * @return обновленная заявка
      */
     @Override
-    public Optional<PassRequest> updateRequest(PassRequestDTO passRequestDTO) {
+    public Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO) {
         Optional<PassRequest> passRequest = passRequestRepository.findById(passRequestDTO.getId());
 
         if (passRequest.isPresent()) {

@@ -9,6 +9,6 @@ public interface PassRequestService {
 
     PassRequest createPassRequest(PassRequestDTO passRequestDTO);
     Optional<PassRequest> getPassRequestById(Long id);
-    Optional<PassRequest> updateRequest(PassRequestDTO passRequestDTO);
+    Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO);
     void deletePassRequestById(Long id);
 }
