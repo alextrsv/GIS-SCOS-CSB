@@ -44,14 +44,15 @@ public class PassRequest {
     /** Комментарий создателя заявки */
     private String comment;
 
-    public PassRequest(Long userId, Long universityId, LocalDate startDate,
-                       LocalDate endDate, PassRequestStatus status, String comment) {
+    public PassRequest(Long userId, Long universityId, LocalDate startDate, LocalDate endDate,
+                       PassRequestStatus status, PassRequestType type, String comment) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
         this.universityId = universityId;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
+        this.type = type;
         this.comment = comment;
     }
 }
