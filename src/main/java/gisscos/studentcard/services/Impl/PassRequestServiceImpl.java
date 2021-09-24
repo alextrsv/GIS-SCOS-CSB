@@ -2,6 +2,7 @@ package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
+import gisscos.studentcard.entities.enums.PassRequestType;
 import gisscos.studentcard.repositories.PassRequestRepository;
 import gisscos.studentcard.services.PassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +30,24 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public PassRequest createPassRequest(PassRequestDTO passRequestDTO) {
-        PassRequest passRequest = new PassRequest(
-                passRequestDTO.getUserId(), passRequestDTO.getUniversityId(),
-                passRequestDTO.getStartDate(), passRequestDTO.getEndDate(),
-                passRequestDTO.getStatus(), passRequestDTO.getType(),
-                passRequestDTO.getComment()
-        );
 
+        PassRequest passRequest;
+
+        if (passRequestDTO.getType() == PassRequestType.GROUP) {
+            passRequest = new PassRequest(
+                    passRequestDTO.getUserId(), passRequestDTO.getUniversityId(),
+                    passRequestDTO.getStartDate(), passRequestDTO.getEndDate(),
+                    passRequestDTO.getStatus(), passRequestDTO.getType(),
+                    passRequestDTO.getComment(), passRequestDTO.getUsers()
+            );
+        } else {
+            passRequest = new PassRequest(
+                    passRequestDTO.getUserId(), passRequestDTO.getUniversityId(),
+                    passRequestDTO.getStartDate(), passRequestDTO.getEndDate(),
+                    passRequestDTO.getStatus(), passRequestDTO.getType(),
+                    passRequestDTO.getComment()
+            );
+        }
         return passRequestRepository.save(passRequest);
     }
 
