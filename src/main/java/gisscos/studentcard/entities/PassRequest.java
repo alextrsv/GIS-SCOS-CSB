@@ -2,10 +2,7 @@ package gisscos.studentcard.entities;
 
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -44,9 +41,10 @@ public class PassRequest {
     /** Список пользователей групповой заявки */
     @OneToMany(
             cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY,
-            mappedBy = "passRequest"
+            fetch = FetchType.EAGER,
+            mappedBy = "passRequestId"
     )
+    @ToString.Exclude
     private List<PassRequestUser> users;
 
     public PassRequest(Long userId, Long universityId, LocalDate startDate, LocalDate endDate,

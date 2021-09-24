@@ -78,6 +78,7 @@ public class PassRequestServiceImpl implements PassRequestService {
             passRequest.get().setStartDate(passRequestDTO.getStartDate());
             passRequest.get().setEndDate(passRequestDTO.getEndDate());
             passRequest.get().setUniversityId(passRequestDTO.getUniversityId());
+            passRequest.get().setUsers(passRequestDTO.getUsers());
             passRequestRepository.save(passRequest.get());
 
             return passRequest;

@@ -20,14 +20,13 @@ public class PassRequestUser {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private @Setter(AccessLevel.PROTECTED) Long id;
     /** Заявка, к которой прикреплен пользователь (в таблице хранится только её id) */
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
-    private PassRequest passRequest;
+    private Long passRequestId;
     /** Id пользователя, прикрепленного к заявке */
     private Long userId;
 
-    public PassRequestUser(PassRequest passRequest, Long userId) {
-        this.passRequest = passRequest;
+    public PassRequestUser(Long passRequestId, Long userId) {
+        this.passRequestId = passRequestId;
         this.userId = userId;
     }
 }
