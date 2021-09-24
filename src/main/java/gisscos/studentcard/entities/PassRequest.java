@@ -7,11 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Класс, описывающий сущность заявки
@@ -43,6 +41,13 @@ public class PassRequest {
     private PassRequestStatus status;
     /** Комментарий создателя заявки */
     private String comment;
+    /** Список пользователей групповой заявки */
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            mappedBy = "passRequest"
+    )
+    private List<PassRequestUser> users;
 
     public PassRequest(Long userId, Long universityId, LocalDate startDate, LocalDate endDate,
                        PassRequestStatus status, PassRequestType type, String comment) {
@@ -53,6 +58,22 @@ public class PassRequest {
         this.endDate = endDate;
         this.status = status;
         this.type = type;
+        this.comment = comment;
+    }
+
+    public PassRequest(Long userId, Long universityId, LocalDate startDate, LocalDate endDate,
+                       PassRequestStatus status, PassRequestType type, String comment,
+                       List<PassRequestUser> users) {
+        this.type = type;
+        if (type == PassRequestType.GROUP) {
+            this.users = users;
+        }
+        this.creationDate = LocalDate.now();
+        this.userId = userId;
+        this.universityId = universityId;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
         this.comment = comment;
     }
 }
