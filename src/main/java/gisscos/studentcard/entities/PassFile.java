@@ -1,9 +1,8 @@
 package gisscos.studentcard.entities;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import gisscos.studentcard.entities.enums.PassFileType;
+import lombok.*;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -25,32 +24,44 @@ public class PassFile {
     /** Имя файла **/
     private String name;
     /** Тип файла **/
-    private String type;
+    private PassFileType type;
     /** размер файла **/
     private Long size;
     /**  Если будет использоваться облачное хранилище - uri файла в этом хранилище**/
     private String uri;
     /** Дата загрузки файла **/
     private LocalDate uploadDate;
-    /** файл **/
-    private byte[] data;
+//    /** файл **/
+//    private byte[] data;
+
+    /** Путь к файлу **/
+    private @Getter String path;
 
 
-    public PassFile(String name, String type, Long size, String uri,
-             LocalDate uploadDate, byte[] data){
+    public PassFile(String name, PassFileType type, Long size, String uri,
+             LocalDate uploadDate, String path){
         this.name = name;
         this.type = type;
         this.size = size;
         this.uri = uri;
         this.uploadDate = uploadDate;
-        this.data = data;
+        this.path = path;
     }
-    public PassFile(String name, String type, Long size,
-                    LocalDate uploadDate, byte[] data){
+    public PassFile(String name, PassFileType type, Long size,
+                    LocalDate uploadDate, String path){
         this.name = name;
         this.type = type;
         this.size = size;
         this.uploadDate = uploadDate;
-        this.data = data;
+        this.path = path;
+    }
+
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 }
