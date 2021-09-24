@@ -8,8 +8,26 @@ package gisscos.studentcard.entities.enums;
  * **/
 
 public enum PassFileType {
-    TXT,
-    JPG,
-    JPEG,
-    PNG
+    TXT("txt"),
+    JPG("jpg"),
+    JPEG("jpeg"),
+    PNG("png"),
+    PDF("pdf"),
+    UNDEFINED("")
+    ;
+
+    String typeAsString;
+
+    PassFileType(){
+    }
+
+    PassFileType(String typeAsString){
+        this.typeAsString = typeAsString;
+    }
+
+
+    @Override
+    public String toString() {
+        return typeAsString;
+    }
 }
