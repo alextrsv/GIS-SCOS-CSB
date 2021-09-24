@@ -1,10 +1,12 @@
 package gisscos.studentcard.entities.dto;
 
+import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Pass request Data transfer object
@@ -20,4 +22,5 @@ public class PassRequestDTO {
     private PassRequestType type;
     private PassRequestStatus status;
     private String comment;
+    private List<PassRequestUser> users;
 }
