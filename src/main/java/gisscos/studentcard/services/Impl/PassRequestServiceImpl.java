@@ -76,9 +76,17 @@ public class PassRequestServiceImpl implements PassRequestService {
     /**
      * Удаление заявки по id
      * @param id заявки
+     * @return в случае, если заявка была найдена и удалена,
+     * возвращается она, если нет - Optional.empty()
      */
     @Override
-    public void deletePassRequestById(Long id) {
-        passRequestRepository.deleteById(id);
+    public Optional<PassRequest> deletePassRequestById(Long id) {
+        Optional<PassRequest> passRequest = passRequestRepository.findById(id);
+        if (passRequest.isPresent()) {
+            passRequestRepository.deleteById(id);
+            return passRequest;
+        }
+
+        return Optional.empty();
     }
 }

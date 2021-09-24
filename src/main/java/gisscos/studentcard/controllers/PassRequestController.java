@@ -61,7 +61,7 @@ public class PassRequestController {
      */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable Long id) {
-        passRequestService.deletePassRequestById(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }
