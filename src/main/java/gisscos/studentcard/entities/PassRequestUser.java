@@ -7,16 +7,27 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
+/**
+ * Сущность, описывающая пользователя, указанного в групповой заявке
+ */
 @Data
 @Entity
 @NoArgsConstructor
 public class PassRequestUser {
 
+    /** Id пользователя, прикрепленного к заявке. Генерируется автоматически */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private @Setter(AccessLevel.PROTECTED) Long id;
+    /** Заявка, к которой прикреплен пользователь (в таблице хранится только её id) */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn
     private PassRequest passRequest;
+    /** Id пользователя, прикрепленного к заявке */
     private Long userId;
+
+    public PassRequestUser(PassRequest passRequest, Long userId) {
+        this.passRequest = passRequest;
+        this.userId = userId;
+    }
 }
