@@ -58,20 +58,4 @@ public class PassRequest {
         this.type = type;
         this.comment = comment;
     }
-
-    public PassRequest(Long userId, Long universityId, LocalDate startDate, LocalDate endDate,
-                       PassRequestStatus status, PassRequestType type, String comment,
-                       List<PassRequestUser> users) {
-        this.type = type;
-        if (type == PassRequestType.GROUP) {
-            this.users = users;
-        }
-        this.creationDate = LocalDate.now();
-        this.userId = userId;
-        this.universityId = universityId;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.status = status;
-        this.comment = comment;
-    }
 }
