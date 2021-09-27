@@ -10,6 +10,7 @@ import gisscos.studentcard.services.PassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -26,29 +27,28 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
-     * Добавление заявки в БД
+     * Добавление заявки в БД. Если заявка групповая, со
      * @param passRequestDTO DTO заявки
      * @return добавленная заявка
      */
     @Override
     public PassRequest createPassRequest(PassRequestDTO passRequestDTO) {
 
-        PassRequest passRequest;
+        PassRequest passRequest = new PassRequest(
+                passRequestDTO.getUserId(), passRequestDTO.getUniversityId(),
+                passRequestDTO.getStartDate(), passRequestDTO.getEndDate(),
+                passRequestDTO.getStatus(), passRequestDTO.getType(),
+                passRequestDTO.getComment()
+        );
 
         if (passRequestDTO.getType() == PassRequestType.GROUP) {
-            passRequest = new PassRequest(
-                    passRequestDTO.getUserId(), passRequestDTO.getUniversityId(),
-                    passRequestDTO.getStartDate(), passRequestDTO.getEndDate(),
-                    passRequestDTO.getStatus(), passRequestDTO.getType(),
-                    passRequestDTO.getComment(), passRequestDTO.getUsers()
-            );
-        } else {
-            passRequest = new PassRequest(
-                    passRequestDTO.getUserId(), passRequestDTO.getUniversityId(),
-                    passRequestDTO.getStartDate(), passRequestDTO.getEndDate(),
-                    passRequestDTO.getStatus(), passRequestDTO.getType(),
-                    passRequestDTO.getComment()
-            );
+            passRequest.setUsers(new ArrayList<>());
+            PassRequestUser passRequestUser;
+
+            for ( PassRequestUserDTO user : passRequestDTO.getUsers() ) {
+                passRequestUser = new PassRequestUser(user.getPassRequestId(), user.getUserId());
+                passRequest.getUsers().add(passRequestUser);
+            }
         }
         return passRequestRepository.save(passRequest);
     }
@@ -80,7 +80,6 @@ public class PassRequestServiceImpl implements PassRequestService {
             passRequest.get().setStartDate(passRequestDTO.getStartDate());
             passRequest.get().setEndDate(passRequestDTO.getEndDate());
             passRequest.get().setUniversityId(passRequestDTO.getUniversityId());
-            passRequest.get().setUsers(passRequestDTO.getUsers());
             passRequestRepository.save(passRequest.get());
 
             return passRequest;
