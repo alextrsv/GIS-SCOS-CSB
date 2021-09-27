@@ -1,5 +1,8 @@
 package gisscos.studentcard.entities.enums;
 
+import java.net.Proxy;
+import java.util.stream.Stream;
+
 /** Возможные типы файлов, прикрепленных к заявке
  * TXT - текстовый файл
  * JPG - изображение формата  JPG
@@ -17,18 +20,23 @@ public enum PassFileType {
     UNDEFINED("")
     ;
 
-    String typeAsString;
+    String type;
 
     PassFileType(){
     }
 
-    PassFileType(String typeAsString){
-        this.typeAsString = typeAsString;
+    PassFileType(String type){
+        this.type = type;
     }
 
+    public String getType() {
+        return type;
+    }
 
-    @Override
-    public String toString() {
-        return typeAsString;
+    public static PassFileType of(String type) {
+        return Stream.of(PassFileType.values())
+                .filter(t -> t.getType().equals(type))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
     }
 }

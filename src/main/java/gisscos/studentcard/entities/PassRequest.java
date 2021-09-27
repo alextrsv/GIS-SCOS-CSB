@@ -27,6 +27,9 @@ public class PassRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private @Setter(AccessLevel.PROTECTED) Long id;
+
+
+    
     /** Id пользоватлея - создателя */
     private Long userId;
     /** Id организации, в которую необходим доступ */

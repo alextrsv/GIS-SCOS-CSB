@@ -37,12 +37,11 @@ public class PassFileServiceImpl implements PassFileService {
     public PassFile uploadPassFile(MultipartFile file) {
         PassFile passFile;
 
-//        String name = UUID.randomUUID().toString() + "." + getFileType(file).toString();
-        String path = uploadDir + File.separator + file.getOriginalFilename();
+        String path = System.getProperty("user.dir") + File.separator + uploadDir + File.separator + file.getOriginalFilename();
         System.out.println(File.separator);
 
 
-        passFile = new PassFile(file.getOriginalFilename(), defineFileType(file.getOriginalFilename()), path);
+        passFile = new PassFile(file.getOriginalFilename(), PassFileType.of(file.getOriginalFilename().split("\\.")[1]), path);
         writeFileToDisk(file, path);
 
         return passFileRepository.save(Objects.requireNonNull(passFile));
@@ -77,32 +76,6 @@ public class PassFileServiceImpl implements PassFileService {
         return fileToDelete.delete();
     }
 
-
-    private PassFileType defineFileType(String fileName) {
-        PassFileType fileType;
-
-        switch (fileName.split("\\.")[1]){
-            case "txt":
-                fileType = PassFileType.TXT;
-                break;
-            case "jpg":
-                fileType = PassFileType.JPG;
-                break;
-            case "jpeg":
-                fileType = PassFileType.JPEG;
-                break;
-            case "png":
-                fileType = PassFileType.PNG;
-                break;
-            case "pdf":
-                fileType = PassFileType.PDF;
-                break;
-            default:
-                fileType = PassFileType.UNDEFINED;
-        }
-
-        return fileType;
-    }
 
     private void writeFileToDisk(MultipartFile file, String path){
         if (file != null) {
