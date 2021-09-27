@@ -7,7 +7,6 @@ import lombok.Data;
  */
 @Data
 public class PassRequestUserDTO {
-    private Long id;
     private Long userId;
     private Long passRequestId;
 }
