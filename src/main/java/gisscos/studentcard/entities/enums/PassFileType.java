@@ -5,6 +5,7 @@ package gisscos.studentcard.entities.enums;
  * JPG - изображение формата  JPG
  * JPEG - изображение формата  JPEG
  * PNG - изображение формата  PNG
+ * PDF - файл формата PDF
  * **/
 
 public enum PassFileType {
