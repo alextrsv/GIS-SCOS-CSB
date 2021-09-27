@@ -19,4 +19,6 @@ public interface PassRequestService {
     Optional<PassRequest> deletePassRequestById(Long id);
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
+
+    Optional<PassRequestUser> deleteUserFromPassRequest(PassRequestUserDTO dto);
 }

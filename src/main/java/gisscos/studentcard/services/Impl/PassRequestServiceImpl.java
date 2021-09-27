@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -134,5 +135,41 @@ public class PassRequestServiceImpl implements PassRequestService {
             return Optional.of(passRequestUserRepository.findAllByPassRequestId(passRequest.get().getId()));
         } else
             return Optional.empty();
+    }
+
+    /**
+     * Удаление пользователя из заявки
+     * @param dto пользователя в заявке
+     * @return удаленный из заявки пользователь если таковой найден
+     */
+    @Override
+    public Optional<PassRequestUser> deleteUserFromPassRequest(PassRequestUserDTO dto) {
+        Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getPassRequestId());
+
+        if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
+
+            passRequest.get()
+                    .getUsers()
+                    .stream()
+                    .filter(
+                            user -> (Objects.equals(
+                                    user.getUserId(), dto.getUserId())
+                            )
+                    )
+                    .findAny()
+                    .ifPresent(
+                            user -> passRequestUserRepository.deleteById(user.getId())
+                    );
+            return passRequest.get()
+                    .getUsers()
+                    .stream()
+                    .filter(
+                            user -> (Objects.equals(
+                                    user.getUserId(), dto.getUserId())
+                            )
+                    )
+                    .findAny();
+        } else
+           return Optional.empty();
     }
 }
