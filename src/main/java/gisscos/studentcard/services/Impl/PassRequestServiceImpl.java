@@ -1,7 +1,9 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.PassRequest;
+import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
+import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import gisscos.studentcard.repositories.PassRequestRepository;
 import gisscos.studentcard.services.PassRequestService;
@@ -101,5 +103,21 @@ public class PassRequestServiceImpl implements PassRequestService {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public Optional<PassRequest> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO) {
+        Optional<PassRequest> passRequest = passRequestRepository.findById(passRequestUserDTO.getPassRequestId());
+
+        if (passRequest.isPresent()) {
+            PassRequestUser passRequestUser = new PassRequestUser(
+                    passRequestUserDTO.getPassRequestId(),
+                    passRequestUserDTO.getUserId()
+            );
+            passRequest.get().getUsers().add(passRequestUser);
+            passRequestRepository.save(passRequest.get());
+            return passRequest;
+        } else
+            return Optional.empty();
     }
 }
