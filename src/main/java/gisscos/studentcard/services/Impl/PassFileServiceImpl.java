@@ -42,7 +42,7 @@ public class PassFileServiceImpl implements PassFileService {
         System.out.println(File.separator);
 
 
-        passFile = new PassFile(file.getOriginalFilename(), defineFileType(file.getOriginalFilename()), file.getSize(), LocalDate.now(), path);
+        passFile = new PassFile(file.getOriginalFilename(), defineFileType(file.getOriginalFilename()), path);
         writeFileToDisk(file, path);
 
         return passFileRepository.save(Objects.requireNonNull(passFile));
