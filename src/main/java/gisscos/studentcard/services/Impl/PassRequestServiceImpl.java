@@ -6,11 +6,12 @@ import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import gisscos.studentcard.repositories.PassRequestRepository;
+import gisscos.studentcard.repositories.PassRequestUserRepository;
 import gisscos.studentcard.services.PassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,35 +21,39 @@ import java.util.Optional;
 public class PassRequestServiceImpl implements PassRequestService {
 
     private final PassRequestRepository passRequestRepository;
+    private final PassRequestUserRepository passRequestUserRepository;
 
     @Autowired
-    public PassRequestServiceImpl(PassRequestRepository passRequestRepository) {
+    public PassRequestServiceImpl(PassRequestRepository passRequestRepository,
+                                  PassRequestUserRepository passRequestUserRepository) {
         this.passRequestRepository = passRequestRepository;
+        this.passRequestUserRepository = passRequestUserRepository;
     }
 
     /**
      * Добавление заявки в БД. Если заявка групповая, со
-     * @param passRequestDTO DTO заявки
+     * @param dto DTO заявки
      * @return добавленная заявка
      */
     @Override
-    public PassRequest createPassRequest(PassRequestDTO passRequestDTO) {
+    public PassRequest createPassRequest(PassRequestDTO dto) {
 
         PassRequest passRequest = new PassRequest(
-                passRequestDTO.getUserId(), passRequestDTO.getUniversityId(),
-                passRequestDTO.getStartDate(), passRequestDTO.getEndDate(),
-                passRequestDTO.getStatus(), passRequestDTO.getType(),
-                passRequestDTO.getComment()
+                dto.getUserId(), dto.getUniversityId(),
+                dto.getStartDate(), dto.getEndDate(),
+                dto.getStatus(), dto.getType(),
+                dto.getComment()
         );
 
-        if (passRequestDTO.getType() == PassRequestType.GROUP) {
-            passRequest.setUsers(new ArrayList<>());
-            PassRequestUser passRequestUser;
+        if (dto.getType() == PassRequestType.GROUP) {
+            long id = passRequestRepository.save(passRequest).getId();
 
-            for ( PassRequestUserDTO user : passRequestDTO.getUsers() ) {
-                passRequestUser = new PassRequestUser(user.getPassRequestId(), user.getUserId());
-                passRequest.getUsers().add(passRequestUser);
+            for ( PassRequestUserDTO user : dto.getUsers() ) {
+                user.setPassRequestId(id);
+                addUserToPassRequest(user);
             }
+            if (getPassRequestById(id).isPresent())
+                return getPassRequestById(id).get();
         }
         return passRequestRepository.save(passRequest);
     }
@@ -65,21 +70,21 @@ public class PassRequestServiceImpl implements PassRequestService {
 
     /**
      * Обновление заявки
-     * @param passRequestDTO DTO обновленной заявки
+     * @param dto DTO обновленной заявки
      * @return обновленная заявка
      */
     @Override
-    public Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO) {
-        Optional<PassRequest> passRequest = passRequestRepository.findById(passRequestDTO.getId());
+    public Optional<PassRequest> updatePassRequest(PassRequestDTO dto) {
+        Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getId());
 
         if (passRequest.isPresent()) {
-            passRequest.get().setUserId(passRequestDTO.getUserId());
-            passRequest.get().setStatus(passRequestDTO.getStatus());
-            passRequest.get().setType(passRequestDTO.getType());
-            passRequest.get().setComment(passRequestDTO.getComment());
-            passRequest.get().setStartDate(passRequestDTO.getStartDate());
-            passRequest.get().setEndDate(passRequestDTO.getEndDate());
-            passRequest.get().setUniversityId(passRequestDTO.getUniversityId());
+            passRequest.get().setUserId(dto.getUserId());
+            passRequest.get().setStatus(dto.getStatus());
+            passRequest.get().setType(dto.getType());
+            passRequest.get().setComment(dto.getComment());
+            passRequest.get().setStartDate(dto.getStartDate());
+            passRequest.get().setEndDate(dto.getEndDate());
+            passRequest.get().setUniversityId(dto.getUniversityId());
             passRequestRepository.save(passRequest.get());
 
             return passRequest;
@@ -104,18 +109,29 @@ public class PassRequestServiceImpl implements PassRequestService {
         return Optional.empty();
     }
 
+    /**
+     * Добавление пользователя в список заявки
+     * @param dto dto пользователя заявки
+     * @return список всех пользователей, находящихся в заявке
+     */
     @Override
-    public Optional<PassRequest> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO) {
-        Optional<PassRequest> passRequest = passRequestRepository.findById(passRequestUserDTO.getPassRequestId());
+    public Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO dto) {
+        Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getPassRequestId());
 
-        if (passRequest.isPresent()) {
+        // Если есть такая заявка и она является групповой
+        if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
+            // Если такой пользователь в заявке уже есть
+            if (passRequestUserRepository
+                    .existsByPassRequestIdAndUserId(dto.getUserId(), dto.getPassRequestId())) {
+                return Optional.empty();
+            }
+
             PassRequestUser passRequestUser = new PassRequestUser(
-                    passRequestUserDTO.getPassRequestId(),
-                    passRequestUserDTO.getUserId()
+                    dto.getPassRequestId(),
+                    dto.getUserId()
             );
-            passRequest.get().getUsers().add(passRequestUser);
-            passRequestRepository.save(passRequest.get());
-            return passRequest;
+            passRequestUserRepository.save(passRequestUser);
+            return Optional.of(passRequestUserRepository.findAllByPassRequestId(passRequest.get().getId()));
         } else
             return Optional.empty();
     }

@@ -6,6 +6,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ public class PassRequest {
 
     /** Id заявки в БД. Генерируется автоматически */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private @Setter(AccessLevel.PROTECTED) Long id;
     /** Id пользоватлея - создателя */
     private Long userId;
