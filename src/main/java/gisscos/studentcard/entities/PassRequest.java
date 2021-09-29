@@ -25,7 +25,9 @@ public class PassRequest {
     private @Setter(AccessLevel.PROTECTED) Long id;
     /** Id пользоватлея - создателя */
     private Long userId;
-    /** Id организации, в которую необходим доступ */
+    /** Id организации, в которую необходим доступ (целевая ООВО)*/
+    private Long targetUniversityId;
+    /** Id организации пользователя */
     private Long universityId;
     /** Дата создания заявки */
     private @Setter(AccessLevel.PROTECTED) LocalDate creationDate;
@@ -48,10 +50,12 @@ public class PassRequest {
     @ToString.Exclude
     private List<PassRequestUser> users;
 
-    public PassRequest(Long userId, Long universityId, LocalDate startDate, LocalDate endDate,
-                       PassRequestStatus status, PassRequestType type, String comment) {
+    public PassRequest(Long userId, Long targetUniversityId, Long universityId,
+                       LocalDate startDate, LocalDate endDate, PassRequestStatus status,
+                       PassRequestType type, String comment) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
+        this.targetUniversityId = targetUniversityId;
         this.universityId = universityId;
         this.startDate = startDate;
         this.endDate = endDate;
