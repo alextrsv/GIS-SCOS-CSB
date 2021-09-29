@@ -33,7 +33,18 @@ public class PassRequestController {
      */
     @PostMapping("/add")
     public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto) {
-        return new ResponseEntity<>(passRequestService.createPassRequest(dto), HttpStatus.CREATED);
+        return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
+    }
+
+    /**
+     * Добавление пользователя в заявку
+     * @param dto пользователя в заявке
+     * @return если заявка найдена, список пользователей заявки с учётом уже добавленного
+     */
+    @PostMapping("/add_user")
+    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto) {
+        return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     /**
@@ -44,6 +55,17 @@ public class PassRequestController {
     @GetMapping("/get/{id}")
     public ResponseEntity<PassRequest> getPassRequestById(@PathVariable Long id) {
         return passRequestService.getPassRequestById(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
+     * Получение заявок для обработки администратором ООВО
+     * @param universityId идентификатор ООВО
+     * @return список заявок для обработки
+     */
+    @GetMapping("/get/requests/{universityId}")
+    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable Long universityId) {
+        return passRequestService.getPassRequestsByUniversity(universityId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -66,17 +88,6 @@ public class PassRequestController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable Long id) {
         return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    /**
-     * Добавление пользователя в заявку
-     * @param dto пользователя в заявке
-     * @return если заявка найдена, список пользователей заявки с учётом уже добавленного
-     */
-    @PostMapping("/add_user")
-    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto) {
-        return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 

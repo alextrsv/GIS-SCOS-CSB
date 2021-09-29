@@ -10,15 +10,17 @@ import java.util.Optional;
 
 public interface PassRequestService {
 
-    PassRequest createPassRequest(PassRequestDTO passRequestDTO);
+    PassRequest addPassRequest(PassRequestDTO passRequestDTO);
+
+    Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
+
+    Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId);
 
     Optional<PassRequest> getPassRequestById(Long id);
 
     Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO);
 
     Optional<PassRequest> deletePassRequestById(Long id);
-
-    Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
     Optional<PassRequestUser> deleteUserFromPassRequest(PassRequestUserDTO dto);
 }

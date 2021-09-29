@@ -16,6 +16,7 @@ public class PassRequestDTO {
     private Long id;
     private Long userId;
     private Long universityId;
+    private Long targetUniversityId;
     private LocalDate creationDate;
     private LocalDate startDate;
     private LocalDate endDate;
