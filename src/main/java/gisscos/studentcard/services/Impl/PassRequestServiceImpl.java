@@ -42,10 +42,10 @@ public class PassRequestServiceImpl implements PassRequestService {
     public PassRequest createPassRequest(PassRequestDTO dto) {
 
         PassRequest passRequest = new PassRequest(
-                dto.getUserId(), dto.getUniversityId(),
-                dto.getStartDate(), dto.getEndDate(),
-                dto.getStatus(), dto.getType(),
-                dto.getComment()
+                dto.getUserId(), dto.getTargetUniversityId(),
+                dto.getUniversityId(), dto.getStartDate(),
+                dto.getEndDate(), dto.getStatus(),
+                dto.getType(), dto.getComment()
         );
 
         if (dto.getType() == PassRequestType.GROUP) {
@@ -81,13 +81,14 @@ public class PassRequestServiceImpl implements PassRequestService {
         Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getId());
 
         if (passRequest.isPresent()) {
-            passRequest.get().setUserId(dto.getUserId());
-            passRequest.get().setStatus(dto.getStatus());
             passRequest.get().setType(dto.getType());
+            passRequest.get().setStatus(dto.getStatus());
+            passRequest.get().setUserId(dto.getUserId());
             passRequest.get().setComment(dto.getComment());
-            passRequest.get().setStartDate(dto.getStartDate());
             passRequest.get().setEndDate(dto.getEndDate());
+            passRequest.get().setStartDate(dto.getStartDate());
             passRequest.get().setUniversityId(dto.getUniversityId());
+            passRequest.get().setTargetUniversityId(dto.getTargetUniversityId());
             passRequestRepository.save(passRequest.get());
 
             return passRequest;
