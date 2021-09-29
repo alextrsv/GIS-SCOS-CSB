@@ -37,6 +37,17 @@ public class PassRequestController {
     }
 
     /**
+     * Добавление пользователя в заявку
+     * @param dto пользователя в заявке
+     * @return если заявка найдена, список пользователей заявки с учётом уже добавленного
+     */
+    @PostMapping("/add_user")
+    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto) {
+        return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Получение заявки по id
      * @param id заявки
      * @return заявка
@@ -66,17 +77,6 @@ public class PassRequestController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable Long id) {
         return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    /**
-     * Добавление пользователя в заявку
-     * @param dto пользователя в заявке
-     * @return если заявка найдена, список пользователей заявки с учётом уже добавленного
-     */
-    @PostMapping("/add_user")
-    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto) {
-        return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
