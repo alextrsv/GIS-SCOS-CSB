@@ -4,6 +4,7 @@ import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
+import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import gisscos.studentcard.repositories.PassRequestRepository;
 import gisscos.studentcard.repositories.PassRequestUserRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Сервис для работы с заявками.
@@ -171,5 +173,31 @@ public class PassRequestServiceImpl implements PassRequestService {
                     .findAny();
         } else
            return Optional.empty();
+    }
+
+    /**
+     * Получение заявок для обработки.
+     * @param universityId идентификатор ООВО
+     * @return список заявок для обработки
+     */
+    @Override
+    public Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId) {
+        List<PassRequest> targetRequestList = passRequestRepository.findAllByTargetUniversityId(universityId);
+
+        targetRequestList = targetRequestList.stream()
+                .filter(
+                        request -> request.getStatus() == PassRequestStatus.TARGET_ORGANISATION_REVIEW
+                )
+                .collect(Collectors.toList());
+
+        List<PassRequest> userRequestList = passRequestRepository.findAllByUniversityId(universityId);
+
+        userRequestList = userRequestList.stream()
+                .filter(
+                        request -> request.getStatus() == PassRequestStatus.USER_ORGANISATION_REVIEW
+                )
+                .collect(Collectors.toList());
+        targetRequestList.addAll(userRequestList);
+        return Optional.of(targetRequestList);
     }
 }

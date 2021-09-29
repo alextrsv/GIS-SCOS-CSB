@@ -21,4 +21,6 @@ public interface PassRequestService {
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
     Optional<PassRequestUser> deleteUserFromPassRequest(PassRequestUserDTO dto);
+
+    Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId);
 }
