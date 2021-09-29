@@ -206,4 +206,16 @@ public class PassRequestServiceImpl implements PassRequestService {
         } else
            return Optional.empty();
     }
+
+    @Override
+    public Optional<List<PassRequest>> deleteExpiredPassRequests() {
+        List<PassRequest> expiredList =
+                passRequestRepository.findAllByStatus(PassRequestStatus.EXPIRED);
+
+        for (PassRequest request : expiredList) {
+            passRequestRepository.deleteById(request.getId());
+        }
+
+        return Optional.of(expiredList);
+    }
 }
