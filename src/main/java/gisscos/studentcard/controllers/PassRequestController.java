@@ -33,7 +33,7 @@ public class PassRequestController {
      */
     @PostMapping("/add")
     public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto) {
-        return new ResponseEntity<>(passRequestService.createPassRequest(dto), HttpStatus.CREATED);
+        return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
     }
 
     /**
