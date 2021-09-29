@@ -1,15 +1,10 @@
-package gisscos.studentcard.Entities;
-import gisscos.studentcard.Entities.Enums.QRStatus;
-import gisscos.studentcard.Entities.Enums.QRType;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+package gisscos.studentcard.entities;
+import gisscos.studentcard.entities.enums.QRStatus;
+import gisscos.studentcard.entities.enums.QRType;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.*;
 /**
  * Класс, описывающий сущность динамического QR-кода
  */
@@ -17,7 +12,7 @@ import javax.persistence.GenerationType;
 @Entity
 @NoArgsConstructor
 public class DynamicQR {
-    @Id
+    @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private @Setter(AccessLevel.PROTECTED) Long id;
     /** id владельца QR-кода */

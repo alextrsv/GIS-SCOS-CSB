@@ -1,22 +1,17 @@
-package gisscos.studentcard.Entities;
+package gisscos.studentcard.entities;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import gisscos.studentcard.Entities.Enums.QRStatus;
-import gisscos.studentcard.Entities.Enums.QRType;
+import gisscos.studentcard.entities.enums.QRStatus;
 import lombok.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import org.springframework.stereotype.Component;
+
 
 import javax.persistence.*;
-import java.io.File;
-import java.nio.file.Path;
 import java.util.HashMap;
 
 /**
@@ -26,10 +21,10 @@ import java.util.HashMap;
 @Data
 @Entity
 @NoArgsConstructor
-@Component
-public class PermamentQR {
+public class PermanentQR {
 
-    @Id
+    /** Id кода в БД. Генерируется автоматически */
+    @javax.persistence.Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private @Setter(AccessLevel.PROTECTED) Long id;
     /** id владельца QR-кода */
@@ -41,7 +36,7 @@ public class PermamentQR {
     /** данные в строке для генерации QR-кода */
     private String data;
 
-    public PermamentQR(Long userId, Long universityId, QRStatus status, String data) {
+    public PermanentQR(Long userId, Long universityId, QRStatus status, String data) {
         this.userId = userId;
         this.universityId = universityId;
         this.status = status;

@@ -1,4 +1,4 @@
-package gisscos.studentcard.Entities.Enums;
+package gisscos.studentcard.entities.enums;
 
 /**
  * Статус временного QR-кода.
