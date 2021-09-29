@@ -59,6 +59,17 @@ public class PassRequestController {
     }
 
     /**
+     * Получение заявок для обработки администратором ООВО
+     * @param universityId идентификатор ООВО
+     * @return список заявок для обработки
+     */
+    @GetMapping("/get/requests/{universityId}")
+    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable Long universityId) {
+        return passRequestService.getPassRequestsByUniversity(universityId).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Редактирование заявки
      * @param dto DTO заявки
      * @return отредактированная заявка
