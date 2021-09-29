@@ -12,6 +12,7 @@ import gisscos.studentcard.services.PassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -211,11 +212,30 @@ public class PassRequestServiceImpl implements PassRequestService {
     public Optional<List<PassRequest>> deleteExpiredPassRequests() {
         List<PassRequest> expiredList =
                 passRequestRepository.findAllByStatus(PassRequestStatus.EXPIRED);
+        expiredList
+                .addAll(
+                        passRequestRepository.findAllByStatus(PassRequestStatus.CANCELED_BY_CREATOR)
+                );
 
         for (PassRequest request : expiredList) {
             passRequestRepository.deleteById(request.getId());
         }
 
         return Optional.of(expiredList);
+    }
+
+    private void checkExpiredPassRequests() {
+        List<PassRequest> requests = passRequestRepository.findAll();
+        requests.stream()
+                .filter(request -> isExpired(request.getStatus(), request.getStartDate()))
+                .forEach(request -> request.setStatus(PassRequestStatus.EXPIRED));
+        passRequestRepository.saveAll(requests);
+    }
+
+    private boolean isExpired(PassRequestStatus status, LocalDate startDate) {
+        return (status != PassRequestStatus.ACCEPTED &&
+                status != PassRequestStatus.EXPIRED &&
+                status != PassRequestStatus.CANCELED_BY_CREATOR &&
+                startDate.isBefore(LocalDate.now()));
     }
 }

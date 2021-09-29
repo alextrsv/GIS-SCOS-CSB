@@ -10,7 +10,7 @@ package gisscos.studentcard.entities.enums;
  * REJECTED_BY_TARGET_ORGANIZATION - отклонена целевой ООВО.
  * CANCELED_BY_CREATOR - отменена создателем.
  * EXPIRED - истек срок действия заявки.
- * Accepted - одобрена
+ * ACCEPTED - одобрена
  * (текущая дата больше конца периода заявки)
  */
 public enum PassRequestStatus {
