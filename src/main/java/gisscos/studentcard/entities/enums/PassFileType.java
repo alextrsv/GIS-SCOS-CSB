@@ -1,6 +1,5 @@
 package gisscos.studentcard.entities.enums;
 
-import java.net.Proxy;
 import java.util.stream.Stream;
 
 /** Возможные типы файлов, прикрепленных к заявке
