@@ -1,8 +1,9 @@
-package gisscos.studentcard.entities.enums;
+package gisscos.studentcard.entities.enums.converters;
+
+import gisscos.studentcard.entities.enums.PassFileType;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-import java.net.Proxy;
 import java.util.stream.Stream;
 
 @Converter(autoApply = true)

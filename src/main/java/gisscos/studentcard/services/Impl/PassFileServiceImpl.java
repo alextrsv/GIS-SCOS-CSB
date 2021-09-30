@@ -1,7 +1,6 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.PassFile;
-import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.enums.PassFileType;
 import gisscos.studentcard.repositories.PassFileRepository;
 import gisscos.studentcard.services.PassFileService;
@@ -11,10 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +40,13 @@ public class PassFileServiceImpl implements PassFileService {
         System.out.println(File.separator);
 
 
-        passFile = new PassFile(file.getOriginalFilename(), PassFileType.of(file.getOriginalFilename().split("\\.")[1]), path);
+        passFile = new PassFile(
+                file.getOriginalFilename(),
+                PassFileType.of(
+                        Objects.requireNonNull(
+                                file.getOriginalFilename()
+                        ).split("\\.")[1]),
+                path);
         writeFileToDisk(file, path);
 
         return passFileRepository.save(Objects.requireNonNull(passFile));
@@ -64,11 +69,11 @@ public class PassFileServiceImpl implements PassFileService {
         if (passFile.isPresent()){
             if(deleteFromDisk(passFile.get())) {
                 passFileRepository.delete(passFile.get());
-                return new ResponseEntity<PassFile>(HttpStatus.OK);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
-            else return new ResponseEntity<PassFile>(HttpStatus.INTERNAL_SERVER_ERROR);
+            else return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        else return new ResponseEntity<PassFile>(HttpStatus.NO_CONTENT);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     private boolean deleteFromDisk(PassFile passFile) {
@@ -82,8 +87,7 @@ public class PassFileServiceImpl implements PassFileService {
             try {
                 byte[] bytes = file.getBytes();
                 BufferedOutputStream stream =
-                        new BufferedOutputStream(new FileOutputStream(
-                                new File(path)));
+                        new BufferedOutputStream(new FileOutputStream(path));
                 stream.write(bytes);
                 stream.close();
             } catch (Exception e) {
