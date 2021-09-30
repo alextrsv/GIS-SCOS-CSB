@@ -101,4 +101,13 @@ public class PassRequestController {
         return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    /**
+     * Удаление просроченных заявок
+     * @return список просроченных заявок, которые были удалены
+     */
+    @DeleteMapping("/delete/expired_requests")
+    public ResponseEntity<List<PassRequest>> deleteExpiredPassRequests() {
+        return ResponseEntity.of(passRequestService.deleteExpiredPassRequests());
+    }
 }

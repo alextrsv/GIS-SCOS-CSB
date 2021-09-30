@@ -12,6 +12,7 @@ import gisscos.studentcard.services.PassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -205,5 +206,53 @@ public class PassRequestServiceImpl implements PassRequestService {
                     .findAny();
         } else
            return Optional.empty();
+    }
+
+    /**
+     * Удаление просроченных заявок
+     * @return список удаленных заявок
+     */
+    @Override
+    public Optional<List<PassRequest>> deleteExpiredPassRequests() {
+        // Поиск просроченных заявок, изменение их статуса на EXPIRED
+        checkExpiredPassRequests();
+
+        // Поиск заявок со статусом EXPIRED и CANCELED_BY_CREATOR
+        List<PassRequest> expiredList =
+                passRequestRepository.findAllByStatus(PassRequestStatus.EXPIRED);
+        expiredList
+                .addAll(
+                        passRequestRepository.findAllByStatus(PassRequestStatus.CANCELED_BY_CREATOR)
+                );
+
+        for (PassRequest request : expiredList) {
+            passRequestRepository.deleteById(request.getId());
+        }
+
+        return Optional.of(expiredList);
+    }
+
+    /**
+     * Проверка всех заявок на наличие просроченных
+     */
+    private void checkExpiredPassRequests() {
+        List<PassRequest> requests = passRequestRepository.findAll();
+        requests.stream()
+                .filter(request -> isExpired(request.getStatus(), request.getStartDate()))
+                .forEach(request -> request.setStatus(PassRequestStatus.EXPIRED));
+        passRequestRepository.saveAll(requests);
+    }
+
+    /**
+     * Является ли заявка просроченной?
+     * @param status статус заявки
+     * @param startDate дата начала действия
+     * @return ответ true или false
+     */
+    private boolean isExpired(PassRequestStatus status, LocalDate startDate) {
+        return (status != PassRequestStatus.ACCEPTED &&
+                status != PassRequestStatus.EXPIRED &&
+                status != PassRequestStatus.CANCELED_BY_CREATOR &&
+                startDate.isBefore(LocalDate.now()));
     }
 }
