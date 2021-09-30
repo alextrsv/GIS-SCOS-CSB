@@ -6,14 +6,20 @@ import gisscos.studentcard.repositories.PassFileRepository;
 import gisscos.studentcard.services.PassFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -74,6 +80,22 @@ public class PassFileServiceImpl implements PassFileService {
             else return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    public Optional<PassFile> getFile(String fileName) {
+        return passFileRepository.findByName(fileName);
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadFile(String fileName) throws IOException {
+        File file = new File(getFile(fileName).get().getPath());
+        Path path = Paths.get(file.getAbsolutePath());
+        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+        return ResponseEntity.ok()
+                .contentLength(file.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     private boolean deleteFromDisk(PassFile passFile) {
