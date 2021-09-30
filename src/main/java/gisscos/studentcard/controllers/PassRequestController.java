@@ -1,12 +1,16 @@
 package gisscos.studentcard.controllers;
 
 import gisscos.studentcard.entities.PassRequest;
+import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
+import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.services.PassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Контроллер для работы с заявками
@@ -24,12 +28,23 @@ public class PassRequestController {
 
     /**
      * Создание новой заявки
-     * @param passRequestDTO DTO заявки
+     * @param dto DTO заявки
      * @return созданная заявка
      */
     @PostMapping("/add")
-    public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO passRequestDTO) {
-        return new ResponseEntity<>(passRequestService.createPassRequest(passRequestDTO), HttpStatus.CREATED);
+    public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto) {
+        return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
+    }
+
+    /**
+     * Добавление пользователя в заявку
+     * @param dto пользователя в заявке
+     * @return если заявка найдена, список пользователей заявки с учётом уже добавленного
+     */
+    @PostMapping("/add_user")
+    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto) {
+        return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     /**
@@ -44,13 +59,24 @@ public class PassRequestController {
     }
 
     /**
+     * Получение заявок для обработки администратором ООВО
+     * @param universityId идентификатор ООВО
+     * @return список заявок для обработки
+     */
+    @GetMapping("/get/requests/{universityId}")
+    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable Long universityId) {
+        return passRequestService.getPassRequestsByUniversity(universityId).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Редактирование заявки
-     * @param passRequestDTO DTO заявки
+     * @param dto DTO заявки
      * @return отредактированная заявка
      */
     @PutMapping("/edit")
-    public ResponseEntity<PassRequest> editPassRequest(@RequestBody PassRequestDTO passRequestDTO) {
-        return passRequestService.updatePassRequest(passRequestDTO).map(ResponseEntity::ok)
+    public ResponseEntity<PassRequest> editPassRequest(@RequestBody PassRequestDTO dto) {
+        return passRequestService.updatePassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -61,7 +87,18 @@ public class PassRequestController {
      */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable Long id) {
-        passRequestService.deletePassRequestById(id);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
+     * Удаление пользователя из заявки
+     * @param dto пользователя в заявке
+     * @return удаленный пользователь, если таковой найден
+     */
+    @DeleteMapping("/delete_user")
+    public ResponseEntity<PassRequestUser> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO dto) {
+        return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }

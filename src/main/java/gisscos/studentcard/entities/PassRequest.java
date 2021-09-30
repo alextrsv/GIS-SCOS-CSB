@@ -2,16 +2,12 @@ package gisscos.studentcard.entities;
 
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Класс, описывающий сущность заявки
@@ -25,14 +21,16 @@ public class PassRequest {
 
     /** Id заявки в БД. Генерируется автоматически */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private @Setter(AccessLevel.PROTECTED) Long id;
 
 
     
     /** Id пользоватлея - создателя */
     private Long userId;
-    /** Id организации, в которую необходим доступ */
+    /** Id организации, в которую необходим доступ (целевая ООВО)*/
+    private Long targetUniversityId;
+    /** Id организации пользователя */
     private Long universityId;
     /** Дата создания заявки */
     private @Setter(AccessLevel.PROTECTED) LocalDate creationDate;
@@ -46,11 +44,21 @@ public class PassRequest {
     private PassRequestStatus status;
     /** Комментарий создателя заявки */
     private String comment;
+    /** Список пользователей групповой заявки */
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.EAGER,
+            mappedBy = "passRequestId"
+    )
+    @ToString.Exclude
+    private List<PassRequestUser> users;
 
-    public PassRequest(Long userId, Long universityId, LocalDate startDate, LocalDate endDate,
-                       PassRequestStatus status, PassRequestType type, String comment) {
+    public PassRequest(Long userId, Long targetUniversityId, Long universityId,
+                       LocalDate startDate, LocalDate endDate, PassRequestStatus status,
+                       PassRequestType type, String comment) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
+        this.targetUniversityId = targetUniversityId;
         this.universityId = universityId;
         this.startDate = startDate;
         this.endDate = endDate;

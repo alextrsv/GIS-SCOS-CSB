@@ -1,0 +1,14 @@
+name: stud_ticket_CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  clone_and_compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: compile sources
+        run:
+          mvn compile
