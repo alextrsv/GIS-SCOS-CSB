@@ -23,8 +23,12 @@ import java.util.Optional;
 @Service
 public class PassFileServiceImpl implements PassFileService {
 
+    private final PassFileRepository passFileRepository;
+
     @Autowired
-    private PassFileRepository passFileRepository;
+    public PassFileServiceImpl(PassFileRepository passFileRepository) {
+        this.passFileRepository = passFileRepository;
+    }
 
     @Value("${upload.dir}")
     private String uploadDir;
