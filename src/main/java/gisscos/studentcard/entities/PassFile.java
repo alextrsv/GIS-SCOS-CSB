@@ -1,15 +1,13 @@
 package gisscos.studentcard.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gisscos.studentcard.entities.enums.PassFileType;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Data
 @Entity
@@ -28,6 +26,7 @@ public class PassFile {
     /** Тип файла **/
     private PassFileType type;
     /** Путь к файлу **/
+    @JsonIgnore
     private String path;
 
 
