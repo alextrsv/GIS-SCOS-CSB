@@ -208,8 +208,16 @@ public class PassRequestServiceImpl implements PassRequestService {
            return Optional.empty();
     }
 
+    /**
+     * Удаление просроченных заявок
+     * @return список удаленных заявок
+     */
     @Override
     public Optional<List<PassRequest>> deleteExpiredPassRequests() {
+        // Поиск просроченных заявок, изменение их статуса на EXPIRED
+        checkExpiredPassRequests();
+
+        // Поиск заявок со статусом EXPIRED и CANCELED_BY_CREATOR
         List<PassRequest> expiredList =
                 passRequestRepository.findAllByStatus(PassRequestStatus.EXPIRED);
         expiredList
@@ -224,6 +232,9 @@ public class PassRequestServiceImpl implements PassRequestService {
         return Optional.of(expiredList);
     }
 
+    /**
+     * Проверка всех заявок на наличие просроченных
+     */
     private void checkExpiredPassRequests() {
         List<PassRequest> requests = passRequestRepository.findAll();
         requests.stream()
@@ -232,6 +243,12 @@ public class PassRequestServiceImpl implements PassRequestService {
         passRequestRepository.saveAll(requests);
     }
 
+    /**
+     * Является ли заявка просроченной?
+     * @param status статус заявки
+     * @param startDate дата начала действия
+     * @return ответ true или false
+     */
     private boolean isExpired(PassRequestStatus status, LocalDate startDate) {
         return (status != PassRequestStatus.ACCEPTED &&
                 status != PassRequestStatus.EXPIRED &&
