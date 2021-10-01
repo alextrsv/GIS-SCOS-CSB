@@ -16,8 +16,6 @@ import javax.persistence.Id;
 @NoArgsConstructor
 public class PassFile {
 
-    //TODO Добавить поле, описывающее заявку, к которой прикреплен файл
-
     /** Id файла, прикрепленного к заявке в БД. Генерируется автоматически */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,12 +27,16 @@ public class PassFile {
     private PassFileType type;
     /** Путь к файлу **/
     private String path;
+    /** Идентификатор заявки, к которой прикреплён файл */
+    private Long passRequestId;
 
 
 
-    public PassFile(String name, PassFileType type, String path){
+    public PassFile(String name, PassFileType type,
+                    String path, Long passRequestId){
         this.name = name;
         this.type = type;
         this.path = path;
+        this.passRequestId = passRequestId;
     }
 }
