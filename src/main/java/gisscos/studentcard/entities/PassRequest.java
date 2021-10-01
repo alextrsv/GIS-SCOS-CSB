@@ -16,8 +16,6 @@ import java.util.List;
 @NoArgsConstructor          // Генерация конструтора без параметров
 public class PassRequest {
 
-    //TODO Добавить поле, описывающее файл, прикрепленный к заявке пользователем
-
     /** Id заявки в БД. Генерируется автоматически */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,6 +49,14 @@ public class PassRequest {
     )
     @ToString.Exclude
     private List<PassRequestUser> users;
+    /** */
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.EAGER,
+            mappedBy = "passRequestId"
+    )
+    @ToString.Exclude
+    private List<PassFile> files;
 
     public PassRequest(Long userId, Long targetUniversityId, Long universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
