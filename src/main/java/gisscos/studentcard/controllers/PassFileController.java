@@ -26,7 +26,6 @@ public class PassFileController {
         this.passFileService = passFileService;
     }
 
-
     @PostMapping("/upload")
     private ResponseEntity<PassFile> uploadPassFile(@RequestParam("file") MultipartFile passFile,
                                                     @RequestParam("passRequestId") Long passRequestId) {
@@ -36,7 +35,6 @@ public class PassFileController {
         );
     }
 
-
     @PostMapping("/upload/multiple")
     private ResponseEntity<List<PassFile>> uploadPassFiles(@RequestParam("file") MultipartFile[] passFiles,
                                                            @RequestParam("passRequestId") Long passRequestId) {
@@ -44,6 +42,11 @@ public class PassFileController {
                 passFileService.uploadPassFiles(passFiles, passRequestId),
                 HttpStatus.OK
         );
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<Resource> download(@RequestBody PassRequestFileIdentifierDTO dto) {
+        return passFileService.downloadFile(dto);
     }
 
     @GetMapping("/view")
@@ -56,10 +59,5 @@ public class PassFileController {
     private ResponseEntity<PassFile> deletePassFile(@RequestBody PassRequestFileIdentifierDTO dto){
         return passFileService.deletePassFile(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/download")
-    public ResponseEntity<Resource> download(@RequestBody PassRequestFileIdentifierDTO dto) {
-        return passFileService.downloadFile(dto);
     }
 }

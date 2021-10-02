@@ -14,10 +14,10 @@ public interface PassFileService {
 
     List<PassFile> uploadPassFiles(MultipartFile[] passFiles, Long passRequestId);
 
-    Optional<PassFile> deletePassFile(PassRequestFileIdentifierDTO dto);
-
     ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto);
 
     Optional<PassFile> getFile(PassRequestFileIdentifierDTO dto);
+
+    Optional<PassFile> deletePassFile(PassRequestFileIdentifierDTO dto);
 }
 

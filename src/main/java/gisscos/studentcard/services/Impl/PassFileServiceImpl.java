@@ -80,24 +80,6 @@ public class PassFileServiceImpl implements PassFileService {
     }
 
     @Override
-    public Optional<PassFile> deletePassFile(PassRequestFileIdentifierDTO dto) {
-        Optional<PassFile> passFile = getFile(dto);
-
-        if (passFile.isPresent()){
-            if(deleteFromDisk(passFile.get())) {
-                passFileRepository.delete(passFile.get());
-                return passFile;
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<PassFile> getFile(PassRequestFileIdentifierDTO dto) {
-        return passFileRepository.findById(dto.getFileId());
-    }
-
-    @Override
     public ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto) {
         Optional<PassFile> file = passFileRepository.findById(dto.getFileId());
         if (file.isPresent()) {
@@ -113,6 +95,24 @@ public class PassFileServiceImpl implements PassFileService {
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @Override
+    public Optional<PassFile> getFile(PassRequestFileIdentifierDTO dto) {
+        return passFileRepository.findById(dto.getFileId());
+    }
+
+    @Override
+    public Optional<PassFile> deletePassFile(PassRequestFileIdentifierDTO dto) {
+        Optional<PassFile> passFile = getFile(dto);
+
+        if (passFile.isPresent()){
+            if(deleteFromDisk(passFile.get())) {
+                passFileRepository.delete(passFile.get());
+                return passFile;
+            }
+        }
+        return Optional.empty();
     }
 
     private boolean deleteFromDisk(PassFile passFile) {
