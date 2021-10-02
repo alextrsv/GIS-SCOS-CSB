@@ -99,6 +99,11 @@ public class PassFileServiceImpl implements PassFileService {
     }
 
     @Override
+    public Optional<PassFile> getFile(PassRequestFileIdentifierDTO dto) {
+        return passFileRepository.findById(dto.getFileId());
+    }
+
+    @Override
     public ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto) {
         Optional<PassFile> file = passFileRepository.findById(dto.getFileId());
         if (file.isPresent()) {
