@@ -11,7 +11,6 @@ import java.util.stream.Stream;
  * PNG - изображение формата  PNG
  * PDF - файл формата PDF
  * **/
-
 public enum PassFileType {
     DOC("doc"),
     DOCX("docx"),
@@ -33,6 +32,11 @@ public enum PassFileType {
         return type;
     }
 
+    /**
+     * Получение MediaType по значению
+     * @param type один из типов файла
+     * @return MediaType (Mime type)
+     */
     public static MediaType getMediaType(PassFileType type) {
         switch (type) {
             case DOC:

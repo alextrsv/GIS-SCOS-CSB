@@ -26,6 +26,12 @@ public class PassFileController {
         this.passFileService = passFileService;
     }
 
+    /**
+     * Загрузка прикреплённого к заявке файла на сервер.
+     * @param passFile файл
+     * @param passRequestId идентификатор заявки
+     * @return загруженный файл если успешно
+     */
     @PostMapping("/upload")
     private ResponseEntity<PassFile> uploadPassFile(@RequestParam("file") MultipartFile passFile,
                                                     @RequestParam("passRequestId") Long passRequestId) {
@@ -35,6 +41,12 @@ public class PassFileController {
         );
     }
 
+    /**
+     * Загрузка прикреплённых к заявке файлов на сервер.
+     * @param passFiles массив файлов
+     * @param passRequestId идентификатор заявки
+     * @return список загруженных файлов если успешно
+     */
     @PostMapping("/upload/multiple")
     private ResponseEntity<List<PassFile>> uploadPassFiles(@RequestParam("file") MultipartFile[] passFiles,
                                                            @RequestParam("passRequestId") Long passRequestId) {
@@ -44,17 +56,32 @@ public class PassFileController {
         );
     }
 
+    /**
+     * Загрузка файла с сервера.
+     * @param dto для нахождения файла
+     * @return файл, прикреплённый к заявке
+     */
     @GetMapping("/download")
     public ResponseEntity<Resource> download(@RequestBody PassRequestFileIdentifierDTO dto) {
         return passFileService.downloadFile(dto);
     }
 
+    /**
+     * Получение информации о файле, прикрепленном к заявке.
+     * @param dto для нахождения файла
+     * @return информация о файле
+     */
     @GetMapping("/view")
     public ResponseEntity<PassFile> getFileInfo(@RequestBody PassRequestFileIdentifierDTO dto) {
         return passFileService.getFile(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    /**
+     * Удаление файла с сервера.
+     * @param dto для нахождения файла
+     * @return информация об удаленном файле
+     */
     @DeleteMapping("/delete")
     private ResponseEntity<PassFile> deletePassFile(@RequestBody PassRequestFileIdentifierDTO dto){
         return passFileService.deletePassFile(dto).map(ResponseEntity::ok)
