@@ -12,6 +12,9 @@ import org.springframework.data.annotation.Id;
 
 
 import javax.persistence.*;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 /**
@@ -64,6 +67,27 @@ public class PermanentQR {
         }
         return "SUCCESS";
     }
+    /**
+     * Хеширование строки информации для статического QR
+     */
+    public void StringToHex(String string) {
+        byte[] bytesOfMessage = new byte[0];
+        try {
+            bytesOfMessage = string.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        byte[] thedigest = md.digest(bytesOfMessage);
+        System.out.println(thedigest);
+    }
+
+
     @Override
     public String toString() {
         return super.toString() + "UserId:" + userId + "\n" + "UniversityId" + universityId + "\n" + "status" + status + "\n";

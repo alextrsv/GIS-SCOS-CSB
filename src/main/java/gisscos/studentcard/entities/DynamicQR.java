@@ -23,4 +23,12 @@ public class DynamicQR {
     private QRType type;
     /** статус QR-кода */
     private QRStatus status;
+
+    public DynamicQR(Long userId, Long universityId, QRType type, QRStatus status) {
+        this.userId = userId;
+        this.universityId = universityId;
+        this.type = type;
+        this.status = status;
+
+    }
 }
