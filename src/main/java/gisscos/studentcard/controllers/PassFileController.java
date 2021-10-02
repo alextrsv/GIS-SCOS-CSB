@@ -61,8 +61,8 @@ public class PassFileController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping(path = "file/download/{file-name}")
-    public ResponseEntity<Resource> download(@PathVariable("file-name") String fileName) throws IOException {
-        return passFileService.downloadFile(fileName);
+    @GetMapping("/download")
+    public ResponseEntity<Resource> download(@RequestBody PassRequestFileIdentifierDTO dto) {
+        return passFileService.downloadFile(dto);
     }
 }
