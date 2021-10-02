@@ -32,10 +32,10 @@ public class PassFile {
 
 
     public PassFile(String name, PassFileType type,
-                    String path){
+                    String path, Long passRequestId){
         this.name = name;
         this.type = type;
         this.path = path;
-        //this.passRequestId = passRequestId;
+        this.passRequestId = passRequestId;
     }
 }
