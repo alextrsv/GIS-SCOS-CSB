@@ -1,8 +1,14 @@
 package gisscos.studentcard.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -41,20 +47,24 @@ public class PassRequest {
     private PassRequestStatus status;
     /** Комментарий создателя заявки */
     private String comment;
+
     /** Список пользователей групповой заявки */
     @OneToMany(
             cascade = CascadeType.ALL,
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             mappedBy = "passRequestId"
     )
+    @LazyCollection(LazyCollectionOption.FALSE)
     @ToString.Exclude
     private List<PassRequestUser> users;
-    /** */
+
+    /** Список файлов, прикрепленных к заявке */
     @OneToMany(
             cascade = CascadeType.ALL,
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             mappedBy = "passRequestId"
     )
+    @LazyCollection(LazyCollectionOption.FALSE)
     @ToString.Exclude
     private List<PassFile> files;
 
