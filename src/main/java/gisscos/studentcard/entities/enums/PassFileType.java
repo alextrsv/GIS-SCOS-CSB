@@ -1,5 +1,7 @@
 package gisscos.studentcard.entities.enums;
 
+import org.springframework.http.MediaType;
+
 import java.util.stream.Stream;
 
 /** Возможные типы файлов, прикрепленных к заявке
@@ -11,6 +13,8 @@ import java.util.stream.Stream;
  * **/
 
 public enum PassFileType {
+    DOC("doc"),
+    DOCX("docx"),
     TXT("txt"),
     JPG("jpg"),
     JPEG("jpeg"),
@@ -21,15 +25,31 @@ public enum PassFileType {
 
     String type;
 
-    PassFileType(){
-    }
-
     PassFileType(String type){
         this.type = type;
     }
 
     public String getType() {
         return type;
+    }
+
+    public static MediaType getMediaType(PassFileType type) {
+        switch (type) {
+            case DOC:
+            case DOCX:
+                return MediaType.APPLICATION_OCTET_STREAM;
+            case TXT:
+                return MediaType.TEXT_PLAIN;
+            case JPG:
+            case JPEG:
+                return MediaType.IMAGE_JPEG;
+            case PNG:
+                return MediaType.IMAGE_PNG;
+            case PDF:
+                return MediaType.APPLICATION_PDF;
+            default:
+                return MediaType.ALL;
+        }
     }
 
     public static PassFileType of(String type) {
