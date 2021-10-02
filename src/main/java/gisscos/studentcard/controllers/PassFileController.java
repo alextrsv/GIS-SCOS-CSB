@@ -2,17 +2,14 @@ package gisscos.studentcard.controllers;
 
 import gisscos.studentcard.entities.PassFile;
 import gisscos.studentcard.entities.dto.PassRequestFileIdentifierDTO;
-import gisscos.studentcard.entities.enums.PassFileType;
 import gisscos.studentcard.services.PassFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
