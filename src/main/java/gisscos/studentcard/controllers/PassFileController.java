@@ -55,10 +55,10 @@ public class PassFileController {
         return passFileService.deletePassFile(fileName);
     }
 
-    @GetMapping("/file/{file-name}")
-    private ResponseEntity<PassFile> downloadFile(@PathVariable("file-name") String fileName){
-        return passFileService.getFile(fileName).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    @DeleteMapping("/delete")
+    private ResponseEntity<PassFile> deletePassFile(@RequestBody PassRequestFileIdentifierDTO dto){
+        return passFileService.deletePassFile(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping(path = "file/download/{file-name}")
