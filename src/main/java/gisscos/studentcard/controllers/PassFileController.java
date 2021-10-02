@@ -30,9 +30,13 @@ public class PassFileController {
     }
 
 
-    @PostMapping("/file")
-    private ResponseEntity<PassFile> uploadPassFile(@RequestParam("file") MultipartFile passFile){
-        return new ResponseEntity<>(passFileService.uploadPassFile(passFile), HttpStatus.OK);
+    @PostMapping("/upload")
+    private ResponseEntity<PassFile> uploadPassFile(@RequestParam("file") MultipartFile passFile,
+                                                    @RequestParam("passRequestId") Long passRequestId) {
+        return new ResponseEntity<>(
+                passFileService.uploadPassFile(passFile, passRequestId),
+                HttpStatus.OK
+        );
     }
 
 
