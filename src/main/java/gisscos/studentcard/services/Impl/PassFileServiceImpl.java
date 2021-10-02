@@ -86,17 +86,16 @@ public class PassFileServiceImpl implements PassFileService {
     }
 
     @Override
-    public ResponseEntity<PassFile> deletePassFile(String fileName) {
-        Optional<PassFile> passFile = passFileRepository.findByName(fileName);
+    public Optional<PassFile> deletePassFile(PassRequestFileIdentifierDTO dto) {
+        Optional<PassFile> passFile = getFile(dto);
 
         if (passFile.isPresent()){
             if(deleteFromDisk(passFile.get())) {
                 passFileRepository.delete(passFile.get());
-                return new ResponseEntity<>(HttpStatus.OK);
+                return passFile;
             }
-            else return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return Optional.empty();
     }
 
     @Override
