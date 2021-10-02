@@ -122,19 +122,11 @@ public class PassFileServiceImpl implements PassFileService {
     }
 
 
-    private void writeFileToDisk(MultipartFile file, String path){
-        if (file != null) {
-            try {
-                byte[] bytes = file.getBytes();
-                BufferedOutputStream stream =
-                        new BufferedOutputStream(new FileOutputStream(path));
-                stream.write(bytes);
-                stream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    private void writeFileToDisk(MultipartFile file, String path) {
+        try {
+            Files.copy(file.getInputStream(), Path.of(path), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
-
-
 }
