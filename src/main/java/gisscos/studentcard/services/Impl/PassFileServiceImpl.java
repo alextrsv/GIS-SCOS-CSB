@@ -99,19 +99,21 @@ public class PassFileServiceImpl implements PassFileService {
     }
 
     @Override
-    public Optional<PassFile> getFile(String fileName) {
-        return passFileRepository.findByName(fileName);
-    }
-
-    @Override
-    public ResponseEntity<Resource> downloadFile(String fileName) throws IOException {
-        File file = new File(getFile(fileName).get().getPath());
-        Path path = Paths.get(file.getAbsolutePath());
-        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
-        return ResponseEntity.ok()
-                .contentLength(file.length())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+    public ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto) {
+        Optional<PassFile> file = passFileRepository.findById(dto.getFileId());
+        if (file.isPresent()) {
+            try {
+                Resource resource = new UrlResource(Path.of(file.get().getPath()).toUri());
+                return ResponseEntity.ok()
+                        .contentType(PassFileType.getMediaType(file.get().getType()))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.get().getName() + "\"")
+                        .body(resource);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     private boolean deleteFromDisk(PassFile passFile) {
