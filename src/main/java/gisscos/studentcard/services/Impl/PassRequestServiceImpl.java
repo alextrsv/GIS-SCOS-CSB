@@ -9,6 +9,7 @@ import gisscos.studentcard.entities.enums.PassRequestType;
 import gisscos.studentcard.repositories.PassRequestRepository;
 import gisscos.studentcard.repositories.PassRequestUserRepository;
 import gisscos.studentcard.services.PassRequestService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  * Сервис для работы с заявками.
  */
 @Service
+@Slf4j
 public class PassRequestServiceImpl implements PassRequestService {
 
     private final PassRequestRepository passRequestRepository;
@@ -59,6 +61,7 @@ public class PassRequestServiceImpl implements PassRequestService {
             if (getPassRequestById(id).isPresent())
                 return getPassRequestById(id).get();
         }
+        log.info("pass request was added");
         return passRequestRepository.save(passRequest);
     }
 
@@ -76,6 +79,7 @@ public class PassRequestServiceImpl implements PassRequestService {
             // Если такой пользователь в заявке уже есть
             if (passRequestUserRepository
                     .existsByPassRequestIdAndUserId(dto.getUserId(), dto.getPassRequestId())) {
+                log.info("the user is already associated to the pass request");
                 return Optional.empty();
             }
 
@@ -84,8 +88,10 @@ public class PassRequestServiceImpl implements PassRequestService {
                     dto.getUserId()
             );
             passRequestUserRepository.save(passRequestUser);
+            log.info("the user was associated to the pass request successfully");
             return Optional.of(passRequestUserRepository.findAllByPassRequestId(passRequest.get().getId()));
         } else
+            log.info("nothing to associate, the pass request type isn't \"GROUP\"");
             return Optional.empty();
     }
 
@@ -113,7 +119,7 @@ public class PassRequestServiceImpl implements PassRequestService {
                         request -> request.getStatus() == PassRequestStatus.TARGET_ORGANISATION_REVIEW
                 )
                 .collect(Collectors.toList());
-
+        log.info("collect requests sent for consideration to the target OOVO");
         List<PassRequest> userRequestList = passRequestRepository.findAllByUniversityId(universityId);
 
         userRequestList = userRequestList.stream()
@@ -121,7 +127,9 @@ public class PassRequestServiceImpl implements PassRequestService {
                         request -> request.getStatus() == PassRequestStatus.USER_ORGANISATION_REVIEW
                 )
                 .collect(Collectors.toList());
+        log.info("collect requests sent for consideration to their OOVO.");
         targetRequestList.addAll(userRequestList);
+        log.info("collect all requests together");
         return Optional.of(targetRequestList);
     }
 
@@ -145,6 +153,7 @@ public class PassRequestServiceImpl implements PassRequestService {
             passRequest.get().setTargetUniversityId(dto.getTargetUniversityId());
             passRequestRepository.save(passRequest.get());
 
+            log.info("pass request with id: {} was updated", dto.getId());
             return passRequest;
         } else
             return Optional.empty();
@@ -161,9 +170,10 @@ public class PassRequestServiceImpl implements PassRequestService {
         Optional<PassRequest> passRequest = passRequestRepository.findById(id);
         if (passRequest.isPresent()) {
             passRequestRepository.deleteById(id);
+            log.info("pass request with id: {} was deleted", id);
             return passRequest;
         }
-
+        log.info("pass request with id: {} wasn't found", id);
         return Optional.empty();
     }
 
@@ -194,6 +204,7 @@ public class PassRequestServiceImpl implements PassRequestService {
                     .ifPresent(
                             user -> passRequestUserRepository.deleteById(user.getId())
                     );
+            log.info("user with id: {} has been deleted from pass request", dto.getUserId());
             // Удалённый пользователь (по сути PassRequestUserDTO)
             return passRequest.get()
                     .getUsers()
@@ -204,8 +215,11 @@ public class PassRequestServiceImpl implements PassRequestService {
                             )
                     )
                     .findAny();
-        } else
-           return Optional.empty();
+        } else {
+            log.warn("user with id: {} hasn't been deleted from pass request " +
+                    "due pass request type isn't \"GROUP\" or pass request isn't present", dto.getUserId());
+            return Optional.empty();
+        }
     }
 
     /**
@@ -228,6 +242,7 @@ public class PassRequestServiceImpl implements PassRequestService {
         for (PassRequest request : expiredList) {
             passRequestRepository.deleteById(request.getId());
         }
+        log.info("expired pass requests has been deleted");
 
         return Optional.of(expiredList);
     }
