@@ -5,6 +5,7 @@ import gisscos.studentcard.entities.dto.PassRequestFileIdentifierDTO;
 import gisscos.studentcard.entities.enums.PassFileType;
 import gisscos.studentcard.repositories.PassFileRepository;
 import gisscos.studentcard.services.PassFileService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -29,6 +30,7 @@ import java.util.Optional;
  * Сервис для работы с файлами
  */
 @Service
+@Slf4j
 public class PassFileServiceImpl implements PassFileService {
 
     /** Репозиторий файлов */
@@ -52,7 +54,7 @@ public class PassFileServiceImpl implements PassFileService {
      * @return информация о загруженном файле
      */
     @Override
-    public PassFile uploadPassFile(MultipartFile file, Long passRequestId) {
+    public Optional<PassFile> uploadPassFile(MultipartFile file, Long passRequestId) {
         PassFile passFile;
 
         String path = System.getProperty("user.dir")
@@ -61,6 +63,7 @@ public class PassFileServiceImpl implements PassFileService {
                 + File.separator
                 + file.getOriginalFilename();
 
+        log.debug("new file's path: " + path);
         System.out.println(File.separator);
 
 
@@ -74,9 +77,16 @@ public class PassFileServiceImpl implements PassFileService {
                 path,
                 passRequestId
         );
-        writeFileToDisk(file, path);
+        if(writeFileToDisk(file, path)) {
+            log.info("new file \""
+                    + file.getOriginalFilename()
+                    + "\" has been uploaded");
 
-        return passFileRepository.save(Objects.requireNonNull(passFile));
+            return Optional.of(passFileRepository.save(Objects.requireNonNull(passFile)));
+        }else{
+            log.warn("file hasn't been uploaded");
+            return Optional.empty();
+        }
     }
 
     /**
@@ -90,9 +100,9 @@ public class PassFileServiceImpl implements PassFileService {
         ArrayList<PassFile> uploadedFiles = new ArrayList<>();
 
         for (MultipartFile file: passFiles) {
-            uploadedFiles.add(uploadPassFile(file, passRequestId));
+            uploadedFiles.add(uploadPassFile(file, passRequestId).get());
         }
-
+        log.info("files were uploaded");
         return uploadedFiles;
     }
 
@@ -105,6 +115,7 @@ public class PassFileServiceImpl implements PassFileService {
     public ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto) {
         Optional<PassFile> file = passFileRepository.findById(dto.getFileId());
         if (file.isPresent()) {
+            log.debug("find file with id {} is present", file.get().getId());
             try {
                 Resource resource = new UrlResource(Path.of(file.get().getPath()).toUri());
                 return ResponseEntity.ok()
@@ -126,6 +137,7 @@ public class PassFileServiceImpl implements PassFileService {
      */
     @Override
     public Optional<PassFile> getFile(PassRequestFileIdentifierDTO dto) {
+        log.info("loading info for file with {}", dto.getFileId());
         return passFileRepository.findById(dto.getFileId());
     }
 
@@ -141,9 +153,12 @@ public class PassFileServiceImpl implements PassFileService {
         if (passFile.isPresent()){
             if(deleteFromDisk(passFile.get())) {
                 passFileRepository.delete(passFile.get());
+                log.info("file with id {} was deleted", dto.getFileId());
                 return passFile;
             }
+            log.error("file wasn't deleted from disk");
         }
+        log.error("file wasn't found");
         return Optional.empty();
     }
 
@@ -162,11 +177,15 @@ public class PassFileServiceImpl implements PassFileService {
      * @param file файл
      * @param path путь для записи
      */
-    private void writeFileToDisk(MultipartFile file, String path) {
+    private boolean writeFileToDisk(MultipartFile file, String path) {
         try {
             Files.copy(file.getInputStream(), Path.of(path), StandardCopyOption.REPLACE_EXISTING);
+            log.info("file was written do disk");
+            return true;
         } catch (IOException ex) {
+            log.error("file wasn't written do disk due IOException");
             ex.printStackTrace();
+            return false;
         }
     }
 }
