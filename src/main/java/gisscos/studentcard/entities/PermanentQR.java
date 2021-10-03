@@ -7,8 +7,6 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import gisscos.studentcard.entities.enums.QRStatus;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-
 
 
 import javax.persistence.*;
@@ -24,6 +22,7 @@ import java.util.HashMap;
 @Data
 @Entity
 @NoArgsConstructor
+@ToString
 public class PermanentQR {
 
     /** Id кода в БД. Генерируется автоматически */
@@ -37,28 +36,22 @@ public class PermanentQR {
     /** статус QR-кода */
     private QRStatus status;
     /** данные в строке для генерации QR-кода */
-    private String data;
 
-    public PermanentQR(Long userId, Long universityId, QRStatus status, String data) {
+
+    public PermanentQR(Long userId, Long universityId, QRStatus status) {
         this.userId = userId;
         this.universityId = universityId;
         this.status = status;
-        this.data=data;
+
     }
 
-    /*
-    public String dataQR() {
-        data = PermamentQR.super.toString();
-        return data;
-    }*/
-
-    public String createQR(int width,int height,String format,String outPath) {
+    public String createQR(String outPath, String studentInf) {
         HashMap ha = new HashMap();
         ha.put (EncodeHintType.CHARACTER_SET, "utf-8"); // Формат кодирования
         ha.put (EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M); // Уровень коррекции]
         ha.put(EncodeHintType.MARGIN, 2);
         try {
-            BitMatrix bitMatrix = new MultiFormatWriter().encode(data, BarcodeFormat.QR_CODE,300 , 300, ha);
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(studentInf, BarcodeFormat.QR_CODE,300 , 300, ha);
             //Path file = new File(outPath).toPath();
             //MatrixToImageWriter.writeToPath(bitMatrix, format, file);
         } catch (Exception e) {
@@ -70,10 +63,10 @@ public class PermanentQR {
     /**
      * Хеширование строки информации для статического QR
      */
-    public void StringToHex(String string) {
+    public String StringToHex(PermanentQR permanentQR) throws UnsupportedEncodingException {
         byte[] bytesOfMessage = new byte[0];
         try {
-            bytesOfMessage = string.getBytes("UTF-8");
+            bytesOfMessage = permanentQR.toString().getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -84,14 +77,15 @@ public class PermanentQR {
             e.printStackTrace();
         }
         byte[] thedigest = md.digest(bytesOfMessage);
-        System.out.println(thedigest);
+        String res = new String(thedigest, "UTF-8");
+        return res;
     }
 
 
-    @Override
+ /*   @Override
     public String toString() {
         return super.toString() + "UserId:" + userId + "\n" + "UniversityId" + universityId + "\n" + "status" + status + "\n";
-    }
+    }*/
 
 
 }
