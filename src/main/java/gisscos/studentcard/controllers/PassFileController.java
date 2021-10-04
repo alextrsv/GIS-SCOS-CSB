@@ -1,6 +1,7 @@
 package gisscos.studentcard.controllers;
 
 import gisscos.studentcard.entities.PassFile;
+import gisscos.studentcard.entities.dto.PassRequestFileIdentifierDTO;
 import gisscos.studentcard.services.PassFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -9,13 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
  * Контроллер для работы с прикрепленными к заявкам файлами
  */
 @RestController
+@RequestMapping("/file")
 public class PassFileController {
 
     private final PassFileService passFileService;
@@ -25,32 +26,65 @@ public class PassFileController {
         this.passFileService = passFileService;
     }
 
-
-    @PostMapping("/file")
-    private ResponseEntity<PassFile> uploadPassFile(@RequestParam("file") MultipartFile passFile){
-        return new ResponseEntity<>(passFileService.uploadPassFile(passFile), HttpStatus.OK);
+    /**
+     * Загрузка прикреплённого к заявке файла на сервер.
+     * @param passFile файл
+     * @param passRequestId идентификатор заявки
+     * @return загруженный файл если успешно
+     */
+    @PostMapping("/upload")
+    private ResponseEntity<PassFile> uploadPassFile(@RequestParam("file") MultipartFile passFile,
+                                                    @RequestParam("passRequestId") Long passRequestId) {
+        return new ResponseEntity<>(
+                passFileService.uploadPassFile(passFile, passRequestId),
+                HttpStatus.OK
+        );
     }
 
-
-    @PostMapping("/files")
-    private ResponseEntity<List<PassFile>> uploadPassFiles(@RequestParam("file") MultipartFile[] passFiles){
-        return new ResponseEntity<>(passFileService.uploadPassFiles(passFiles), HttpStatus.OK);
+    /**
+     * Загрузка прикреплённых к заявке файлов на сервер.
+     * @param passFiles массив файлов
+     * @param passRequestId идентификатор заявки
+     * @return список загруженных файлов если успешно
+     */
+    @PostMapping("/upload/multiple")
+    private ResponseEntity<List<PassFile>> uploadPassFiles(@RequestParam("file") MultipartFile[] passFiles,
+                                                           @RequestParam("passRequestId") Long passRequestId) {
+        return new ResponseEntity<>(
+                passFileService.uploadPassFiles(passFiles, passRequestId),
+                HttpStatus.OK
+        );
     }
 
-
-    @DeleteMapping("/file/{file-name}")
-    private ResponseEntity<PassFile> deletePassFile(@PathVariable("file-name") String fileName){
-        return passFileService.deletePassFile(fileName);
+    /**
+     * Загрузка файла с сервера.
+     * @param dto для нахождения файла
+     * @return файл, прикреплённый к заявке
+     */
+    @GetMapping("/download")
+    public ResponseEntity<Resource> download(@RequestBody PassRequestFileIdentifierDTO dto) {
+        return passFileService.downloadFile(dto);
     }
 
-    @GetMapping("/file/{file-name}")
-    private ResponseEntity<PassFile> downloadFile(@PathVariable("file-name") String fileName){
-        return passFileService.getFile(fileName).map(ResponseEntity::ok)
+    /**
+     * Получение информации о файле, прикрепленном к заявке.
+     * @param dto для нахождения файла
+     * @return информация о файле
+     */
+    @GetMapping("/view")
+    public ResponseEntity<PassFile> getFileInfo(@RequestBody PassRequestFileIdentifierDTO dto) {
+        return passFileService.getFile(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping(path = "file/download/{file-name}")
-    public ResponseEntity<Resource> download(@PathVariable("file-name") String fileName) throws IOException {
-        return passFileService.downloadFile(fileName);
+    /**
+     * Удаление файла с сервера.
+     * @param dto для нахождения файла
+     * @return информация об удаленном файле
+     */
+    @DeleteMapping("/delete")
+    private ResponseEntity<PassFile> deletePassFile(@RequestBody PassRequestFileIdentifierDTO dto){
+        return passFileService.deletePassFile(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

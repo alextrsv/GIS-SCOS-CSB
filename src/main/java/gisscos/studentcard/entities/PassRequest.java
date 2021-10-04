@@ -3,6 +3,8 @@ package gisscos.studentcard.entities;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import lombok.*;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -15,8 +17,6 @@ import java.util.List;
 @Entity
 @NoArgsConstructor          // Генерация конструтора без параметров
 public class PassRequest {
-
-    //TODO Добавить поле, описывающее файл, прикрепленный к заявке пользователем
 
     /** Id заявки в БД. Генерируется автоматически */
     @Id
@@ -43,14 +43,26 @@ public class PassRequest {
     private PassRequestStatus status;
     /** Комментарий создателя заявки */
     private String comment;
+
     /** Список пользователей групповой заявки */
     @OneToMany(
             cascade = CascadeType.ALL,
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             mappedBy = "passRequestId"
     )
+    @LazyCollection(LazyCollectionOption.FALSE)
     @ToString.Exclude
     private List<PassRequestUser> users;
+
+    /** Список файлов, прикрепленных к заявке */
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            mappedBy = "passRequestId"
+    )
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @ToString.Exclude
+    private List<PassFile> files;
 
     public PassRequest(Long userId, Long targetUniversityId, Long universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,

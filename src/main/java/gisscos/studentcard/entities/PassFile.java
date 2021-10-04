@@ -7,14 +7,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Data
 @Entity
 @NoArgsConstructor
 public class PassFile {
-
-    //TODO Добавить поле, описывающее заявку, к которой прикреплен файл
 
     /** Id файла, прикрепленного к заявке в БД. Генерируется автоматически */
     @Id
@@ -28,12 +29,16 @@ public class PassFile {
     /** Путь к файлу **/
     @JsonIgnore
     private String path;
+    /** Идентификатор заявки, к которой прикреплён файл */
+    private Long passRequestId;
 
 
 
-    public PassFile(String name, PassFileType type, String path){
+    public PassFile(String name, PassFileType type,
+                    String path, Long passRequestId){
         this.name = name;
         this.type = type;
         this.path = path;
+        this.passRequestId = passRequestId;
     }
 }
