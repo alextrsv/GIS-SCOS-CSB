@@ -26,7 +26,7 @@ public class PermanentQRController {
      *Генерация и добавление статического QR кода
      * @param permanentQRDTO QR-кода
      * @return BitMatrix QR-кода
-     * @throws WriterException
+     * @throws WriterException zxing
      */
     @PostMapping("/add")
     public ResponseEntity<BitMatrix> addPermanentQR(@RequestBody PermanentQRDTO permanentQRDTO) throws WriterException {
@@ -52,6 +52,17 @@ public class PermanentQRController {
     @PutMapping("/edit")
     public ResponseEntity<PermanentQR> editPermanentQR(@RequestBody PermanentQRDTO permanentQRDTO) {
         return permanentQRService.editPermanentQR(permanentQRDTO).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
+     * удаление QR-кода по id
+     * @param id QR-кода
+     * @return удаленный QR-код
+     */
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<PermanentQR> deletePermanentQRById(@PathVariable Long id) {
+        return permanentQRService.deletePermanentQRById(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }
