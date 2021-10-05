@@ -24,8 +24,8 @@ public class PermanentQRController {
 
     /**
      *Генерация и добавление статического QR кода
-     * @param permanentQRDTO
-     * @return
+     * @param permanentQRDTO QR-кода
+     * @return BitMatrix QR-кода
      * @throws WriterException
      */
     @PostMapping("/add")
@@ -35,8 +35,8 @@ public class PermanentQRController {
 
     /**
      * Получение статического QR кода по id
-     * @param id
-     * @return
+     * @param id QR-кода
+     * @return статический QR код
      */
     @GetMapping("/get/{id}")
     public ResponseEntity<PermanentQR> getPermanentQRById(@PathVariable Long id) {
@@ -46,8 +46,8 @@ public class PermanentQRController {
 
     /**
      * Редактирование статического QR-кода
-     * @param permanentQRDTO
-     * @return
+     * @param permanentQRDTO dto
+     * @return отредактированный QR-код
      */
     @PutMapping("/edit")
     public ResponseEntity<PermanentQR> editPermanentQR(@RequestBody PermanentQRDTO permanentQRDTO) {
