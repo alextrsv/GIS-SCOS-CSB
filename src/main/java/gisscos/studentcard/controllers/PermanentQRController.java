@@ -43,4 +43,15 @@ public class PermanentQRController {
         return permanentQRService.getPermanentQRById(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    /**
+     * Редактирование статического QR-кода
+     * @param permanentQRDTO
+     * @return
+     */
+    @PutMapping("/edit")
+    public ResponseEntity<PermanentQR> editPermanentQR(@RequestBody PermanentQRDTO permanentQRDTO) {
+        return permanentQRService.editPermanentQR(permanentQRDTO).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
 }

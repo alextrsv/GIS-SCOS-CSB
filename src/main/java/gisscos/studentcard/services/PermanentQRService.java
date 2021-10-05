@@ -15,7 +15,7 @@ public interface PermanentQRService {
 
     Optional<PermanentQR> getPermanentQRById(Long id);
 
-    Optional<PermanentQR> editPassRequest(PermanentQRDTO permanentQRDTO);
+    Optional<PermanentQR> editPermanentQR(PermanentQRDTO permanentQRDTO);
 
     Optional<PermanentQR> deletePermanentQRById(Long id);
 }

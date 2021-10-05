@@ -12,6 +12,7 @@ import gisscos.studentcard.repositories.PermanentQRRepository;
 import gisscos.studentcard.services.PermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -86,7 +87,7 @@ public class PermanentQRServiveImpl implements PermanentQRService {
      * @return редактированный QR-код
      */
     @Override
-    public Optional<PermanentQR> editPassRequest(PermanentQRDTO permanentQRDTO) {
+    public Optional<PermanentQR> editPermanentQR(PermanentQRDTO permanentQRDTO) {
         Optional<PermanentQR> permanentQR = permanentQRRepository.findById(permanentQRDTO.getId());
         if(permanentQR.isPresent()) {
             permanentQR.get().setStatus(permanentQRDTO.getStatus());
@@ -111,5 +112,7 @@ public class PermanentQRServiveImpl implements PermanentQRService {
         }
         return Optional.empty();
     }
+
+
 
 }
