@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class PermanentQRDTO {
+    private Long id;
     private Long userId;
     private Long universityId;
     private QRStatus status;
