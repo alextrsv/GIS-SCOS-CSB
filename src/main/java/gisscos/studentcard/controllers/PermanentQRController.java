@@ -26,6 +26,6 @@ public class PermanentQRController {
 
     @GetMapping("download/")
     public ResponseEntity<Resource> downloadQrAsFile(@RequestHeader("Authorization") String userToken){
-        return permanentQRService.downloadQrAsFile(userToken);
+        return permanentQRService.downloadQRAsFile(userToken);
     }
 }
