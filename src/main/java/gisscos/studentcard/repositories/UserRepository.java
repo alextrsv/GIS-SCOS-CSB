@@ -8,6 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<Long, User> {
+public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> getByToken(String userToken);
 }

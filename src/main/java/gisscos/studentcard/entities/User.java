@@ -17,4 +17,7 @@ public class User {
     /** Id университета */
     private Long universityId;
 
+    /** Токен пользователя */
+    private String token;
+
 }
