@@ -1,6 +1,7 @@
 package gisscos.studentcard.scheduler;
 
 import gisscos.studentcard.entities.DynamicQR;
+import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.DynamicQRRepository;
 import gisscos.studentcard.services.Impl.QrGenerator;
 import org.quartz.JobExecutionContext;
@@ -32,6 +33,7 @@ public class GenerationQRJob extends QuartzJobBean {
         //todo логика изменения контента
         for (DynamicQR qr: allDynamicQRList) {
             qr.setContent("новый контент: " + UUID.randomUUID());
+            qr.setStatus(QRStatus.UPDATED);
             dynamicQRRepository.save(qr);
         }
     }
