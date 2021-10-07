@@ -9,6 +9,7 @@ import javax.persistence.*;
 @Data
 @Entity
 @NoArgsConstructor
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -20,4 +21,9 @@ public class User {
     /** Токен пользователя */
     private String token;
 
+    public User(Long id, String token, Long universityId) {
+        this.id = id;
+        this.token = token;
+        this.universityId = universityId;
+    }
 }
