@@ -1,10 +1,11 @@
 package gisscos.studentcard.entities;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.entities.enums.QRType;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-
 import javax.persistence.*;
+import java.time.LocalDate;
+
 /**
  * Класс, описывающий сущность динамического QR-кода
  */
@@ -23,12 +24,30 @@ public class DynamicQR {
     private QRType type;
     /** статус QR-кода */
     private QRStatus status;
+    /** Дата создание QR-кода */
+    private LocalDate creationDate;
+    /** Дата конца периода действия QR-кода */
+    private LocalDate endDate;
+    /** кодировка */
+    private String characterSet;
+    /** уровень коррекции */
+    private ErrorCorrectionLevel errorCorrectionLevel;
+    /** отступы */
+    private int margin;
+    /** содержимое */
+    private byte[] date;
 
-    public DynamicQR(Long userId, Long universityId, QRType type, QRStatus status) {
+
+    public DynamicQR(Long userId, Long universityId, QRType type, QRStatus status,
+                     String characterSet, ErrorCorrectionLevel errorCorrectionLevel, int margin) {
+        this.creationDate = LocalDate.now();
+        this.endDate = creationDate.plusDays(1);
         this.userId = userId;
         this.universityId = universityId;
         this.type = type;
         this.status = status;
-
+        this.characterSet = characterSet;
+        this.errorCorrectionLevel = errorCorrectionLevel;
+        this.margin = margin;
     }
 }
