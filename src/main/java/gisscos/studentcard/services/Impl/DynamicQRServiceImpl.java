@@ -9,9 +9,11 @@ import gisscos.studentcard.repositories.UserRepository;
 import gisscos.studentcard.services.DynamicQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.awt.image.BufferedImage;
 import java.util.Optional;
 
 @Service
@@ -32,7 +34,9 @@ public class DynamicQRServiceImpl implements DynamicQRService {
      * */
     @Override
     public Optional<DynamicQR> getInfo(String userToken) {
-        User currentUser = userRepository.getByToken(userToken).get();
+        /* todo User currentUser = методДляЗагрузкиЮзераИзГИС СЦОС() */
+        User currentUser = new User(1L, "111", 1L); //mock
+
         Optional<DynamicQR> dynamicQR = dynamicQRRepository.getByUserId(currentUser.getId());
         if (dynamicQR.isPresent()){
             return dynamicQR;
@@ -43,12 +47,21 @@ public class DynamicQRServiceImpl implements DynamicQRService {
     }
 
 
-
     @Override
     public ResponseEntity<Resource> downloadQRAsFile(String userToken) {
+        /* todo User currentUser = методДляЗагрузкиЮзераИзГИС СЦОС()  */
+        User currentUser = new User(1L, "111", 1L); //mock временная заглушка юзера
+        Optional<DynamicQR> dynamicQR = getInfo(userToken);
 
-        return null;
+        if (dynamicQR.isPresent()){
+            BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(dynamicQR.get().getContent());
+            return QRImageAsResource.getResourceResponseEntity(qrCodeImage);
+        } else
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+
+
+
 
     @Override
     public Optional<DynamicQR> editPermanentQR(DynamicQRDTO dynamicQRDTO) {
