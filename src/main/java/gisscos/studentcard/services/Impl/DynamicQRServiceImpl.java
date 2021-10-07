@@ -32,11 +32,11 @@ public class DynamicQRServiceImpl implements DynamicQRService {
      * */
     @Override
     public Optional<DynamicQR> getInfo(String userToken) {
-        Optional<DynamicQR> dynamicQR = dynamicQRRepository.getByUserToken(userToken);
+        User currentUser = userRepository.getByToken(userToken).get();
+        Optional<DynamicQR> dynamicQR = dynamicQRRepository.getByUserId(currentUser.getId());
         if (dynamicQR.isPresent()){
             return dynamicQR;
         }
-        User currentUser = userRepository.getByToken(userToken).get();
         return Optional.of(dynamicQRRepository.save(
                 new DynamicQR(currentUser.getId(), currentUser.getUniversityId(),
                         QRStatus.NEW, "someContent")));

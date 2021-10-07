@@ -8,5 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface DynamicQRRepository extends JpaRepository<DynamicQR, Long> {
-    Optional<DynamicQR> getByUserToken(String userToken);
+
+    Optional<DynamicQR> getByUserId(Long userId);
 }
