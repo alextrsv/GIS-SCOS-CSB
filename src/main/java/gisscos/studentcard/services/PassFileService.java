@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PassFileService {
-    PassFile uploadPassFile(MultipartFile file, Long passRequestId);
+    Optional<PassFile> uploadPassFile(MultipartFile file, Long passRequestId);
 
     List<PassFile> uploadPassFiles(MultipartFile[] passFiles, Long passRequestId);
 
