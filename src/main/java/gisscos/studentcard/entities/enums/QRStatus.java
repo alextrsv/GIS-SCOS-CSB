@@ -7,6 +7,7 @@ package gisscos.studentcard.entities.enums;
  * EXPIRED - QR просрочился
  */
 public enum QRStatus {
+    NEW,
     DELETED,
     UPDATED,
     EXPIRED
