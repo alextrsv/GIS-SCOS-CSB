@@ -11,7 +11,7 @@ public interface DynamicQRService {
 
     Optional<DynamicQR> getInfo(String userToken);
 
-    ResponseEntity<Resource> downloadQrAsFile(String userToken);
+    ResponseEntity<Resource> downloadQRAsFile(String userToken);
 
     Optional<DynamicQR> editPermanentQR(DynamicQRDTO dynamicQRDTO);
 
