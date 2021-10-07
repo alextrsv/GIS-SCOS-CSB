@@ -6,6 +6,7 @@ import gisscos.studentcard.entities.PermanentQR;
 import gisscos.studentcard.entities.dto.PermanentQRDTO;
 import gisscos.studentcard.services.PermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,55 +15,63 @@ import org.springframework.web.bind.annotation.*;
  * контроллер для работы со статическими QR-кодами
  */
 @RestController
-@RequestMapping("/permanent_qr_codes")
+@RequestMapping("permanent-qr/")
 public class PermanentQRController {
     private final PermanentQRService permanentQRService;
-@Autowired
+
+    @Autowired
     public PermanentQRController(PermanentQRService permanentQRService) {
         this.permanentQRService = permanentQRService;
     }
 
-    /**
-     *Генерация и добавление статического QR кода
-     * @param permanentQRDTO QR-кода
-     * @return BitMatrix QR-кода
-     * @throws WriterException zxing
-     */
-    @PostMapping("/add")
-    public ResponseEntity<BitMatrix> addPermanentQR(@RequestBody PermanentQRDTO permanentQRDTO) throws WriterException {
-    return new ResponseEntity<>(permanentQRService.addPermanentQR(permanentQRDTO), HttpStatus.CREATED);
+    @GetMapping("download/")
+    public ResponseEntity<Resource> downloadQrAsFile(@RequestHeader("Authorization") String userToken){
+        return permanentQRService.downloadQrAsFile(userToken);
     }
 
-    /**
-     * Получение статического QR кода по id
-     * @param id QR-кода
-     * @return статический QR код
-     */
-    @GetMapping("/get/{id}")
-    public ResponseEntity<PermanentQR> getPermanentQRById(@PathVariable Long id) {
-        return permanentQRService.getPermanentQRById(id).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
 
-    /**
-     * Редактирование статического QR-кода
-     * @param permanentQRDTO dto
-     * @return отредактированный QR-код
-     */
-    @PutMapping("/edit")
-    public ResponseEntity<PermanentQR> editPermanentQR(@RequestBody PermanentQRDTO permanentQRDTO) {
-        return permanentQRService.editPermanentQR(permanentQRDTO).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
 
-    /**
-     * удаление QR-кода по id
-     * @param id QR-кода
-     * @return удаленный QR-код
-     */
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<PermanentQR> deletePermanentQRById(@PathVariable Long id) {
-        return permanentQRService.deletePermanentQRById(id).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
+//    /**
+//     *Генерация и добавление статического QR кода
+//     * @param permanentQRDTO QR-кода
+//     * @return BitMatrix QR-кода
+//     * @throws WriterException zxing
+//     */
+//    @PostMapping("/add")
+//    public ResponseEntity<BitMatrix> addPermanentQR(@RequestBody PermanentQRDTO permanentQRDTO) throws WriterException {
+//        return new ResponseEntity<>(permanentQRService.addPermanentQR(permanentQRDTO), HttpStatus.CREATED);
+//    }
+//
+//    /**
+//     * Получение статического QR кода по id
+//     * @param id QR-кода
+//     * @return статический QR код
+//     */
+//    @GetMapping("/get/{id}")
+//    public ResponseEntity<PermanentQR> getPermanentQRById(@PathVariable Long id) {
+//        return permanentQRService.getPermanentQRById(id).map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+//    }
+//
+//    /**
+//     * Редактирование статического QR-кода
+//     * @param permanentQRDTO dto
+//     * @return отредактированный QR-код
+//     */
+//    @PutMapping("/edit")
+//    public ResponseEntity<PermanentQR> editPermanentQR(@RequestBody PermanentQRDTO permanentQRDTO) {
+//        return permanentQRService.editPermanentQR(permanentQRDTO).map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+//    }
+//
+//    /**
+//     * удаление QR-кода по id
+//     * @param id QR-кода
+//     * @return удаленный QR-код
+//     */
+//    @DeleteMapping("/delete/{id}")
+//    public ResponseEntity<PermanentQR> deletePermanentQRById(@PathVariable Long id) {
+//        return permanentQRService.deletePermanentQRById(id).map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+//    }
 }

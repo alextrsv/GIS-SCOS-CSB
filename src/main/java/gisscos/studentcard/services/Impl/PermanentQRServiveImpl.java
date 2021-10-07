@@ -1,24 +1,20 @@
 package gisscos.studentcard.services.Impl;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import gisscos.studentcard.entities.PermanentQR;
-import gisscos.studentcard.entities.dto.PermanentQRDTO;
 import gisscos.studentcard.repositories.PermanentQRRepository;
 import gisscos.studentcard.services.PermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PutMapping;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Optional;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * сервис для работы со статическими QR
@@ -28,91 +24,46 @@ public class PermanentQRServiveImpl implements PermanentQRService {
 
     private final PermanentQRRepository permanentQRRepository;
 
-@Autowired
+    @Autowired
     public PermanentQRServiveImpl(PermanentQRRepository permanentQRRepository) {
         this.permanentQRRepository = permanentQRRepository;
     }
 
-    /**
-     * генерация статического QR-кода
-     * @param permanentQRDTO
-     * @return qr
-     */
     @Override
-    public BitMatrix addPermanentQR(PermanentQRDTO permanentQRDTO) throws WriterException {
-        PermanentQR permanentQR = new PermanentQR(permanentQRDTO.getUserId(), permanentQRDTO.getUniversityId(), permanentQRDTO.getStatus());
-        HashMap ha = new HashMap();
-        ha.put (EncodeHintType.CHARACTER_SET, "utf-8"); // Формат кодирования
-        ha.put (EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M); // Уровень коррекции]
-        ha.put(EncodeHintType.MARGIN, 2);
-        byte[] bytesOfMessage = new byte[0];
+    public ResponseEntity<Resource> downloadQrAsFile(String userToken) {
+        /**
+         *  @makeInfoString() - mock для получения информативной строки.
+         *  В дальнешим, инфа будет браться из данных о пользователе на ГИС СЦОС
+         */
+        String content = makeInfoString(userToken);
+
+        BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
+        ByteArrayResource resource = null;
         try {
-            bytesOfMessage = permanentQR.toString().getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
+            resource = BufferedImageToByteArray(qrCodeImage);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "got permanent QR code")
+                    .body(resource);
+        } catch (IOException e) {
             e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        byte[] thedigest = md.digest(bytesOfMessage);
-        String content = null;
-        try {
-            content = new String(thedigest, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-            BitMatrix bitMatrix = new MultiFormatWriter().encode(content, BarcodeFormat.QR_CODE,300 , 300, ha);
-            return bitMatrix;
-
 
     }
 
-    /**
-     * получение заявки по id
-     * @param id
-     * @return
-     */
-    @Override
-    public Optional<PermanentQR> getPermanentQRById(Long id) {
-        return permanentQRRepository.findById(id);
+    private ByteArrayResource BufferedImageToByteArray(BufferedImage qrCodeImage) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(qrCodeImage, "png", baos);
+        byte[] bytes = baos.toByteArray();
+
+        return new ByteArrayResource(bytes);
     }
 
-    /**
-     * редактирование QR-кода
-     * @param permanentQRDTO
-     * @return редактированный QR-код
-     */
-    @Override
-    public Optional<PermanentQR> editPermanentQR(PermanentQRDTO permanentQRDTO) {
-        Optional<PermanentQR> permanentQR = permanentQRRepository.findById(permanentQRDTO.getId());
-        if(permanentQR.isPresent()) {
-            permanentQR.get().setStatus(permanentQRDTO.getStatus());
-            permanentQR.get().setUniversityId(permanentQRDTO.getUniversityId());
-            permanentQR.get().setUserId(permanentQRDTO.getUserId());
-            return permanentQR;
-        }
-        else return Optional.empty();
-    }
+    private String makeInfoString(String userToken){
+        return "Some info about User founded by usrToken, " + userToken;
 
-    /**
-     * удаление QR-кода по id
-     * @param id QR-кода
-     * @return Удаленн
-     */
-    @Override
-    public Optional<PermanentQR> deletePermanentQRById(Long id) {
-        Optional<PermanentQR> permanentQR = permanentQRRepository.findById(id);
-        if (permanentQR.isPresent()) {
-            permanentQRRepository.deleteById(id);
-            return permanentQR;
-        }
-        return Optional.empty();
     }
-
 
 
 }

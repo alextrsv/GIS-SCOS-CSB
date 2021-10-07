@@ -1,21 +1,17 @@
 package gisscos.studentcard.services;
 
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import gisscos.studentcard.entities.PermanentQR;
-import gisscos.studentcard.entities.dto.PermanentQRDTO;
-
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.Optional;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 public interface PermanentQRService {
 
-    BitMatrix addPermanentQR(PermanentQRDTO permanentQRDTO) throws WriterException;
+//    BitMatrix addPermanentQR(PermanentQRDTO permanentQRDTO) throws WriterException;
+//
+//    Optional<PermanentQR> getPermanentQRById(Long id);
+//
+//    Optional<PermanentQR> editPermanentQR(PermanentQRDTO permanentQRDTO);
+//
+//    Optional<PermanentQR> deletePermanentQRById(Long id);
 
-    Optional<PermanentQR> getPermanentQRById(Long id);
-
-    Optional<PermanentQR> editPermanentQR(PermanentQRDTO permanentQRDTO);
-
-    Optional<PermanentQR> deletePermanentQRById(Long id);
+    ResponseEntity<Resource> downloadQrAsFile(String userToken);
 }
