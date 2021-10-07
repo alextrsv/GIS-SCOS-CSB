@@ -13,5 +13,5 @@ public interface PermanentQRService {
 //
 //    Optional<PermanentQR> deletePermanentQRById(Long id);
 
-    ResponseEntity<Resource> downloadQrAsFile(String userToken);
+    ResponseEntity<Resource> downloadQRAsFile(String userToken);
 }

@@ -30,7 +30,7 @@ public class PermanentQRServiveImpl implements PermanentQRService {
     }
 
     @Override
-    public ResponseEntity<Resource> downloadQrAsFile(String userToken) {
+    public ResponseEntity<Resource> downloadQRAsFile(String userToken) {
         /**
          *  @makeInfoString() - mock для получения информативной строки.
          *  В дальнешим, инфа будет браться из данных о пользователе на ГИС СЦОС
@@ -38,27 +38,9 @@ public class PermanentQRServiveImpl implements PermanentQRService {
         String content = makeInfoString(userToken);
 
         BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
-        ByteArrayResource resource = null;
-        try {
-            resource = BufferedImageToByteArray(qrCodeImage);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_PNG)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "got permanent QR code")
-                    .body(resource);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
+        return QRImageAsResource.getResourceResponseEntity(qrCodeImage);
     }
 
-    private ByteArrayResource BufferedImageToByteArray(BufferedImage qrCodeImage) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(qrCodeImage, "png", baos);
-        byte[] bytes = baos.toByteArray();
-
-        return new ByteArrayResource(bytes);
-    }
 
     private String makeInfoString(String userToken){
         return "Some info about User founded by usrToken, " + userToken;
