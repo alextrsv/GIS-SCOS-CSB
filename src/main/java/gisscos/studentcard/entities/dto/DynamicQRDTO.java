@@ -8,7 +8,6 @@ import lombok.Data;
 public class DynamicQRDTO {
     private Long userId;
     private Long universityId;
-    private QRType type;
     private QRStatus status;
 
 }
