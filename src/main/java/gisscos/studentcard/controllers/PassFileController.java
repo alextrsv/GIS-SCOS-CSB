@@ -48,10 +48,12 @@ public class PassFileController {
     @PostMapping("/upload/multiple")
     private ResponseEntity<List<PassFile>> uploadPassFiles(@RequestParam("file") MultipartFile[] passFiles,
                                                            @RequestParam("passRequestId") Long passRequestId) {
-        return new ResponseEntity<>(
-                passFileService.uploadPassFiles(passFiles, passRequestId),
-                HttpStatus.OK
-        );
+
+        List<PassFile> uploadedFiles = passFileService.uploadPassFiles(passFiles, passRequestId);
+        if (uploadedFiles.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        else
+            return new ResponseEntity<>(uploadedFiles, HttpStatus.OK);
     }
 
     /**

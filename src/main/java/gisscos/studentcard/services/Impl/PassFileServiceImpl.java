@@ -1,9 +1,11 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.PassFile;
+import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.dto.PassRequestFileIdentifierDTO;
 import gisscos.studentcard.entities.enums.PassFileType;
 import gisscos.studentcard.repositories.PassFileRepository;
+import gisscos.studentcard.repositories.PassRequestRepository;
 import gisscos.studentcard.services.PassFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Сервис для работы с файлами
@@ -36,13 +35,16 @@ public class PassFileServiceImpl implements PassFileService {
     /** Репозиторий файлов */
     private final PassFileRepository passFileRepository;
 
+    private final PassRequestRepository passRequestRepository;
+
     /** Директория для хранения файлов. Указывается в application.properties */
     @Value("${upload.dir}")
     private String uploadDir;
 
     @Autowired
-    public PassFileServiceImpl(PassFileRepository passFileRepository) {
+    public PassFileServiceImpl(PassFileRepository passFileRepository, PassRequestRepository passRequestRepository) {
         this.passFileRepository = passFileRepository;
+        this.passRequestRepository = passRequestRepository;
     }
 
     //TODO добавить работу с облачным хранилищем, если такое будет использоваться
@@ -67,16 +69,20 @@ public class PassFileServiceImpl implements PassFileService {
         System.out.println(File.separator);
 
 
-        passFile = new PassFile(
-                file.getOriginalFilename(),
-                PassFileType.of(
-                        Objects.requireNonNull(
-                                file.getOriginalFilename()
-                        ).split("\\.")[1]
-                ),
-                path,
-                passRequestId
-        );
+        Optional<PassRequest> currentRequest = passRequestRepository.findById(passRequestId);
+        if (currentRequest.isPresent()) {
+            passFile = new PassFile(
+                    file.getOriginalFilename(),
+                    PassFileType.of(
+                            Objects.requireNonNull(
+                                    file.getOriginalFilename()
+                            ).split("\\.")[1]
+                    ),
+                    path,
+                    passRequestId
+            );
+        }
+        else return Optional.empty();
         if(writeFileToDisk(file, path)) {
             log.info("new file \""
                     + file.getOriginalFilename()
@@ -99,8 +105,10 @@ public class PassFileServiceImpl implements PassFileService {
     public List<PassFile> uploadPassFiles(MultipartFile[] passFiles, Long passRequestId) {
         ArrayList<PassFile> uploadedFiles = new ArrayList<>();
 
+
         for (MultipartFile file: passFiles) {
-            uploadedFiles.add(uploadPassFile(file, passRequestId).get());
+            Optional<PassFile> passFile = uploadPassFile(file, passRequestId);
+            passFile.ifPresent(uploadedFiles::add);
         }
         log.info("files were uploaded");
         return uploadedFiles;
