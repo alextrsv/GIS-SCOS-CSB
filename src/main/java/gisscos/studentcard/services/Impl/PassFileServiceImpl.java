@@ -121,7 +121,16 @@ public class PassFileServiceImpl implements PassFileService {
      */
     @Override
     public ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto) {
-        Optional<PassFile> file = passFileRepository.findById(dto.getFileId());
+        Optional<PassFile> file = Optional.empty();// = passFileRepository.findById(dto.getFileId());
+
+        Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getPassRequestId());
+        if (passRequest.isPresent()) {
+            file = passRequest.get().getFiles()
+                    .stream()
+                    .filter(f -> f.getId() == dto.getFileId())
+                    .findFirst();
+        }
+
         if (file.isPresent()) {
             log.debug("find file with id {} is present", file.get().getId());
             try {
