@@ -60,6 +60,17 @@ public class PassRequestController {
     }
 
     /**
+     * Получение заявок по статусу
+     * @param status заявок
+     * @return заявки
+     */
+    @GetMapping("/get/status/{status}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@PathVariable String status) {
+        return passRequestService.getPassRequestByStatus(status).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Получение заявок для обработки администратором ООВО
      * @param universityId идентификатор ООВО
      * @return список заявок для обработки
