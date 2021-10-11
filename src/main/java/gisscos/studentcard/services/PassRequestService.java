@@ -20,6 +20,8 @@ public interface PassRequestService {
 
     Optional<PassRequest> getPassRequestById(Long id);
 
+    Optional<List<PassRequest>> getPassRequestByStatus(String status);
+
     Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO);
 
     Optional<PassRequest> deletePassRequestById(Long id);

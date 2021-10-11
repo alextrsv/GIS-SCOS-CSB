@@ -106,6 +106,23 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Получить список заявок по статусу
+     * @param status статус заявки
+     * @return список заявок с определенным статусом
+     */
+    @Override
+    public Optional<List<PassRequest>> getPassRequestByStatus(String status) {
+        try {
+            PassRequestStatus requestStatus = PassRequestStatus.of(status);
+            log.info("Getting passRequests by status");
+            return Optional.of(passRequestRepository.findAllByStatus(requestStatus));
+        } catch (IllegalArgumentException ex) {
+            log.warn("Cannot resolve {} as PassRequestStatus.", status);
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Получение заявок для обработки.
      * @param universityId идентификатор ООВО
      * @return список заявок для обработки
@@ -141,7 +158,7 @@ public class PassRequestServiceImpl implements PassRequestService {
     @Override
     public Integer getPassRequestsNumberByUniversity(Long universityId) {
         Optional<List<PassRequest>> list = getPassRequestsByUniversity(universityId);
-
+        log.info("Calculating number of passRequests by universityId");
         return list.map(List::size).orElse(0);
     }
 
