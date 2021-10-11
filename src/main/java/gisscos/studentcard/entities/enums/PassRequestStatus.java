@@ -1,5 +1,7 @@
 package gisscos.studentcard.entities.enums;
 
+import java.util.stream.Stream;
+
 /**
  * Статус заявки.
  * USER_ORGANISATION_REVIEW - отправлена на рассмотрение в свою ООВО.
@@ -23,4 +25,12 @@ public enum PassRequestStatus {
     CANCELED_BY_CREATOR,
     EXPIRED,
     ACCEPTED
+    ;
+
+    public static PassRequestStatus of(String status) {
+        return Stream.of(PassRequestStatus.values())
+                .filter(t -> t.toString().equals(status))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+    }
 }
