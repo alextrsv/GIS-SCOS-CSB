@@ -34,3 +34,6 @@ build/
 
 ### Files ###
 /PassFiles/
+
+### Logs ###
+/app.log
