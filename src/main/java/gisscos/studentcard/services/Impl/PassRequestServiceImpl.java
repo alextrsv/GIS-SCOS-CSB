@@ -134,6 +134,18 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Получение количества заявок для обработки.
+     * @param universityId идентификатор ООВО
+     * @return количество заявок для обработки
+     */
+    @Override
+    public Integer getPassRequestsNumberByUniversity(Long universityId) {
+        Optional<List<PassRequest>> list = getPassRequestsByUniversity(universityId);
+
+        return list.map(List::size).orElse(0);
+    }
+
+    /**
      * Обновление заявки
      * @param dto DTO обновленной заявки
      * @return обновленная заявка
