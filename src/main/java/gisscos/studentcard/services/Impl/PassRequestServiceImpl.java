@@ -335,4 +335,14 @@ public class PassRequestServiceImpl implements PassRequestService {
                 status != PassRequestStatus.CANCELED_BY_CREATOR &&
                 startDate.isBefore(LocalDate.now()));
     }
+
+    /**
+     * Является ли пользователь автором заявки?
+     * @param request заявка
+     * @param dto пользователя заявки
+     * @return true - является, false - не является
+     */
+    private boolean isAuthor(PassRequest request, PassRequestUserDTO dto) {
+        return (Objects.equals(request.getUserId(), dto.getUserId()));
+    }
 }
