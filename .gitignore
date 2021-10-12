@@ -37,3 +37,4 @@ build/
 
 ### Logs ###
 /app.log
+/logs/
