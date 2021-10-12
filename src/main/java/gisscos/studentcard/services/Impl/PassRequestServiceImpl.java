@@ -225,6 +225,41 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Отменить заявку
+     * @param dto создателя заявки
+     * @return отменённая заявка или Optional.empty
+     * если заявка не найдена, пользователь не является автором
+     * или заявка уже не находится на рассмотрении (несоответствие статуса)
+     */
+    @Override
+    public Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto) {
+        Optional<PassRequest> request =
+                passRequestRepository.findById(dto.getPassRequestId());
+
+        if (request.isPresent()) {
+            // Являестя ли пользователь создателем заявки?
+            // если да, получаем статус, нет - null
+            PassRequestStatus status =
+                    isAuthor(request.get(), dto) ? request.get().getStatus() : null;
+            // Если заявку ещё имеет смысл отменять.
+            // (с остальными статусами не актуально)
+            if (status == PassRequestStatus.USER_ORGANISATION_REVIEW
+                 || status == PassRequestStatus.TARGET_ORGANISATION_REVIEW) {
+
+                request.get().setStatus(PassRequestStatus.CANCELED_BY_CREATOR);
+                passRequestRepository.save(request.get());
+                log.info("Pass request cancelled by creator");
+                return request;
+            }
+            log.warn("Impossible to cancel pass request! " +
+                    "User is not author or pass request status invalid.");
+            return Optional.empty();
+        }
+        log.warn("Impossible to cancel pass request! Pass request not found.");
+        return Optional.empty();
+    }
+
+    /**
      * Удаление заявки по id
      * @param id заявки
      * @return в случае, если заявка была найдена и удалена,
