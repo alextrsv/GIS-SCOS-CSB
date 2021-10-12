@@ -22,6 +22,8 @@ public interface PassRequestService {
 
     Optional<List<PassRequest>> getPassRequestByStatus(String status);
 
+    Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
+
     Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO);
 
     Optional<PassRequest> deletePassRequestById(Long id);

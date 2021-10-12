@@ -123,6 +123,34 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Получить список пользователей групповой заявки.
+     * @param dto заявки
+     * @return список пользователей заявки или Optional.empty
+     * если заявка одиночная или вообще не найдена.
+     */
+    @Override
+    public Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto) {
+        Optional<PassRequest> request =
+                passRequestRepository.findById(dto.getId());
+
+        if (request.isPresent()) {
+            if (request.get().getType() == PassRequestType.SINGLE) {
+                log.warn("Pass request with {} id has single type.",
+                        request.get().getId());
+
+                return Optional.empty();
+            }
+            log.info("Getting users from pass request with id {}",
+                    request.get().getId());
+
+            return Optional.of(request.get().getUsers());
+        }
+
+        log.warn("Pass request with id {} not found", dto.getId());
+        return Optional.empty();
+    }
+
+    /**
      * Получение заявок для обработки.
      * @param universityId идентификатор ООВО
      * @return список заявок для обработки
