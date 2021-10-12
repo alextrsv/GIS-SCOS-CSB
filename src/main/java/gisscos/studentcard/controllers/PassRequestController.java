@@ -94,6 +94,17 @@ public class PassRequestController {
     }
 
     /**
+     * Получить список пользователей групповой заявки
+     * @param dto заявки. Необходимо передать только id заявки
+     * @return список пользователей заявки
+     */
+    @GetMapping("/get/users")
+    public ResponseEntity<List<PassRequestUser>> getPassRequestUsers(@RequestBody PassRequestDTO dto) {
+        return passRequestService.getPassRequestUsers(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Редактирование заявки
      * @param dto DTO заявки
      * @return отредактированная заявка
