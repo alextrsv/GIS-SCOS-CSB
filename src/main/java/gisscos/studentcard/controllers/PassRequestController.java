@@ -1,7 +1,9 @@
 package gisscos.studentcard.controllers;
 
 import gisscos.studentcard.entities.PassRequest;
+import gisscos.studentcard.entities.PassRequestComment;
 import gisscos.studentcard.entities.PassRequestUser;
+import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.services.PassRequestService;
@@ -45,6 +47,17 @@ public class PassRequestController {
     @PostMapping("/add_user")
     public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto) {
         return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
+     * Добавление комментария к заявке
+     * @param dto комментария
+     * @return добавленный комментарий
+     */
+    @PostMapping("/comments/add")
+    public ResponseEntity<PassRequestComment> addCommentToPassRequest(@RequestBody PassRequestCommentDTO dto) {
+        return passRequestService.addCommentToPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
