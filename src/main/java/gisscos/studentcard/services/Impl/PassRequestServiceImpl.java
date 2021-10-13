@@ -43,7 +43,9 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public PassRequest addPassRequest(PassRequestDTO dto) {
-
+        // Необходимо сделать так, чтобы одиночные заявки
+        // по умолчанию имели бы статус "Отправлена на
+        // рассмотрение в целевую ООВО"
         PassRequest passRequest = new PassRequest(
                 dto.getUserId(), dto.getTargetUniversityId(),
                 dto.getUniversityId(), dto.getStartDate(),
@@ -125,7 +127,7 @@ public class PassRequestServiceImpl implements PassRequestService {
     /**
      * Получить список пользователей групповой заявки.
      * @param dto заявки
-     * @return список пользователей (включая автора) заявки или Optional.empty
+     * @return список пользователей заявки или Optional.empty
      * если заявка одиночная или вообще не найдена.
      */
     @Override
@@ -142,14 +144,6 @@ public class PassRequestServiceImpl implements PassRequestService {
             }
             log.info("Getting users from pass request with id {}",
                     request.get().getId());
-
-            // Добавление автора в список пользователей заявки
-            request.get().getUsers().add(
-                    new PassRequestUser(
-                            request.get().getId(),
-                            request.get().getUserId()
-                    )
-            );
 
             return Optional.of(request.get().getUsers());
         }

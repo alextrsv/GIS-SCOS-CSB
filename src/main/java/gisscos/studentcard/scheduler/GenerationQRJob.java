@@ -3,13 +3,12 @@ package gisscos.studentcard.scheduler;
 import gisscos.studentcard.entities.DynamicQR;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.DynamicQRRepository;
-import gisscos.studentcard.services.Impl.QrGenerator;
+import lombok.NonNull;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
