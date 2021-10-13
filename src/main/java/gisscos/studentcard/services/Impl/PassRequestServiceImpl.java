@@ -269,6 +269,30 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Редактирование комментария
+     * @param dto комментария
+     * @return отредактированный комментарий
+     */
+    @Override
+    public Optional<PassRequestComment> updateComment(PassRequestCommentDTO dto) {
+        Optional<PassRequestComment> comment =
+                passRequestCommentRepository.findById(dto.getId());
+
+        if (comment.isPresent()) {
+            comment.get().setComment(dto.getComment());
+            comment.get().setPassRequestId(dto.getPassRequestId());
+            comment.get().setAuthorId(dto.getAuthorId());
+            comment.get().setEditDate(LocalDate.now());
+
+            passRequestCommentRepository.save(comment.get());
+            log.info("Comment has successfully updated");
+            return comment;
+        }
+        log.warn("Pass request not found");
+        return Optional.empty();
+    }
+
+    /**
      * Отменить заявку
      * @param dto создателя заявки
      * @return отменённая заявка или Optional.empty
