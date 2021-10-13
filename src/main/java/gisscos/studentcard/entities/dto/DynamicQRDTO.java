@@ -1,7 +1,6 @@
 package gisscos.studentcard.entities.dto;
 
 import gisscos.studentcard.entities.enums.QRStatus;
-import gisscos.studentcard.entities.enums.QRType;
 import lombok.Data;
 
 @Data

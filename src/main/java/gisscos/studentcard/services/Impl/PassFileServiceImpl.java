@@ -23,7 +23,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Сервис для работы с файлами
@@ -42,7 +45,8 @@ public class PassFileServiceImpl implements PassFileService {
     private String uploadDir;
 
     @Autowired
-    public PassFileServiceImpl(PassFileRepository passFileRepository, PassRequestRepository passRequestRepository) {
+    public PassFileServiceImpl(PassFileRepository passFileRepository,
+                               PassRequestRepository passRequestRepository) {
         this.passFileRepository = passFileRepository;
         this.passRequestRepository = passRequestRepository;
     }
@@ -69,7 +73,8 @@ public class PassFileServiceImpl implements PassFileService {
         System.out.println(File.separator);
 
 
-        Optional<PassRequest> currentRequest = passRequestRepository.findById(passRequestId);
+        Optional<PassRequest> currentRequest =
+                passRequestRepository.findById(passRequestId);
         if (currentRequest.isPresent()) {
             passFile = new PassFile(
                     file.getOriginalFilename(),
@@ -121,13 +126,14 @@ public class PassFileServiceImpl implements PassFileService {
      */
     @Override
     public ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto) {
-        Optional<PassFile> file = Optional.empty();// = passFileRepository.findById(dto.getFileId());
+        Optional<PassFile> file = Optional.empty();
 
-        Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getPassRequestId());
+        Optional<PassRequest> passRequest =
+                passRequestRepository.findById(dto.getPassRequestId());
         if (passRequest.isPresent()) {
             file = passRequest.get().getFiles()
                     .stream()
-                    .filter(f -> f.getId() == dto.getFileId())
+                    .filter(f -> Objects.equals(f.getId(), dto.getFileId()))
                     .findFirst();
         }
 
@@ -137,7 +143,8 @@ public class PassFileServiceImpl implements PassFileService {
                 Resource resource = new UrlResource(Path.of(file.get().getPath()).toUri());
                 return ResponseEntity.ok()
                         .contentType(PassFileType.getMediaType(file.get().getType()))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.get().getName() + "\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename=\"" + file.get().getName() + "\"")
                         .body(resource);
             } catch (IOException ex) {
                 ex.printStackTrace();

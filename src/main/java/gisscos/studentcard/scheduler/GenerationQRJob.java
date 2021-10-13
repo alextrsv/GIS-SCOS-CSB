@@ -3,24 +3,28 @@ package gisscos.studentcard.scheduler;
 import gisscos.studentcard.entities.DynamicQR;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.DynamicQRRepository;
-import gisscos.studentcard.services.Impl.QrGenerator;
+import lombok.NonNull;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+@Component
 public class GenerationQRJob extends QuartzJobBean {
 
+    private final DynamicQRRepository dynamicQRRepository;
+
     @Autowired
-    DynamicQRRepository dynamicQRRepository;
+    public GenerationQRJob(DynamicQRRepository dynamicQRRepository) {
+        this.dynamicQRRepository = dynamicQRRepository;
+    }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    protected void executeInternal(@NonNull JobExecutionContext jobExecutionContext) {
         System.out.println("Hi! ---" + new Date());
         System.out.println("new QR generating");
         reGenerateAllQRs();
