@@ -41,4 +41,6 @@ public interface PassRequestService {
     Optional<PassRequestUser> deleteUserFromPassRequest(PassRequestUserDTO dto);
 
     Optional<List<PassRequest>> deleteExpiredPassRequests();
+
+    Optional<PassRequestComment> deletePassRequestComment(PassRequestCommentDTO dto);
 }

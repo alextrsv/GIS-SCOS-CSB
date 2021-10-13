@@ -255,7 +255,6 @@ public class PassRequestServiceImpl implements PassRequestService {
             passRequest.get().setType(dto.getType());
             passRequest.get().setStatus(dto.getStatus());
             passRequest.get().setUserId(dto.getUserId());
-            passRequest.get().setComment(dto.getComment());
             passRequest.get().setEndDate(dto.getEndDate());
             passRequest.get().setStartDate(dto.getStartDate());
             passRequest.get().setUniversityId(dto.getUniversityId());
@@ -413,6 +412,25 @@ public class PassRequestServiceImpl implements PassRequestService {
         log.info("expired pass requests has been deleted");
 
         return Optional.of(expiredList);
+    }
+
+    /**
+     * Удаление комментария по его id
+     * @param dto комментария с id
+     * @return удалённый комментарий
+     */
+    @Override
+    public Optional<PassRequestComment> deletePassRequestComment(PassRequestCommentDTO dto) {
+        Optional<PassRequestComment> comment =
+                passRequestCommentRepository.findById(dto.getId());
+
+        if (comment.isPresent()) {
+            passRequestCommentRepository.deleteById(dto.getId());
+            log.info("Comment has successfully deleted");
+            return comment;
+        }
+        log.warn("Pass request not found");
+        return Optional.empty();
     }
 
     /**
