@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Контроллер для работы с заявками
@@ -59,6 +60,17 @@ public class PassRequestController {
     }
 
     /**
+     * Получение заявок по статусу
+     * @param status заявок
+     * @return заявки
+     */
+    @GetMapping("/get/status/{status}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@PathVariable String status) {
+        return passRequestService.getPassRequestByStatus(status).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Получение заявок для обработки администратором ООВО
      * @param universityId идентификатор ООВО
      * @return список заявок для обработки
@@ -70,6 +82,29 @@ public class PassRequestController {
     }
 
     /**
+     * Получение количества заявок для обработки администратором ООВО
+     * @param universityId идентификатор ООВО
+     * @return количество заявок для обработки
+     */
+    @GetMapping("/get/requests/count/{universityId}")
+    public ResponseEntity<Integer> getPassRequestsNumberForProcessing(@PathVariable Long universityId) {
+        return ResponseEntity.of(
+                Optional.of(passRequestService.getPassRequestsNumberByUniversity(universityId))
+        );
+    }
+
+    /**
+     * Получить список пользователей групповой заявки
+     * @param dto заявки. Необходимо передать только id заявки
+     * @return список пользователей заявки
+     */
+    @GetMapping("/get/users")
+    public ResponseEntity<List<PassRequestUser>> getPassRequestUsers(@RequestBody PassRequestDTO dto) {
+        return passRequestService.getPassRequestUsers(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Редактирование заявки
      * @param dto DTO заявки
      * @return отредактированная заявка
@@ -77,6 +112,17 @@ public class PassRequestController {
     @PutMapping("/edit")
     public ResponseEntity<PassRequest> editPassRequest(@RequestBody PassRequestDTO dto) {
         return passRequestService.updatePassRequest(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
+     * Отмена заявки создателем
+     * @param dto пользователя заявки
+     * @return отменённая заявка
+     */
+    @PutMapping("/cancel")
+    public ResponseEntity<PassRequest> cancelPassRequest(@RequestBody PassRequestUserDTO dto) {
+        return passRequestService.cancelPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 

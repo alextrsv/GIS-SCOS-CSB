@@ -106,6 +106,59 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Получить список заявок по статусу
+     * @param status статус заявки
+     * @return список заявок с определенным статусом
+     */
+    @Override
+    public Optional<List<PassRequest>> getPassRequestByStatus(String status) {
+        try {
+            PassRequestStatus requestStatus = PassRequestStatus.of(status);
+            log.info("Getting passRequests by status");
+            return Optional.of(passRequestRepository.findAllByStatus(requestStatus));
+        } catch (IllegalArgumentException ex) {
+            log.warn("Cannot resolve {} as PassRequestStatus.", status);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Получить список пользователей групповой заявки.
+     * @param dto заявки
+     * @return список пользователей (включая автора) заявки или Optional.empty
+     * если заявка одиночная или вообще не найдена.
+     */
+    @Override
+    public Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto) {
+        Optional<PassRequest> request =
+                passRequestRepository.findById(dto.getId());
+
+        if (request.isPresent()) {
+            if (request.get().getType() == PassRequestType.SINGLE) {
+                log.warn("Pass request with {} id has single type.",
+                        request.get().getId());
+
+                return Optional.empty();
+            }
+            log.info("Getting users from pass request with id {}",
+                    request.get().getId());
+
+            // Добавление автора в список пользователей заявки
+            request.get().getUsers().add(
+                    new PassRequestUser(
+                            request.get().getId(),
+                            request.get().getUserId()
+                    )
+            );
+
+            return Optional.of(request.get().getUsers());
+        }
+
+        log.warn("Pass request with id {} not found", dto.getId());
+        return Optional.empty();
+    }
+
+    /**
      * Получение заявок для обработки.
      * @param universityId идентификатор ООВО
      * @return список заявок для обработки
@@ -134,6 +187,18 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Получение количества заявок для обработки.
+     * @param universityId идентификатор ООВО
+     * @return количество заявок для обработки
+     */
+    @Override
+    public Integer getPassRequestsNumberByUniversity(Long universityId) {
+        Optional<List<PassRequest>> list = getPassRequestsByUniversity(universityId);
+        log.info("Calculating number of passRequests by universityId");
+        return list.map(List::size).orElse(0);
+    }
+
+    /**
      * Обновление заявки
      * @param dto DTO обновленной заявки
      * @return обновленная заявка
@@ -157,6 +222,41 @@ public class PassRequestServiceImpl implements PassRequestService {
             return passRequest;
         } else
             return Optional.empty();
+    }
+
+    /**
+     * Отменить заявку
+     * @param dto создателя заявки
+     * @return отменённая заявка или Optional.empty
+     * если заявка не найдена, пользователь не является автором
+     * или заявка уже не находится на рассмотрении (несоответствие статуса)
+     */
+    @Override
+    public Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto) {
+        Optional<PassRequest> request =
+                passRequestRepository.findById(dto.getPassRequestId());
+
+        if (request.isPresent()) {
+            // Являестя ли пользователь создателем заявки?
+            // если да, получаем статус, нет - null
+            PassRequestStatus status =
+                    isAuthor(request.get(), dto) ? request.get().getStatus() : null;
+            // Если заявку ещё имеет смысл отменять.
+            // (с остальными статусами не актуально)
+            if (status == PassRequestStatus.USER_ORGANISATION_REVIEW
+                 || status == PassRequestStatus.TARGET_ORGANISATION_REVIEW) {
+
+                request.get().setStatus(PassRequestStatus.CANCELED_BY_CREATOR);
+                passRequestRepository.save(request.get());
+                log.info("Pass request cancelled by creator");
+                return request;
+            }
+            log.warn("Impossible to cancel pass request! " +
+                    "User is not author or pass request status invalid.");
+            return Optional.empty();
+        }
+        log.warn("Impossible to cancel pass request! Pass request not found.");
+        return Optional.empty();
     }
 
     /**
@@ -269,5 +369,15 @@ public class PassRequestServiceImpl implements PassRequestService {
                 status != PassRequestStatus.EXPIRED &&
                 status != PassRequestStatus.CANCELED_BY_CREATOR &&
                 startDate.isBefore(LocalDate.now()));
+    }
+
+    /**
+     * Является ли пользователь автором заявки?
+     * @param request заявка
+     * @param dto пользователя заявки
+     * @return true - является, false - не является
+     */
+    private boolean isAuthor(PassRequest request, PassRequestUserDTO dto) {
+        return (Objects.equals(request.getUserId(), dto.getUserId()));
     }
 }

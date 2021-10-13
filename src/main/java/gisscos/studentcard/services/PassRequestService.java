@@ -16,9 +16,17 @@ public interface PassRequestService {
 
     Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId);
 
+    Integer getPassRequestsNumberByUniversity(Long universityId);
+
     Optional<PassRequest> getPassRequestById(Long id);
 
+    Optional<List<PassRequest>> getPassRequestByStatus(String status);
+
+    Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
+
     Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO);
+
+    Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
 
     Optional<PassRequest> deletePassRequestById(Long id);
 
