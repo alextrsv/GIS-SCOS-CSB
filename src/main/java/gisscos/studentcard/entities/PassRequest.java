@@ -22,9 +22,6 @@ public class PassRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private @Setter(AccessLevel.PROTECTED) Long id;
-
-
-    
     /** Id пользоватлея - создателя */
     private Long userId;
     /** Id организации, в которую необходим доступ (целевая ООВО)*/
@@ -41,8 +38,6 @@ public class PassRequest {
     private PassRequestType type;
     /** Статус заявки */
     private PassRequestStatus status;
-    /** Комментарий создателя заявки */
-    private String comment;
 
     /** Список пользователей групповой заявки */
     @OneToMany(
@@ -64,9 +59,19 @@ public class PassRequest {
     @ToString.Exclude
     private List<PassFile> files;
 
+    /** Список комментариев, прикрепленных к заявке */
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            mappedBy = "passRequestId"
+    )
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @ToString.Exclude
+    private List<PassRequestComment> comments;
+
     public PassRequest(Long userId, Long targetUniversityId, Long universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
-                       PassRequestType type, String comment) {
+                       PassRequestType type) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
         this.targetUniversityId = targetUniversityId;
@@ -75,6 +80,5 @@ public class PassRequest {
         this.endDate = endDate;
         this.status = status;
         this.type = type;
-        this.comment = comment;
     }
 }
