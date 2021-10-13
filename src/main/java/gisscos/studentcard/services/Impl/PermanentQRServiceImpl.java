@@ -13,18 +13,18 @@ import java.awt.image.BufferedImage;
  * сервис для работы со статическими QR
  */
 @Service
-public class PermanentQRServiveImpl implements PermanentQRService {
+public class PermanentQRServiceImpl implements PermanentQRService {
 
     private final PermanentQRRepository permanentQRRepository;
 
     @Autowired
-    public PermanentQRServiveImpl(PermanentQRRepository permanentQRRepository) {
+    public PermanentQRServiceImpl(PermanentQRRepository permanentQRRepository) {
         this.permanentQRRepository = permanentQRRepository;
     }
 
     @Override
     public ResponseEntity<Resource> downloadQRAsFile(String userToken) {
-        /**
+        /*
          *  @makeInfoString() - mock для получения информативной строки.
          *  В дальнешим, инфа будет браться из данных о пользователе на ГИС СЦОС
          */
