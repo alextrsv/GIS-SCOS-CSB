@@ -191,4 +191,15 @@ public class PassRequestController {
     public ResponseEntity<List<PassRequest>> deleteExpiredPassRequests() {
         return ResponseEntity.of(passRequestService.deleteExpiredPassRequests());
     }
+
+    /**
+     * Удаление комментария
+     * @param dto комментария с id
+     * @return удалённый комментарий
+     */
+    @DeleteMapping("/comments/delete")
+    public ResponseEntity<PassRequestComment> deletePassRequestComment(@RequestBody PassRequestCommentDTO dto) {
+        return passRequestService.deletePassRequestComment(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
 }
