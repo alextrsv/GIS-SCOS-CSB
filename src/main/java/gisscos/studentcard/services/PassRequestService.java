@@ -1,7 +1,9 @@
 package gisscos.studentcard.services;
 
 import gisscos.studentcard.entities.PassRequest;
+import gisscos.studentcard.entities.PassRequestComment;
 import gisscos.studentcard.entities.PassRequestUser;
+import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 
@@ -13,6 +15,8 @@ public interface PassRequestService {
     PassRequest addPassRequest(PassRequestDTO passRequestDTO);
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
+
+    Optional<PassRequestComment> addCommentToPassRequest(PassRequestCommentDTO dto);
 
     Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId);
 
