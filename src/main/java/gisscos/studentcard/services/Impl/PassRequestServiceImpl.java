@@ -189,6 +189,20 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Получение комментириев по id заявки
+     * @param passRequestId id заявки
+     * @return список комментариев
+     */
+    @Override
+    public Optional<List<PassRequestComment>> getPassRequestComments(Long passRequestId) {
+        Optional<PassRequest> request =
+                passRequestRepository.findById(passRequestId);
+
+        log.info("Getting comments from pass request");
+        return request.map(PassRequest::getComments);
+    }
+
+    /**
      * Получение заявок для обработки.
      * @param universityId идентификатор ООВО
      * @return список заявок для обработки

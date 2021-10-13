@@ -28,6 +28,8 @@ public interface PassRequestService {
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
 
+    Optional<List<PassRequestComment>> getPassRequestComments(Long passRequestId);
+
     Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO);
 
     Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
