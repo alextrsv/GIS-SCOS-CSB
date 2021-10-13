@@ -118,6 +118,17 @@ public class PassRequestController {
     }
 
     /**
+     * Получение комментариев заявки
+     * @param passRequestId id заявки
+     * @return список комментариев
+     */
+    @GetMapping("/comments/{passRequestId}")
+    public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable Long passRequestId) {
+        return passRequestService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Редактирование заявки
      * @param dto DTO заявки
      * @return отредактированная заявка
