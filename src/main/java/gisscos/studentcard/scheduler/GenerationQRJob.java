@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+@Component
 public class GenerationQRJob extends QuartzJobBean {
 
     private final DynamicQRRepository dynamicQRRepository;
@@ -23,7 +24,7 @@ public class GenerationQRJob extends QuartzJobBean {
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    protected void executeInternal(@NonNull JobExecutionContext jobExecutionContext) {
         System.out.println("Hi! ---" + new Date());
         System.out.println("new QR generating");
         reGenerateAllQRs();
