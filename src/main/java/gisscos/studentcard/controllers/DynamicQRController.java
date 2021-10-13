@@ -15,8 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("dynamic-qr")
 public class DynamicQRController {
 
+    private final DynamicQRService dynamicQRService;
+
     @Autowired
-    DynamicQRService dynamicQRService;
+    public DynamicQRController(DynamicQRService dynamicQRService) {
+        this.dynamicQRService = dynamicQRService;
+    }
 
     @GetMapping("/view")
     private ResponseEntity<DynamicQR> getInfo(@RequestHeader("Authorization") String userToken){

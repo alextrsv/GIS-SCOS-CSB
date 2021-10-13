@@ -15,8 +15,12 @@ import java.util.UUID;
 
 public class GenerationQRJob extends QuartzJobBean {
 
+    private final DynamicQRRepository dynamicQRRepository;
+
     @Autowired
-    DynamicQRRepository dynamicQRRepository;
+    public GenerationQRJob(DynamicQRRepository dynamicQRRepository) {
+        this.dynamicQRRepository = dynamicQRRepository;
+    }
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
