@@ -31,13 +31,10 @@ public class PermanentQR {
     private QRStatus status;
     /** данные в строке для генерации QR-кода */
 
-
     public PermanentQR(Long userId, Long universityId, QRStatus status) {
         this.userId = userId;
         this.universityId = universityId;
         this.status = status;
 
     }
-
-
 }
