@@ -140,6 +140,17 @@ public class PassRequestController {
     }
 
     /**
+     * Редактирование комментария
+     * @param dto комментария с id
+     * @return отредактированный комментарий
+     */
+    @PutMapping("/comments/edit")
+    public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PassRequestCommentDTO dto) {
+        return passRequestService.updateComment(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Отмена заявки создателем
      * @param dto пользователя заявки
      * @return отменённая заявка
