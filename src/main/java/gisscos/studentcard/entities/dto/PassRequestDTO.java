@@ -1,5 +1,6 @@
 package gisscos.studentcard.entities.dto;
 
+import gisscos.studentcard.entities.PassRequestComment;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import lombok.Data;
@@ -21,6 +22,6 @@ public class PassRequestDTO {
     private LocalDate endDate;
     private PassRequestType type;
     private PassRequestStatus status;
-    private String comment;
     private List<PassRequestUserDTO> users;
+    private List<PassRequestComment> comments;
 }
