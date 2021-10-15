@@ -74,12 +74,12 @@ public class PassRequestController {
 
     /**
      * Получение заявок по статусу
-     * @param status заявок
+     * @param dto заявки
      * @return заявки
      */
-    @GetMapping("/get/status/{status}")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@PathVariable String status) {
-        return passRequestService.getPassRequestByStatus(status).map(ResponseEntity::ok)
+    @GetMapping("/get/status")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto) {
+        return passRequestService.getPassRequestByStatus(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 

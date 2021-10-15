@@ -145,19 +145,19 @@ public class PassRequestServiceImpl implements PassRequestService {
 
     /**
      * Получить список заявок по статусу
-     * @param status статус заявки
+     * @param dto заявки
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestByStatus(String status) {
-        try {
-            PassRequestStatus requestStatus = PassRequestStatus.of(status);
-            log.info("Getting passRequests by status");
-            return Optional.of(passRequestRepository.findAllByStatus(requestStatus));
-        } catch (IllegalArgumentException ex) {
-            log.warn("Cannot resolve {} as PassRequestStatus.", status);
-            return Optional.empty();
-        }
+    public Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto) {
+        List<PassRequest> requests =
+                passRequestRepository.findAllByUniversityId(dto.getUniversityId());
+        log.info("Getting passRequests by status");
+        return Optional.of(
+                requests.stream()
+                        .filter(r -> r.getStatus() == dto.getStatus())
+                        .collect(Collectors.toList())
+        );
     }
 
     /**
