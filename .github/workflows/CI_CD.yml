@@ -29,11 +29,11 @@ jobs:
         pwd 
         ls -l
         
-    - name: trying to coonect via ssh
-      run: |
-       echo lalala >> ~/.ssh/authorized_keys
-       ssh -p 22116 devmaster@90.154.15.250
-       script: ls
+#     - name: trying to coonect via ssh
+#       run: |
+#        echo lalala >> ~/.ssh/authorized_keys
+#        ssh -p 22116 devmaster@90.154.15.250
+#        script: ls
     
 #     ### Request Timeout error ### 
 #     - name: copy file via ssh password   
