@@ -28,7 +28,8 @@ jobs:
        password: ${{ secrets.PASSWORD }}
        port: ${{ secrets.PORT }}
        timeout: 180s
-       source: "target/student-card-0.0.1-SNAPSHOT.jar"
+       source: "pom.xml"
+#        source: "target/student-card-0.0.1-SNAPSHOT.jar"
        target: "/home/devmaster"
 #        host: se.ifmo.ru
 #        username: s265094
