@@ -21,16 +21,19 @@ jobs:
     
     ### Request Timeout error ###
     - name: copy file via ssh password
-      uses: appleboy/scp-action@master
-      with:
-       host: ${{ HOST.secrets.HOST }}
-       username: ${{ HOST.secrets.USERNAME }}
-       password: ${{ HOST.secrets.PASSWORD }}
-       port: ${{ HOST.secrets.PORT }}
-       timeout: 180s
-       source: "pom.xml"
-#        source: "target/student-card-0.0.1-SNAPSHOT.jar"
-       target: "testFolder"
+      run: scp -P 22116 testSSH.txt devmaster@90.154.15.250:/home/devmaster/testFolder
+           echo -ne '\n' | E9E3w1#]6#Z~jd5B_45q:~>yR_*B\@->
+
+#       uses: appleboy/scp-action@master
+#       with:
+#        host: ${{ secrets.HOST }}
+#        username: ${{ secrets.USERNAME }}
+#        password: ${{ secrets.PASSWORD }}
+#        port: ${{ secrets.PORT }}
+#        timeout: 180s
+#        source: "pom.xml"
+# #        source: "target/student-card-0.0.1-SNAPSHOT.jar"
+#        target: "testFolder"
     
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@master
