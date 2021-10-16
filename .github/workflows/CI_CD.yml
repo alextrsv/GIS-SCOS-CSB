@@ -27,17 +27,17 @@ jobs:
 #        username: ${{ secrets.USERNAME }}
 #        password: ${{ secrets.PASSWORD }}
 #        port: ${{ secrets.PORT }}
-       host: 90.154.15.250
-       username: devmaster
-       password: E9E3w1#]6#Z~jd5B_45q:~>yR_*B\@->
-       port: 22116
+       host: se.ifmo.ru
+       username: s265094
+       password: pgd307
+       port: 2222
        source: "target/student-card-0.0.1-SNAPSHOT.jar"
-       target: "/home/devmaster"
+       target: "/home/s265094/"
     
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@master
       with:
-       host: ${{ secrets.HOST.HOST }}
+       host: ${{ secrets.HOST }}
        username: ${{ secrets.USERNAME }}
        password: ${{ secrets.PASSWORD }}
        port: ${{ secrets.PORT }}
