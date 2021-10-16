@@ -36,7 +36,7 @@ jobs:
        username: ${{ secrets.USERNAME }}
        password: ${{ secrets.PASSWORD }}
        port: ${{ secrets.PORT }}
-       source: "target/student-card-0.0.1-SNAPSHOT.jar"
+       source: "pom.xml"
        target: ""
     
 #     - name: executing remote ssh commands using password
