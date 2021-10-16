@@ -22,7 +22,7 @@ jobs:
     
     - name: check dirs
       run: |
-        la -la ~/
+        ls -la ~/
         pwd
         ls -l
         cd target
