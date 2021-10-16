@@ -23,7 +23,7 @@ jobs:
     - name: check dirs
       run: |
         pwd
-        ls- l
+        ls -l
         cd target
         pwd 
         ls -l
