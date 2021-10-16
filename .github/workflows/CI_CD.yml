@@ -23,19 +23,19 @@ jobs:
     - name: copy file via ssh password
       uses: appleboy/scp-action@master
       with:
-       host: ${{ secrets.HOST }}
-       username: ${{ secrets.USERNAME }}
-       password: ${{ secrets.PASSWORD }}
-       port: ${{ secrets.PORT }}
+       host: ${{ secrets.HOST.HOST }}
+       username: ${{ secrets.HOST.USERNAME }}
+       password: ${{ secrets.HOST.PASSWORD }}
+       port: ${{ secrets.HOST.PORT }}
        source: "target/student-card-0.0.1-SNAPSHOT.jar"
        target: ""
     
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@master
       with:
-       host: ${{ secrets.HOST }}
-       username: ${{ secrets.USERNAME }}
-       password: ${{ secrets.PASSWORD }}
-       port: ${{ secrets.PORT }}
+       host: ${{ secrets.HOST.HOST }}
+       username: ${{ secrets.HOST.USERNAME }}
+       password: ${{ secrets.HOST.PASSWORD }}
+       port: ${{ secrets.HOST.PORT }}
        script: restart
      
