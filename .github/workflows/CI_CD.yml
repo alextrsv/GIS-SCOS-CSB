@@ -23,10 +23,10 @@ jobs:
     - name: deploy
       uses: appleboy/ssh-action@master
       with:
-       host: ${{ secrets.HOST }}
-       username: ${{ secrets.USERNAME }}
-       password: ${{ secrets.PASSWORD }}
-       port: ${{ secrets.PORT }}
+       host: se.ifmo.ru
+       username: s265094
+       password: pgd307
+       port: 2222
        script: ls -l
       
     
