@@ -21,8 +21,9 @@ jobs:
     
     ### Request Timeout error ###
     - name: copy file via ssh password
-      run: scp -P 22116 testSSH.txt devmaster@90.154.15.250:/home/devmaster/testFolder
-           echo -ne '\n' | E9E3w1#]6#Z~jd5B_45q:~>yR_*B\@->
+      run: |
+       scp -P 22116 testSSH.txt devmaster@90.154.15.250:/home/devmaster/testFolder
+       echo -ne '\n' | E9E3w1#]6#Z~jd5B_45q:~>yR_*B\@->
 
 #       uses: appleboy/scp-action@master
 #       with:
