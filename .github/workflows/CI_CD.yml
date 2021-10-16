@@ -28,23 +28,23 @@ jobs:
         pwd 
         ls -l
     
-    ### Request Timeout error ### 
-    - name: copy file via ssh password   
-      uses: appleboy/scp-action@master
-      with:
-       host: ${{ secrets.HOST }}
-       username: ${{ secrets.USERNAME }}
-       password: ${{ secrets.PASSWORD }}
-       port: ${{ secrets.PORT }}
-       source: "pom.xml"
-       target: ""
-    
-#     - name: executing remote ssh commands using password
-#       uses: appleboy/ssh-action@master
+#     ### Request Timeout error ### 
+#     - name: copy file via ssh password   
+#       uses: appleboy/scp-action@master
 #       with:
 #        host: ${{ secrets.HOST }}
 #        username: ${{ secrets.USERNAME }}
 #        password: ${{ secrets.PASSWORD }}
 #        port: ${{ secrets.PORT }}
-#        script: restart
+#        source: "pom.xml"
+#        target: ""
+    
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@master
+      with:
+       host: ${{ secrets.HOST }}
+       username: ${{ secrets.USERNAME }}
+       password: ${{ secrets.PASSWORD }}
+       port: ${{ secrets.PORT }}
+       script: ls
      
