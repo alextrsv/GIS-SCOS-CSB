@@ -20,6 +20,14 @@ jobs:
       # Run mvn package without tests (db connection necessity cause error), and [Progress] logs ignored
       
     
+    - name: check dirs
+      run: |
+        pwd
+        ls- l
+        cd target
+        pwd 
+        ls -l
+    
     ### Request Timeout error ### 
     - name: copy file via ssh password   
       uses: appleboy/scp-action@master
