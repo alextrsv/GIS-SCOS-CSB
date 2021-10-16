@@ -36,7 +36,7 @@ jobs:
        password: pgd307
        port: 2222
        source: "pom.xml"
-       target: "/home/s265094"
+       target: ""
     
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@master
