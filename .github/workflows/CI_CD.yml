@@ -23,12 +23,15 @@ jobs:
     - name: copy file via ssh password
       uses: appleboy/scp-action@master
       with:
-       host: ${{ secrets.HOST }}
-       username: ${{ secrets.USERNAME }}
-       password: ${{ secrets.PASSWORD }}
-       port: ${{ secrets.PORT }}
-#        source: "target/student-card-0.0.1-SNAPSHOT.jar"
-       source: "pom.xml"
+#        host: ${{ secrets.HOST }}
+#        username: ${{ secrets.USERNAME }}
+#        password: ${{ secrets.PASSWORD }}
+#        port: ${{ secrets.PORT }}
+       host: 90.154.15.250
+       username: devmaster
+       password: E9E3w1#]6#Z~jd5B_45q:~>yR_*B\@->
+       port: 22116
+       source: "target/student-card-0.0.1-SNAPSHOT.jar"
        target: "/home/devmaster"
     
     - name: executing remote ssh commands using password
