@@ -1,14 +1,11 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.PassRequest;
-import gisscos.studentcard.entities.PassRequestComment;
 import gisscos.studentcard.entities.PassRequestUser;
-import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
-import gisscos.studentcard.repositories.PassRequestCommentRepository;
 import gisscos.studentcard.repositories.PassRequestRepository;
 import gisscos.studentcard.repositories.PassRequestUserRepository;
 import gisscos.studentcard.services.PassRequestService;
@@ -31,15 +28,12 @@ public class PassRequestServiceImpl implements PassRequestService {
 
     private final PassRequestRepository passRequestRepository;
     private final PassRequestUserRepository passRequestUserRepository;
-    private final PassRequestCommentRepository passRequestCommentRepository;
 
     @Autowired
     public PassRequestServiceImpl(PassRequestRepository passRequestRepository,
-                                  PassRequestUserRepository passRequestUserRepository,
-                                  PassRequestCommentRepository passRequestCommentRepository) {
+                                  PassRequestUserRepository passRequestUserRepository) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
-        this.passRequestCommentRepository = passRequestCommentRepository;
     }
 
     /**
@@ -82,7 +76,7 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO dto) {
-        Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getPassRequestId());
+        Optional<PassRequest> passRequest = getPassRequest(dto);
 
         // Если есть такая заявка и она является групповой
         if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
@@ -106,41 +100,13 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
-     * Добавление комментария
-     * @param dto комментария
-     * @return добавленный комментарий
-     */
-    @Override
-    public Optional<PassRequestComment> addCommentToPassRequest(PassRequestCommentDTO dto) {
-        Optional<PassRequest> request =
-                passRequestRepository.findById(dto.getPassRequestId());
-
-        if (request.isPresent()) {
-            PassRequestComment comment = new PassRequestComment();
-            comment.setComment(dto.getComment());
-            comment.setPassRequestId(dto.getPassRequestId());
-            comment.setAuthorId(dto.getAuthorId());
-            comment.setCreationDate(LocalDate.now());
-            comment.setEditDate(LocalDate.now());
-
-            request.get().getComments().add(comment);
-            passRequestCommentRepository.save(comment);
-            log.info("Comment added to passRequest");
-            return Optional.of(comment);
-        }
-
-        log.warn("Pass request not found");
-        return Optional.empty();
-    }
-
-    /**
      * Получение заявки по id
      * @param id заявки
      * @return заявка
      */
     @Override
     public Optional<PassRequest> getPassRequestById(Long id) {
-        return passRequestRepository.findById(id);
+        return getPassRequest(id);
     }
 
     /**
@@ -168,8 +134,7 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto) {
-        Optional<PassRequest> request =
-                passRequestRepository.findById(dto.getId());
+        Optional<PassRequest> request = getPassRequest(dto);
 
         if (request.isPresent()) {
             if (request.get().getType() == PassRequestType.SINGLE) {
@@ -189,27 +154,14 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
-     * Получение комментириев по id заявки
-     * @param passRequestId id заявки
-     * @return список комментариев
-     */
-    @Override
-    public Optional<List<PassRequestComment>> getPassRequestComments(Long passRequestId) {
-        Optional<PassRequest> request =
-                passRequestRepository.findById(passRequestId);
-
-        log.info("Getting comments from pass request");
-        return request.map(PassRequest::getComments);
-    }
-
-    /**
      * Получение заявок для обработки.
      * @param universityId идентификатор ООВО
      * @return список заявок для обработки
      */
     @Override
     public Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId) {
-        List<PassRequest> targetRequestList = passRequestRepository.findAllByTargetUniversityId(universityId);
+        List<PassRequest> targetRequestList =
+                passRequestRepository.findAllByTargetUniversityId(universityId);
 
         targetRequestList = targetRequestList.stream()
                 .filter(
@@ -249,7 +201,7 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<PassRequest> updatePassRequest(PassRequestDTO dto) {
-        Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getId());
+        Optional<PassRequest> passRequest = getPassRequest(dto);
 
         if (passRequest.isPresent()) {
             passRequest.get().setType(dto.getType());
@@ -268,30 +220,6 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
-     * Редактирование комментария
-     * @param dto комментария
-     * @return отредактированный комментарий
-     */
-    @Override
-    public Optional<PassRequestComment> updateComment(PassRequestCommentDTO dto) {
-        Optional<PassRequestComment> comment =
-                passRequestCommentRepository.findById(dto.getId());
-
-        if (comment.isPresent()) {
-            comment.get().setComment(dto.getComment());
-            comment.get().setPassRequestId(dto.getPassRequestId());
-            comment.get().setAuthorId(dto.getAuthorId());
-            comment.get().setEditDate(LocalDate.now());
-
-            passRequestCommentRepository.save(comment.get());
-            log.info("Comment has successfully updated");
-            return comment;
-        }
-        log.warn("Pass request not found");
-        return Optional.empty();
-    }
-
-    /**
      * Отменить заявку
      * @param dto создателя заявки
      * @return отменённая заявка или Optional.empty
@@ -300,8 +228,7 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto) {
-        Optional<PassRequest> request =
-                passRequestRepository.findById(dto.getPassRequestId());
+        Optional<PassRequest> request = getPassRequest(dto);
 
         if (request.isPresent()) {
             // Являестя ли пользователь создателем заявки?
@@ -334,7 +261,7 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<PassRequest> deletePassRequestById(Long id) {
-        Optional<PassRequest> passRequest = passRequestRepository.findById(id);
+        Optional<PassRequest> passRequest = getPassRequest(id);
         if (passRequest.isPresent()) {
             passRequestRepository.deleteById(id);
             log.info("pass request with id: {} was deleted", id);
@@ -351,7 +278,7 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<PassRequestUser> deleteUserFromPassRequest(PassRequestUserDTO dto) {
-        Optional<PassRequest> passRequest = passRequestRepository.findById(dto.getPassRequestId());
+        Optional<PassRequest> passRequest = getPassRequest(dto);
 
         // Если заявка существует и является групповой
         if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
@@ -415,25 +342,6 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
-     * Удаление комментария по его id
-     * @param dto комментария с id
-     * @return удалённый комментарий
-     */
-    @Override
-    public Optional<PassRequestComment> deletePassRequestComment(PassRequestCommentDTO dto) {
-        Optional<PassRequestComment> comment =
-                passRequestCommentRepository.findById(dto.getId());
-
-        if (comment.isPresent()) {
-            passRequestCommentRepository.deleteById(dto.getId());
-            log.info("Comment has successfully deleted");
-            return comment;
-        }
-        log.warn("Pass request not found");
-        return Optional.empty();
-    }
-
-    /**
      * Проверка всех заявок на наличие просроченных
      */
     private void checkExpiredPassRequests() {
@@ -465,5 +373,32 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     private boolean isAuthor(PassRequest request, PassRequestUserDTO dto) {
         return (Objects.equals(request.getUserId(), dto.getUserId()));
+    }
+
+    /**
+     * Получить заявку по id
+     * @param dto заявки
+     * @return заявка
+     */
+    private Optional<PassRequest> getPassRequest(PassRequestDTO dto) {
+        return passRequestRepository.findById(dto.getId());
+    }
+
+    /**
+     * Получить заявку по id
+     * @param dto пользователя заявки
+     * @return заявка
+     */
+    private Optional<PassRequest> getPassRequest(PassRequestUserDTO dto) {
+        return passRequestRepository.findById(dto.getPassRequestId());
+    }
+
+    /**
+     * Получить азявку по id
+     * @param id id заявки
+     * @return заявка
+     */
+    private Optional<PassRequest> getPassRequest(Long id) {
+        return passRequestRepository.findById(id);
     }
 }
