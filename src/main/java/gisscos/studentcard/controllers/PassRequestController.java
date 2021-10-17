@@ -6,6 +6,7 @@ import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
+import gisscos.studentcard.services.PassRequestCommentsService;
 import gisscos.studentcard.services.PassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,10 +24,13 @@ import java.util.Optional;
 public class PassRequestController {
 
     private final PassRequestService passRequestService;
+    private final PassRequestCommentsService passRequestCommentsService;
 
     @Autowired
-    public PassRequestController(PassRequestService passRequestService) {
+    public PassRequestController(PassRequestService passRequestService,
+                                 PassRequestCommentsService passRequestCommentsService) {
         this.passRequestService = passRequestService;
+        this.passRequestCommentsService = passRequestCommentsService;
     }
 
     /**
@@ -57,7 +61,7 @@ public class PassRequestController {
      */
     @PostMapping("/comments/add")
     public ResponseEntity<PassRequestComment> addCommentToPassRequest(@RequestBody PassRequestCommentDTO dto) {
-        return passRequestService.addCommentToPassRequest(dto).map(ResponseEntity::ok)
+        return passRequestCommentsService.addCommentToPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -74,12 +78,12 @@ public class PassRequestController {
 
     /**
      * Получение заявок по статусу
-     * @param status заявок
+     * @param dto заявки
      * @return заявки
      */
-    @GetMapping("/get/status/{status}")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@PathVariable String status) {
-        return passRequestService.getPassRequestByStatus(status).map(ResponseEntity::ok)
+    @GetMapping("/get/status")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto) {
+        return passRequestService.getPassRequestByStatus(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -124,7 +128,7 @@ public class PassRequestController {
      */
     @GetMapping("/comments/{passRequestId}")
     public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable Long passRequestId) {
-        return passRequestService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
+        return passRequestCommentsService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -146,7 +150,7 @@ public class PassRequestController {
      */
     @PutMapping("/comments/edit")
     public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PassRequestCommentDTO dto) {
-        return passRequestService.updateComment(dto).map(ResponseEntity::ok)
+        return passRequestCommentsService.updateComment(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -199,7 +203,7 @@ public class PassRequestController {
      */
     @DeleteMapping("/comments/delete")
     public ResponseEntity<PassRequestComment> deletePassRequestComment(@RequestBody PassRequestCommentDTO dto) {
-        return passRequestService.deletePassRequestComment(dto).map(ResponseEntity::ok)
+        return passRequestCommentsService.deletePassRequestComment(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }
