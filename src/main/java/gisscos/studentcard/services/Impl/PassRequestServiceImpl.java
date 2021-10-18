@@ -1,6 +1,7 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.PassRequest;
+import gisscos.studentcard.entities.PassRequestComment;
 import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
@@ -53,12 +54,10 @@ public class PassRequestServiceImpl implements PassRequestService {
                 dto.getType()
         );
 
-        passRequest.setComments(dto.getComments());
-
         if (dto.getType() == PassRequestType.GROUP) {
             long id = passRequestRepository.save(passRequest).getId();
 
-            for ( PassRequestUserDTO user : dto.getUsers() ) {
+            for (PassRequestUserDTO user : dto.getUsers()) {
                 user.setPassRequestId(id);
                 addUserToPassRequest(user);
             }
