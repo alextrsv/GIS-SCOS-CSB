@@ -23,5 +23,4 @@ public class PassRequestDTO {
     private PassRequestType type;
     private PassRequestStatus status;
     private List<PassRequestUserDTO> users;
-    private List<PassRequestComment> comments;
 }
