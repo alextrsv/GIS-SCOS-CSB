@@ -27,3 +27,11 @@ jobs:
         key: ${{ secrets.OMG_SECRET }} 
         source: "target/student-card-0.0.1-SNAPSHOT.jar"
         target: "jar"
+  
+    - name: executing remote ssh commands
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.OMG_SECRET }} 
+        script: ./script
