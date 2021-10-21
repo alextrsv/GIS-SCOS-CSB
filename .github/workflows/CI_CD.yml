@@ -36,4 +36,4 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.OMG_SECRET }}
         # err: tput: No value for $TERM and no -T specified ignoring
-        script: ./script 2 > /dev/null
+        script: ./script 2 > /dev/null 2>&1
