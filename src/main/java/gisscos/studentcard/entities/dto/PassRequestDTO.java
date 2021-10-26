@@ -1,6 +1,5 @@
 package gisscos.studentcard.entities.dto;
 
-import gisscos.studentcard.entities.PassRequestComment;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import lombok.Data;
