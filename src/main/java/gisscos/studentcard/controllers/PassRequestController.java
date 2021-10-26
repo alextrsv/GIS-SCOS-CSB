@@ -77,6 +77,17 @@ public class PassRequestController {
     }
 
     /**
+     * Получение заявки по id пользователя
+     * @param id заявки
+     * @return заявка
+     */
+    @GetMapping("/user/get/{id}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable Long id) {
+        return passRequestService.getPassRequestsByUserId(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
      * Получение заявок по статусу
      * @param dto заявки
      * @return заявки

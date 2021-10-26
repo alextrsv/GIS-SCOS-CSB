@@ -109,6 +109,16 @@ public class PassRequestServiceImpl implements PassRequestService {
     }
 
     /**
+     * Получить список заявок по id пользователя
+     * @param id пользователя
+     * @return список заявок
+     */
+    @Override
+    public Optional<List<PassRequest>> getPassRequestsByUserId(Long id) {
+        return Optional.of(passRequestRepository.findAllByUserId(id));
+    }
+
+    /**
      * Получить список заявок по статусу
      * @param dto заявки
      * @return список заявок с определенным статусом

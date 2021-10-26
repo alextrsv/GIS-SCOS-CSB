@@ -20,6 +20,8 @@ public interface PassRequestService {
 
     Optional<PassRequest> getPassRequestById(Long id);
 
+    Optional<List<PassRequest>> getPassRequestsByUserId(Long id);
+
     Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto);
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
