@@ -104,6 +104,7 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<PassRequest> getPassRequestById(Long id) {
+        log.info("getting pass request by id: {}", id);
         return getPassRequest(id);
     }
 
@@ -114,7 +115,14 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<List<PassRequest>> getPassRequestsByUserId(Long id) {
-        return Optional.of(passRequestRepository.findAllByUserId(id));
+        log.info("getting pass request by user id: {}", id);
+        List<PassRequest> requestList = passRequestRepository.findAllByUserId(id);
+
+        if (requestList.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(requestList);
     }
 
     /**
