@@ -11,11 +11,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 
 @Component
-public class VamRestClient {
+public class UserRestClient {
 
     RestTemplate restTemplate = new RestTemplate();
 

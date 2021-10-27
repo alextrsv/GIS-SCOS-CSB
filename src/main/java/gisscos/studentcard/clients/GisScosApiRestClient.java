@@ -9,6 +9,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.UUID;
 
 @Component
 public class GisScosApiRestClient {
@@ -26,7 +27,7 @@ public class GisScosApiRestClient {
     @Value("${vam.X-CN-UUID}")
     private String vamSecret;
 
-    public OrganizationDTO makeGetOrganizationRequest(String global_id){
+    public OrganizationDTO makeGetOrganizationRequest(UUID global_id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
