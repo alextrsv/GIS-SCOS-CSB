@@ -83,21 +83,8 @@ public class PassRequestController {
      */
     @GetMapping("/user/get/{id}")
     public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable Long id) {
-        return passRequestService.getPassRequestsByUserId(id)
-                .map(
-                        passRequests ->
-                                ResponseEntity
-                                        .ok()
-                                        .header("Access-Control-Allow-Origin", "*")
-                                        .body(passRequests)
-                )
-                .orElseGet(
-                        () ->
-                                ResponseEntity
-                                        .notFound()
-                                        .header("Access-Control-Allow-Origin", "*")
-                                        .build()
-                );
+        return passRequestService.getPassRequestsByUserId(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**
