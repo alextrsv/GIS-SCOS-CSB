@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class TestController {
@@ -34,7 +35,7 @@ public class TestController {
     }
 
     @GetMapping("organization")
-    public ResponseEntity<OrganizationDTO> getGisOrganization(@RequestParam String global_id){
+    public ResponseEntity<OrganizationDTO> getGisOrganization(@RequestParam UUID global_id){
         return new ResponseEntity<>(gisScosApiRestClient.makeGetOrganizationRequest(global_id), HttpStatus.OK);
     }
 }
