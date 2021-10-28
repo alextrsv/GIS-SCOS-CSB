@@ -6,6 +6,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 /**
  * контроллер для работы со статическими QR-кодами
  */
@@ -21,7 +23,7 @@ public class PermanentQRController {
     }
 
     @GetMapping("download/{id}")
-    public ResponseEntity<Resource> downloadQrAsFile(@PathVariable String id){
+    public ResponseEntity<Resource> downloadQrAsFile(@PathVariable UUID id){
         return permanentQRService.downloadQRAsFile(id);
     }
 }
