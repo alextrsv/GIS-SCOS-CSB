@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
-//@NoArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudentDTO {
 
     UUID id;
@@ -22,6 +24,7 @@ public class StudentDTO {
     String scos_id;
     Integer study_year;
     UUID organization_id;
+    List<StudyPlanDTO> study_plans;
 
 
 
@@ -39,7 +42,6 @@ public class StudentDTO {
         this.scos_id = scos_id;
         this.study_year = study_year;
         this.organization_id = organization_id;
-    }
 
-    public StudentDTO(){}
+    }
 }
