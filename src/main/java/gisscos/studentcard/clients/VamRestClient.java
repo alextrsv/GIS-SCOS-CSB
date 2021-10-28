@@ -3,6 +3,7 @@ package gisscos.studentcard.clients;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudentsDTO;
 import gisscos.studentcard.entities.dto.StudyPlanDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 
+@Slf4j
 @Component
 public class VamRestClient {
 
@@ -32,6 +34,8 @@ public class VamRestClient {
     @Value("${vam.X-CN-UUID}")
     private String vamSecret;
 
+
+    /** 5.1.4 Получение учебного плана */
     public StudyPlanDTO makeGetStudyPlanRequest(UUID studyPlanId){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
@@ -43,6 +47,9 @@ public class VamRestClient {
                 .encode()
                 .toUriString();
 
+        System.out.println(urlTemplate);
+        log.info(urlTemplate);
+
         ResponseEntity<StudyPlanDTO> response = restTemplate.exchange(
                 urlTemplate,
                 HttpMethod.GET,
@@ -52,6 +59,7 @@ public class VamRestClient {
         return response.getBody();
     }
 
+    /** 5.1.5 Получение списка студентов */
     public List<StudentDTO> makeGetStudentsRequest(){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
@@ -71,14 +79,15 @@ public class VamRestClient {
         return Objects.requireNonNull(response.getBody(), "students list is Empty").getResults();
     }
 
-    public StudentDTO makeGetStudentRequest(String id){
+    /** 5.1.6 Получение студента */
+    public StudentDTO makeGetStudentRequest(UUID id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
                 .host(host)
                 .path(vamPrefix)
                 .pathSegment(STUDENTS_ENDPOINT)
-                .pathSegment(id)
+                .pathSegment(id.toString())
                 .encode()
                 .toUriString();
 

@@ -27,7 +27,10 @@ public class GisScosApiRestClient {
     @Value("${vam.X-CN-UUID}")
     private String vamSecret;
 
-    public OrganizationDTO makeGetOrganizationRequest(UUID global_id){
+
+
+    /** 4.1.10.3 Получение объекта записи об организации по global_id организации */
+     public OrganizationDTO makeGetOrganizationRequest(UUID global_id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
