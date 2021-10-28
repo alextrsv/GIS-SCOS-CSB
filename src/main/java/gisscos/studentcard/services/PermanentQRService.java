@@ -3,6 +3,8 @@ package gisscos.studentcard.services;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
+import java.util.UUID;
+
 public interface PermanentQRService {
 
 //    BitMatrix addPermanentQR(PermanentQRDTO permanentQRDTO) throws WriterException;
@@ -13,5 +15,5 @@ public interface PermanentQRService {
 //
 //    Optional<PermanentQR> deletePermanentQRById(Long id);
 
-    ResponseEntity<Resource> downloadQRAsFile(String userToken);
+    ResponseEntity<Resource> downloadQRAsFile(UUID userId);
 }
