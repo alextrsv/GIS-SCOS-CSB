@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
-public interface PassFileService {
+public interface IPassFileService {
     Optional<PassFile> uploadPassFile(MultipartFile file, Long passRequestId);
 
     List<PassFile> uploadPassFiles(MultipartFile[] passFiles, Long passRequestId);

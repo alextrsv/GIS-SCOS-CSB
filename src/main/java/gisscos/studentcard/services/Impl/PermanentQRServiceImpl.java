@@ -1,7 +1,7 @@
 package gisscos.studentcard.services.Impl;
 
-import gisscos.studentcard.repositories.PermanentQRRepository;
-import gisscos.studentcard.services.PermanentQRService;
+import gisscos.studentcard.repositories.IPermanentQRRepository;
+import gisscos.studentcard.services.IPermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +13,12 @@ import java.awt.image.BufferedImage;
  * сервис для работы со статическими QR
  */
 @Service
-public class PermanentQRServiceImpl implements PermanentQRService {
+public class PermanentQRServiceImpl implements IPermanentQRService {
 
-    private final PermanentQRRepository permanentQRRepository;
+    private final IPermanentQRRepository permanentQRRepository;
 
     @Autowired
-    public PermanentQRServiceImpl(PermanentQRRepository permanentQRRepository) {
+    public PermanentQRServiceImpl(IPermanentQRRepository permanentQRRepository) {
         this.permanentQRRepository = permanentQRRepository;
     }
 

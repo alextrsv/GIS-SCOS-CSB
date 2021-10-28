@@ -8,7 +8,7 @@ import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import java.util.List;
 import java.util.Optional;
 
-public interface PassRequestService {
+public interface IPassRequestService {
 
     PassRequest addPassRequest(PassRequestDTO passRequestDTO);
 

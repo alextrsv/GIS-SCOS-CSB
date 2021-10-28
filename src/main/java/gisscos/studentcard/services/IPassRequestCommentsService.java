@@ -6,7 +6,7 @@ import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import java.util.List;
 import java.util.Optional;
 
-public interface PassRequestCommentsService {
+public interface IPassRequestCommentsService {
 
     Optional<PassRequestComment> addCommentToPassRequest(PassRequestCommentDTO dto);
 

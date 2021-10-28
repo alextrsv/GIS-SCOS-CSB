@@ -6,9 +6,9 @@ import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
-import gisscos.studentcard.repositories.PassRequestRepository;
-import gisscos.studentcard.repositories.PassRequestUserRepository;
-import gisscos.studentcard.services.PassRequestService;
+import gisscos.studentcard.repositories.IPassRequestRepository;
+import gisscos.studentcard.repositories.IPassRequestUserRepository;
+import gisscos.studentcard.services.IPassRequestService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,14 +24,14 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class PassRequestServiceImpl implements PassRequestService {
+public class PassRequestServiceImpl implements IPassRequestService {
 
-    private final PassRequestRepository passRequestRepository;
-    private final PassRequestUserRepository passRequestUserRepository;
+    private final IPassRequestRepository passRequestRepository;
+    private final IPassRequestUserRepository passRequestUserRepository;
 
     @Autowired
-    public PassRequestServiceImpl(PassRequestRepository passRequestRepository,
-                                  PassRequestUserRepository passRequestUserRepository) {
+    public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
+                                  IPassRequestUserRepository passRequestUserRepository) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
     }

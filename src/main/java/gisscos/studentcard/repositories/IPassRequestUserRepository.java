@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PassRequestUserRepository extends JpaRepository<PassRequestUser, Long> {
+public interface IPassRequestUserRepository extends JpaRepository<PassRequestUser, Long> {
     Boolean existsByPassRequestIdAndUserId(Long userId, Long passRequestId);
 
     List<PassRequestUser> findAllByPassRequestId(Long PassRequestId);

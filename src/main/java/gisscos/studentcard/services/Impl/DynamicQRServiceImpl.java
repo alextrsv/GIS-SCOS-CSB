@@ -4,9 +4,9 @@ import gisscos.studentcard.entities.DynamicQR;
 import gisscos.studentcard.entities.User;
 import gisscos.studentcard.entities.dto.DynamicQRDTO;
 import gisscos.studentcard.entities.enums.QRStatus;
-import gisscos.studentcard.repositories.DynamicQRRepository;
-import gisscos.studentcard.repositories.UserRepository;
-import gisscos.studentcard.services.DynamicQRService;
+import gisscos.studentcard.repositories.IDynamicQRRepository;
+import gisscos.studentcard.repositories.IUserRepository;
+import gisscos.studentcard.services.IDynamicQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -17,13 +17,13 @@ import java.awt.image.BufferedImage;
 import java.util.Optional;
 
 @Service
-public class DynamicQRServiceImpl implements DynamicQRService {
+public class DynamicQRServiceImpl implements IDynamicQRService {
 
     @Autowired
-    DynamicQRRepository dynamicQRRepository;
+    IDynamicQRRepository dynamicQRRepository;
 
     @Autowired
-    UserRepository userRepository;
+    IUserRepository userRepository;
 
 
     /**
