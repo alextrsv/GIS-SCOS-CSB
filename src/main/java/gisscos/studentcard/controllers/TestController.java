@@ -45,11 +45,4 @@ public class TestController {
         return new ResponseEntity<>(
                 restClient.makeGetStudyPlanRequest(uuid), HttpStatus.OK);
     }
-
-//    @GetMapping("lol")
-//    public ResponseEntity<StudyPlanDTO> getLol(@RequestParam UUID uuid){
-////        return "LOOOL";
-//        return new ResponseEntity<>(
-//                restClient.makeGetStudyPlanRequest(uuid), HttpStatus.OK);
-//    }
 }
