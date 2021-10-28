@@ -26,6 +26,10 @@ public class PassRequest {
     private Long userId;
     /** Id организации, в которую необходим доступ (целевая ООВО)*/
     private Long targetUniversityId;
+    /** Название целевой ООВО */
+    private String targetUniversityName;
+    /** Адрес целевой ООВО */
+    private String targetUniversityAddress;
     /** Id организации пользователя */
     private Long universityId;
     /** Дата создания заявки */
@@ -71,7 +75,8 @@ public class PassRequest {
 
     public PassRequest(Long userId, Long targetUniversityId, Long universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
-                       PassRequestType type) {
+                       PassRequestType type, String targetUniversityAddress,
+                       String targetUniversityName) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
         this.targetUniversityId = targetUniversityId;
@@ -80,5 +85,7 @@ public class PassRequest {
         this.endDate = endDate;
         this.status = status;
         this.type = type;
+        this.targetUniversityAddress = targetUniversityAddress;
+        this.targetUniversityName = targetUniversityName;
     }
 }
