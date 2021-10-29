@@ -21,8 +21,9 @@ public class PermanentQR {
 
     /** Id кода в БД. Генерируется автоматически */
     @Id
+    @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private @Setter(AccessLevel.PROTECTED) Long id;
+    private Long id;
     /** id владельца QR-кода */
     private Long userId;
     /** id университета, к которому относится QR-код */

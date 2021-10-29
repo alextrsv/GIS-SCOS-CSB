@@ -19,8 +19,9 @@ public class PassFile {
 
     /** Id файла, прикрепленного к заявке в БД. Генерируется автоматически */
     @Id
+    @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private @Setter(AccessLevel.PROTECTED) Long id;
+    private Long id;
 
     /** Имя файла **/
     private String name;

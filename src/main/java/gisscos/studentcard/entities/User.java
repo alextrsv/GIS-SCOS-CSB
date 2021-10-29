@@ -15,8 +15,9 @@ import javax.persistence.Id;
 @NoArgsConstructor
 public class User {
     @Id
+    @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private @Setter(AccessLevel.PROTECTED) Long id;
+    private Long id;
 
     /** Id университета */
     private Long universityId;

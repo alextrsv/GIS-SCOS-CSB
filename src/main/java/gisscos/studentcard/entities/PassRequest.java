@@ -20,8 +20,9 @@ public class PassRequest {
 
     /** Id заявки в БД. Генерируется автоматически */
     @Id
+    @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter(AccessLevel.PROTECTED) Long id;
+    private Long id;
     /** Id пользоватлея - создателя */
     private Long userId;
     /** Id организации, в которую необходим доступ (целевая ООВО)*/

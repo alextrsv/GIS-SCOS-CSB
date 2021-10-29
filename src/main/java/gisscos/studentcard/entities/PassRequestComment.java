@@ -21,8 +21,9 @@ public class PassRequestComment {
 
     /** Id комментария в БД. Генерируется автоматически */
     @Id
+    @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter(AccessLevel.PROTECTED) Long id;
+    private Long id;
     /** Id пользоватлея - создателя */
     private Long authorId;
     /** Id заявки, к которой прикреплён комментарий */
