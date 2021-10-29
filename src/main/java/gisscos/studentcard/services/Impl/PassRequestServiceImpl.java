@@ -1,11 +1,13 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.PassRequest;
+import gisscos.studentcard.entities.PassRequestChangeLogEntry;
 import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
+import gisscos.studentcard.repositories.IPassRequestChangeLogRepository;
 import gisscos.studentcard.repositories.IPassRequestRepository;
 import gisscos.studentcard.repositories.IPassRequestUserRepository;
 import gisscos.studentcard.services.IPassRequestService;
@@ -28,12 +30,15 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     private final IPassRequestRepository passRequestRepository;
     private final IPassRequestUserRepository passRequestUserRepository;
+    private final IPassRequestChangeLogRepository passRequestChangeLogRepository;
 
     @Autowired
     public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
-                                  IPassRequestUserRepository passRequestUserRepository) {
+                                  IPassRequestUserRepository passRequestUserRepository,
+                                  IPassRequestChangeLogRepository passRequestChangeLogRepository) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
+        this.passRequestChangeLogRepository = passRequestChangeLogRepository;
     }
 
     /**
@@ -236,6 +241,33 @@ public class PassRequestServiceImpl implements IPassRequestService {
             log.info("pass request with id: {} was updated", dto.getId());
             return passRequest;
         } else
+            log.warn("pass request with id: {} not found", dto.getId());
+            return Optional.empty();
+    }
+
+    /**
+     * Обновление статуса заявки
+     * @param dto DTO обновленной заявки
+     * @return обновленная заявка
+     */
+    @Override
+    public Optional<PassRequest> updatePassRequestStatus(PassRequestDTO dto) {
+        Optional<PassRequest> passRequest = getPassRequest(dto);
+
+        if (passRequest.isPresent()) {
+            PassRequestChangeLogEntry entry = new PassRequestChangeLogEntry(
+                    "PassRequestStatus", passRequest.get().getStatus().toString(),
+                    dto.getStatus().toString(), dto.getId()
+            );
+            passRequestChangeLogRepository.save(entry);
+
+            passRequest.get().setStatus(dto.getStatus());
+            passRequestRepository.save(passRequest.get());
+
+            log.info("pass request with id: {} was updated", dto.getId());
+            return passRequest;
+        } else
+            log.warn("pass request with id: {} not found", dto.getId());
             return Optional.empty();
     }
 

@@ -26,7 +26,9 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
 
-    Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO);
+    Optional<PassRequest> updatePassRequest(PassRequestDTO dto);
+
+    Optional<PassRequest> updatePassRequestStatus(PassRequestDTO dto);
 
     Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
 
