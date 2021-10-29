@@ -34,7 +34,8 @@ public class PassRequest {
     /** Id организации пользователя */
     private Long universityId;
     /** Дата создания заявки */
-    private @Setter(AccessLevel.PROTECTED) LocalDate creationDate;
+    @Setter(AccessLevel.PROTECTED)
+    private LocalDate creationDate;
     /** Дата начала периода действия заявки */
     private LocalDate startDate;
     /** Дата конца периода действия заявки */
@@ -73,6 +74,16 @@ public class PassRequest {
     @LazyCollection(LazyCollectionOption.FALSE)
     @ToString.Exclude
     private List<PassRequestComment> comments;
+
+    /** Журнал изменений заявки */
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            mappedBy = "passRequestId"
+    )
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @ToString.Exclude
+    private List<PassRequestChangeLogEntry> changeLog;
 
     public PassRequest(Long userId, Long targetUniversityId, Long universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
