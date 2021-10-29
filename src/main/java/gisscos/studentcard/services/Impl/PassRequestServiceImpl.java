@@ -51,7 +51,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 dto.getUniversityId(), dto.getStartDate(),
                 dto.getEndDate(), dto.getStatus(),
                 dto.getType(), dto.getTargetUniversityAddress(),
-                dto.getTargetUniversityName()
+                dto.getTargetUniversityName(), dto.getUniversityName()
         );
 
         if (dto.getType() == PassRequestType.GROUP) {
@@ -230,6 +230,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             passRequest.get().setTargetUniversityId(dto.getTargetUniversityId());
             passRequest.get().setTargetUniversityAddress(dto.getTargetUniversityAddress());
             passRequest.get().setTargetUniversityName(dto.getTargetUniversityName());
+            passRequest.get().setUniversityName(dto.getUniversityName());
             passRequestRepository.save(passRequest.get());
 
             log.info("pass request with id: {} was updated", dto.getId());
