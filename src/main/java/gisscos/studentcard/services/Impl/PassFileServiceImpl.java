@@ -4,9 +4,9 @@ import gisscos.studentcard.entities.PassFile;
 import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.dto.PassRequestFileIdentifierDTO;
 import gisscos.studentcard.entities.enums.PassFileType;
-import gisscos.studentcard.repositories.PassFileRepository;
-import gisscos.studentcard.repositories.PassRequestRepository;
-import gisscos.studentcard.services.PassFileService;
+import gisscos.studentcard.repositories.IPassFileRepository;
+import gisscos.studentcard.repositories.IPassRequestRepository;
+import gisscos.studentcard.services.IPassFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,20 +33,20 @@ import java.util.Optional;
  */
 @Service
 @Slf4j
-public class PassFileServiceImpl implements PassFileService {
+public class PassFileServiceImpl implements IPassFileService {
 
     /** Репозиторий файлов */
-    private final PassFileRepository passFileRepository;
+    private final IPassFileRepository passFileRepository;
 
-    private final PassRequestRepository passRequestRepository;
+    private final IPassRequestRepository passRequestRepository;
 
     /** Директория для хранения файлов. Указывается в application.properties */
     @Value("${upload.dir}")
     private String uploadDir;
 
     @Autowired
-    public PassFileServiceImpl(PassFileRepository passFileRepository,
-                               PassRequestRepository passRequestRepository) {
+    public PassFileServiceImpl(IPassFileRepository passFileRepository,
+                               IPassRequestRepository passRequestRepository) {
         this.passFileRepository = passFileRepository;
         this.passRequestRepository = passRequestRepository;
     }

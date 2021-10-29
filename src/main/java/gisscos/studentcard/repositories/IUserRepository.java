@@ -1,13 +1,13 @@
 package gisscos.studentcard.repositories;
 
-import gisscos.studentcard.entities.DynamicQR;
+import gisscos.studentcard.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface DynamicQRRepository extends JpaRepository<DynamicQR, Long> {
+public interface IUserRepository extends JpaRepository<User, Long> {
 
-    Optional<DynamicQR> getByUserId(Long userId);
+    Optional<User> getByToken(String userToken);
 }

@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 
-public interface DynamicQRService {
+public interface IDynamicQRService {
 
     Optional<DynamicQR> getInfo(String userToken);
 

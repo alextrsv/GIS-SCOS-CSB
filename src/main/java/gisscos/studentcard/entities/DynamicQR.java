@@ -10,6 +10,7 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.time.LocalDate;
 
 /**
@@ -19,9 +20,11 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor
 public class DynamicQR {
-    @javax.persistence.Id
+
+    @Id
+    @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private @Setter(AccessLevel.PROTECTED) Long id;
+    private Long id;
     /** id владельца QR-кода */
     private Long userId;
     /** id университета, к которому относится QR-код */

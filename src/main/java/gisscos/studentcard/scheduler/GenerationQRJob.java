@@ -2,7 +2,7 @@ package gisscos.studentcard.scheduler;
 
 import gisscos.studentcard.entities.DynamicQR;
 import gisscos.studentcard.entities.enums.QRStatus;
-import gisscos.studentcard.repositories.DynamicQRRepository;
+import gisscos.studentcard.repositories.IDynamicQRRepository;
 import lombok.NonNull;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +16,10 @@ import java.util.UUID;
 @Component
 public class GenerationQRJob extends QuartzJobBean {
 
-    private final DynamicQRRepository dynamicQRRepository;
+    private final IDynamicQRRepository dynamicQRRepository;
 
     @Autowired
-    public GenerationQRJob(DynamicQRRepository dynamicQRRepository) {
+    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository) {
         this.dynamicQRRepository = dynamicQRRepository;
     }
 

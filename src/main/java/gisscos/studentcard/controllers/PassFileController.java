@@ -2,7 +2,7 @@ package gisscos.studentcard.controllers;
 
 import gisscos.studentcard.entities.PassFile;
 import gisscos.studentcard.entities.dto.PassRequestFileIdentifierDTO;
-import gisscos.studentcard.services.PassFileService;
+import gisscos.studentcard.services.IPassFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -19,10 +19,10 @@ import java.util.List;
 @RequestMapping("/file")
 public class PassFileController {
 
-    private final PassFileService passFileService;
+    private final IPassFileService passFileService;
 
     @Autowired
-    public PassFileController(PassFileService passFileService) {
+    public PassFileController(IPassFileService passFileService) {
         this.passFileService = passFileService;
     }
 

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PermanentQRRepository extends JpaRepository<PermanentQR, Long> {
+public interface IPermanentQRRepository extends JpaRepository<PermanentQR, Long> {
 
     List<PermanentQR> findAllByUserId(Long userId);
 
