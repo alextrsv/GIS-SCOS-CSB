@@ -33,6 +33,8 @@ public class PassRequest {
     private String targetUniversityAddress;
     /** Id организации пользователя */
     private Long universityId;
+    /** Название ООВО пользователя */
+    private String universityName;
     /** Дата создания заявки */
     @Setter(AccessLevel.PROTECTED)
     private LocalDate creationDate;
@@ -88,7 +90,7 @@ public class PassRequest {
     public PassRequest(Long userId, Long targetUniversityId, Long universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
                        PassRequestType type, String targetUniversityAddress,
-                       String targetUniversityName) {
+                       String targetUniversityName, String universityName) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
         this.targetUniversityId = targetUniversityId;
@@ -99,5 +101,6 @@ public class PassRequest {
         this.type = type;
         this.targetUniversityAddress = targetUniversityAddress;
         this.targetUniversityName = targetUniversityName;
+        this.universityName = universityName;
     }
 }
