@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * Компонент - фильтр для добавления заголовка ко всем запросам для UI
  */
-@Component
+//@Component
 public class CustomHeaderFilter extends OncePerRequestFilter {
 
     @Override
