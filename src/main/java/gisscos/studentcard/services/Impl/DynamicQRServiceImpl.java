@@ -21,11 +21,14 @@ import java.util.stream.Collectors;
 @Service
 public class DynamicQRServiceImpl implements DynamicQRService {
 
-    @Autowired
-    DynamicQRRepository dynamicQRRepository;
+    final DynamicQRRepository dynamicQRRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    final UserRepository userRepository;
+
+    public DynamicQRServiceImpl(DynamicQRRepository dynamicQRRepository, UserRepository userRepository) {
+        this.dynamicQRRepository = dynamicQRRepository;
+        this.userRepository = userRepository;
+    }
 
 
     /**
