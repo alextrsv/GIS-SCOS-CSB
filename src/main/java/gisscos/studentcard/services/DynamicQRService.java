@@ -5,14 +5,14 @@ import gisscos.studentcard.entities.dto.DynamicQRDTO;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface DynamicQRService {
 
-    Optional<DynamicQR> getInfo(String userToken);
+    Optional<List<DynamicQR>> getInfo(UUID userId, UUID organizationId);
 
-    ResponseEntity<Resource> downloadQRAsFile(String userToken);
-
-    Optional<DynamicQR> editPermanentQR(DynamicQRDTO dynamicQRDTO);
+    ResponseEntity<Resource> downloadQRAsFile(UUID userId, UUID organizationId);
 
 }
