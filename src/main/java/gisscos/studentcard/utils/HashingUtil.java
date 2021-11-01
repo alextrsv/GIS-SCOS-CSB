@@ -9,7 +9,7 @@ public class HashingUtil {
     public static String getHash(String content) throws NoSuchAlgorithmException {
 
         MessageDigest md = MessageDigest.getInstance("SHA-512");
-        byte[] messageDigest = md.digest("input".getBytes());
+        byte[] messageDigest = md.digest(content.getBytes());
 
         BigInteger no = new BigInteger(1, messageDigest);
 
