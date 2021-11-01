@@ -15,8 +15,11 @@ import java.util.stream.Collectors;
 @Service
 public class OrganizationServiceImpl implements OrganizationService {
 
-    @Autowired
-    private PassRequestService passRequestService;
+    private final PassRequestService passRequestService;
+
+    public OrganizationServiceImpl(PassRequestService passRequestService) {
+        this.passRequestService = passRequestService;
+    }
 
     @Override
     public List<UUID> getPermittedOrganizations(StudentDTO studentDTO) {
@@ -25,6 +28,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
                 .map(PassRequest::getTargetUniversityId)
                 .collect(Collectors.toList());
+        acceptedOrganizationsUUID.add(studentDTO.getOrganization_id());
         return acceptedOrganizationsUUID;
     }
 }
