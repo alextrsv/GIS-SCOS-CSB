@@ -7,6 +7,7 @@ import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudyPlanDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.repositories.PermanentQRRepository;
+import gisscos.studentcard.services.OrganizationService;
 import gisscos.studentcard.services.PassRequestService;
 import gisscos.studentcard.services.PermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +32,14 @@ public class PermanentQRServiceImpl implements PermanentQRService {
 
     private final PassRequestService passRequestService;
 
+    private final OrganizationService organizationService;
+
     @Autowired
-    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, PassRequestService passRequestService) {
+    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, PassRequestService passRequestService, OrganizationService organizationService) {
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
         this.passRequestService = passRequestService;
+        this.organizationService = organizationService;
     }
 
     @Override
@@ -60,20 +64,17 @@ public class PermanentQRServiceImpl implements PermanentQRService {
                 "\neducation_form: " +  "gis- error" + //getEducationForm(studentDTO.getStudy_plans()) +
                 "\nstart_year: " + getCurrentStudyPlan(studentDTO.getStudy_plans()).get().getStart_year() +
                 "\nstud-bilet-duration: " + "" +
-                "\naccessed organizations: " + getPermittedOrganizations(studentDTO));
+                "\naccessed organizations: " + getPermittedOrganizationsAsString(studentDTO));
         System.out.println(content);
         return content;
     }
 
-    private String getPermittedOrganizations(StudentDTO studentDTO) {
-        List<PassRequest> acceptedPassRequests = passRequestService.getPassRequestsByUserId(studentDTO.getId()).get()
-                .stream()
-                .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
-                .collect(Collectors.toList());
+    private String getPermittedOrganizationsAsString(StudentDTO studentDTO) {
 
-        String str =  acceptedPassRequests.stream()
-                .map(passRequest -> gisScosApiRestClient.makeGetOrganizationRequest(passRequest.getTargetUniversityId()).getFull_name())
+        String str =  organizationService.getPermittedOrganizations(studentDTO).stream()
+                .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).getFull_name())
                 .collect(Collectors.joining(", "));
+        str += gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).getFull_name();
         System.out.println(str);
         return str;
     }
