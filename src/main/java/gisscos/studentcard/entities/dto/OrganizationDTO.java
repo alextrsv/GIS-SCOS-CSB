@@ -13,4 +13,8 @@ public class OrganizationDTO {
     String inn;
     String ogrn;
     String kpp;
+
+    public String getQRInterfaceType() {
+        return "wiegand-34";
+    }
 }
