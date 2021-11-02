@@ -90,11 +90,15 @@ public class PassRequestController {
     /**
      * Получение заявок по статусу
      * @param dto заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы
      * @return заявки
      */
-    @GetMapping("/get/status")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto) {
-        return passRequestService.getPassRequestByStatus(dto).map(ResponseEntity::ok)
+    @GetMapping("/get/status/{page}/{pageSize}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto,
+                                                                    @PathVariable Long page,
+                                                                    @PathVariable Long pageSize) {
+        return passRequestService.getPassRequestByStatus(dto, page, pageSize).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
