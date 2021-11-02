@@ -1,56 +1,25 @@
-package itmo.labs.soa.utils;
+package gisscos.studentcard.utils.mail;
 
-
-import itmo.labs.soa.entities.*;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
-import org.hibernate.service.ServiceRegistry;
-
-import java.util.Optional;
+import javax.mail.Session;
 import java.util.Properties;
 
-public class SessionFactoryBuilder {
-    private static SessionFactory sessionFactory;
+public class SessionFactory {
+    private static Session session;
 
-    public static SessionFactory getSessionFactory() {
-        if (sessionFactory != null) return sessionFactory;
+    public static Session getSession() {
+        if (session != null) return session;
         try {
-
-            Configuration configuration = new Configuration();
-            Properties settings = new Properties();
-
-            settings.put(Environment.DRIVER, "org.postgresql.Driver");
-            settings.put(Environment.URL, String.format("jdbc:postgresql://%s:%s/%s",
-                    Optional.ofNullable(System.getenv("DB_HOST"))
-                            .orElseThrow(() -> new IllegalArgumentException("Missing required env variable DB_HOST")),
-                    Optional.ofNullable(System.getenv("DB_PORT"))
-                            .orElseThrow(() -> new IllegalArgumentException("Missing required env variable DB_PORT")),
-                    Optional.ofNullable(System.getenv("DB_NAME"))
-                            .orElseThrow(() -> new IllegalArgumentException("Missing required env variable DB_NAME"))
-            ));
-            settings.put(Environment.USER,
-                    Optional.ofNullable(System.getenv("DB_USER"))
-                            .orElseThrow(() -> new IllegalArgumentException("Missing required env variable DB_USER")));
-            settings.put(Environment.PASS,
-                    Optional.ofNullable(System.getenv("DB_PASS"))
-                            .orElseThrow(() -> new IllegalArgumentException("Missing required env variable DB_PASS")));
-            settings.put(Environment.SHOW_SQL, "true");
-            settings.put(Environment.HBM2DDL_AUTO, "update");
-            configuration.setProperties(settings);
-            configuration.addAnnotatedClass(Worker.class);
-            configuration.addAnnotatedClass(Address.class);
-            configuration.addAnnotatedClass(Coordinates.class);
-            configuration.addAnnotatedClass(Location.class);
-            configuration.addAnnotatedClass(Organization.class);
-
-            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                    .applySettings(configuration.getProperties()).build();
-            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+            Properties p = new Properties();
+            p.put("mail.smtp.host", "smtp.yandex.ru");
+            p.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            p.put("mail.smtp.auth", "true");
+            p.put("mail.smtp.port", 465);
+            SMTPAuthenticator smtpAuthenticator = new SMTPAuthenticator();
+            session = Session.getDefaultInstance(p, smtpAuthenticator);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return sessionFactory;
+
+        return session;
     }
 }

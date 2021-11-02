@@ -1,6 +1,10 @@
 package gisscos.studentcard.services.Impl;
 
+import gisscos.studentcard.clients.GisScosApiRestClient;
+import gisscos.studentcard.clients.VamRestClient;
 import gisscos.studentcard.entities.DynamicQR;
+import gisscos.studentcard.entities.dto.OrganizationDTO;
+import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.DynamicQRRepository;
 import gisscos.studentcard.repositories.UserRepository;
@@ -24,12 +28,18 @@ public class DynamicQRServiceImpl implements DynamicQRService {
 
     final UserRepository userRepository;
 
+    private final VamRestClient vamRestClient;
+
+    final GisScosApiRestClient gisScosApiRestClient;
+
     private final MailUtil mailUtil;
 
-    public DynamicQRServiceImpl(DynamicQRRepository dynamicQRRepository, UserRepository userRepository, MailUtil mailUtil) {
+    public DynamicQRServiceImpl(DynamicQRRepository dynamicQRRepository, UserRepository userRepository, MailUtil mailUtil, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.userRepository = userRepository;
         this.mailUtil = mailUtil;
+        this.vamRestClient = vamRestClient;
+        this.gisScosApiRestClient = gisScosApiRestClient;
     }
 
 
@@ -52,6 +62,15 @@ public class DynamicQRServiceImpl implements DynamicQRService {
     @Override
     public Optional<Resource> downloadQRAsFile(UUID userId, UUID organizationId) {
 
+      Optional<DynamicQR> activeQR = getActiveQR(userId, organizationId);
+        if (activeQR.isPresent()) {
+            BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(activeQR.get().getContent());
+            return Converter.getResource(qrCodeImage);
+        }
+        else return Optional.empty();
+    }
+
+    private Optional<DynamicQR> getActiveQR(UUID userId, UUID organizationId){
         Optional<List<DynamicQR>> dynamicQRs = getInfo(userId, organizationId);
 
         Optional<DynamicQR> activeQR = Optional.empty();
@@ -61,19 +80,23 @@ public class DynamicQRServiceImpl implements DynamicQRService {
                     activeQR = Optional.of(qr);
             }
         }
-        if (activeQR.isPresent()) {
-            BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(activeQR.get().getContent());
-            return Converter.getResource(qrCodeImage);
-        }
-        else return Optional.empty();
+        return activeQR;
     }
 
     @Override
     public ResponseEntity<Resource> sendQRViaEmail(UUID userId, UUID organizationId) {
-//        QRMessage qrMessage = new QRMessage();
-//
-//        qrMessage.setQR();
-//        downloadQRAsFile(userId, organizationId)
+
+        StudentDTO studentDTO = vamRestClient.makeGetStudentRequest(userId);
+        studentDTO.setEmail("*****");
+
+        OrganizationDTO organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
+
+        QRMessage qrMessage = new QRMessage(studentDTO, getActiveQR(userId, organizationId).get(), organizationDTO );
+
+        qrMessage.prepareMessage();
+
+        mailUtil.sendQRImage(qrMessage);
+
         return null;
     }
 }
