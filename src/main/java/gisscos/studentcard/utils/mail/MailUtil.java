@@ -1,6 +1,7 @@
 package gisscos.studentcard.utils.mail;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.mail.Transport;
@@ -10,8 +11,8 @@ import javax.mail.internet.MimeMessage;
 @Component
 public class MailUtil {
 
-      String fromAdr = "sasha.tara2000@yandex.ru";
-
+    @Value("${email.sender.address}")
+    String fromAdr;
 
     public void sendQRImage(MimeMessage message) {
 

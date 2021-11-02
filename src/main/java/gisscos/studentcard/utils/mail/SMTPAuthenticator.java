@@ -10,8 +10,8 @@ public class SMTPAuthenticator extends Authenticator {
 
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
-        String username = "*****";
-        String password = "*****";
+        String username = System.getenv("EMAIL_ADDRESS");
+        String password = System.getenv("EMAIL_PASSWORD");
         return new PasswordAuthentication(username, password);
 
     }

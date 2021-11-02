@@ -87,7 +87,7 @@ public class DynamicQRServiceImpl implements DynamicQRService {
     public ResponseEntity<Resource> sendQRViaEmail(UUID userId, UUID organizationId) {
 
         StudentDTO studentDTO = vamRestClient.makeGetStudentRequest(userId);
-        studentDTO.setEmail("*****");
+        studentDTO.setEmail("sasha2.tara2000@yandex.ru");
 
         OrganizationDTO organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
 
