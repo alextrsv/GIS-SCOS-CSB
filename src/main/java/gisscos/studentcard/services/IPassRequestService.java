@@ -22,7 +22,7 @@ public interface IPassRequestService {
 
     Optional<List<PassRequest>> getPassRequestsByUserId(Long id);
 
-    Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto);
+    Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto, Long page, Long pageSize);
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
 
