@@ -1,14 +1,14 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.DynamicQR;
-import gisscos.studentcard.entities.dto.DynamicQRDTO;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.DynamicQRRepository;
 import gisscos.studentcard.repositories.UserRepository;
 import gisscos.studentcard.services.DynamicQRService;
+import gisscos.studentcard.utils.mail.MailUtil;
+import gisscos.studentcard.utils.mail.QRMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class DynamicQRServiceImpl implements DynamicQRService {
@@ -25,9 +24,12 @@ public class DynamicQRServiceImpl implements DynamicQRService {
 
     final UserRepository userRepository;
 
-    public DynamicQRServiceImpl(DynamicQRRepository dynamicQRRepository, UserRepository userRepository) {
+    private final MailUtil mailUtil;
+
+    public DynamicQRServiceImpl(DynamicQRRepository dynamicQRRepository, UserRepository userRepository, MailUtil mailUtil) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.userRepository = userRepository;
+        this.mailUtil = mailUtil;
     }
 
 
@@ -48,7 +50,7 @@ public class DynamicQRServiceImpl implements DynamicQRService {
 
 
     @Override
-    public ResponseEntity<Resource> downloadQRAsFile(UUID userId, UUID organizationId) {
+    public Optional<Resource> downloadQRAsFile(UUID userId, UUID organizationId) {
 
         Optional<List<DynamicQR>> dynamicQRs = getInfo(userId, organizationId);
 
@@ -59,16 +61,19 @@ public class DynamicQRServiceImpl implements DynamicQRService {
                     activeQR = Optional.of(qr);
             }
         }
-//        dynamicQRs.ifPresent(dynamicQRS -> dynamicQRS.stream()
-//                .filter(dynamicQR -> dynamicQR.getStatus() != QRStatus.EXPIRED)
-//                .filter(dynamicQR -> dynamicQR.getStatus() != QRStatus.DELETED)
-//                .collect(Collectors.toList()));
         if (activeQR.isPresent()) {
             BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(activeQR.get().getContent());
-            return QRImageAsResource.getResourceResponseEntity(qrCodeImage);
+            return Converter.getResource(qrCodeImage);
         }
-        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-
+        else return Optional.empty();
     }
 
+    @Override
+    public ResponseEntity<Resource> sendQRViaEmail(UUID userId, UUID organizationId) {
+//        QRMessage qrMessage = new QRMessage();
+//
+//        qrMessage.setQR();
+//        downloadQRAsFile(userId, organizationId)
+        return null;
+    }
 }

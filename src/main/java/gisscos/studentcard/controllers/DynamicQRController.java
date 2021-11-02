@@ -4,7 +4,9 @@ import gisscos.studentcard.entities.DynamicQR;
 import gisscos.studentcard.services.DynamicQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +35,19 @@ public class DynamicQRController {
     @GetMapping("download/{userId}")
     public ResponseEntity<Resource> downloadQrAsFile(@PathVariable UUID userId,
                                                      @RequestParam(name = "organizationId") UUID organizationId){
-        return dynamicQRService.downloadQRAsFile(userId, organizationId);
+
+        return dynamicQRService.downloadQRAsFile(userId, organizationId).map(resource ->
+                ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_PNG)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "got dynamic QR code")
+                        .body(resource))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("email/{userId}")
+    public ResponseEntity<Resource> sendViaEmail(@PathVariable UUID userId,
+                                                     @RequestParam(name = "organizationId") UUID organizationId){
+        return dynamicQRService.sendQRViaEmail(userId, organizationId);
     }
 
 }

@@ -2,21 +2,16 @@ package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.clients.VamRestClient;
-import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudyPlanDTO;
-import gisscos.studentcard.entities.enums.PassRequestStatus;
-import gisscos.studentcard.repositories.PermanentQRRepository;
 import gisscos.studentcard.services.OrganizationService;
 import gisscos.studentcard.services.PassRequestService;
 import gisscos.studentcard.services.PermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,11 +38,11 @@ public class PermanentQRServiceImpl implements PermanentQRService {
     }
 
     @Override
-    public ResponseEntity<Resource> downloadQRAsFile(UUID userId) {
+    public Optional<Resource> downloadQRAsFile(UUID userId) {
 
         String content = makeInfoString(userId);
         BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
-        return QRImageAsResource.getResourceResponseEntity(qrCodeImage);
+        return Converter.getResource(qrCodeImage);
     }
 
 
