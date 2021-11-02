@@ -20,16 +20,24 @@ public class PassRequest {
 
     /** Id заявки в БД. Генерируется автоматически */
     @Id
+    @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter(AccessLevel.PROTECTED) Long id;
+    private Long id;
     /** Id пользоватлея - создателя */
     private Long userId;
     /** Id организации, в которую необходим доступ (целевая ООВО)*/
     private Long targetUniversityId;
+    /** Название целевой ООВО */
+    private String targetUniversityName;
+    /** Адрес целевой ООВО */
+    private String targetUniversityAddress;
     /** Id организации пользователя */
     private Long universityId;
+    /** Название ООВО пользователя */
+    private String universityName;
     /** Дата создания заявки */
-    private @Setter(AccessLevel.PROTECTED) LocalDate creationDate;
+    @Setter(AccessLevel.PROTECTED)
+    private LocalDate creationDate;
     /** Дата начала периода действия заявки */
     private LocalDate startDate;
     /** Дата конца периода действия заявки */
@@ -69,9 +77,20 @@ public class PassRequest {
     @ToString.Exclude
     private List<PassRequestComment> comments;
 
+    /** Журнал изменений заявки */
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            mappedBy = "passRequestId"
+    )
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @ToString.Exclude
+    private List<PassRequestChangeLogEntry> changeLog;
+
     public PassRequest(Long userId, Long targetUniversityId, Long universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
-                       PassRequestType type) {
+                       PassRequestType type, String targetUniversityAddress,
+                       String targetUniversityName, String universityName) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
         this.targetUniversityId = targetUniversityId;
@@ -80,5 +99,8 @@ public class PassRequest {
         this.endDate = endDate;
         this.status = status;
         this.type = type;
+        this.targetUniversityAddress = targetUniversityAddress;
+        this.targetUniversityName = targetUniversityName;
+        this.universityName = universityName;
     }
 }

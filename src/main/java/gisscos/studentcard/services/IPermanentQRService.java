@@ -3,7 +3,7 @@ package gisscos.studentcard.services;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
-public interface PermanentQRService {
+public interface IPermanentQRService {
 
 //    BitMatrix addPermanentQR(PermanentQRDTO permanentQRDTO) throws WriterException;
 //

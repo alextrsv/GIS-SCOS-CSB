@@ -8,7 +8,7 @@ import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import java.util.List;
 import java.util.Optional;
 
-public interface PassRequestService {
+public interface IPassRequestService {
 
     PassRequest addPassRequest(PassRequestDTO passRequestDTO);
 
@@ -20,11 +20,15 @@ public interface PassRequestService {
 
     Optional<PassRequest> getPassRequestById(Long id);
 
-    Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto);
+    Optional<List<PassRequest>> getPassRequestsByUserId(Long id);
+
+    Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto, Long page, Long pageSize);
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
 
-    Optional<PassRequest> updatePassRequest(PassRequestDTO passRequestDTO);
+    Optional<PassRequest> updatePassRequest(PassRequestDTO dto);
+
+    Optional<PassRequest> updatePassRequestStatus(PassRequestDTO dto);
 
     Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
 

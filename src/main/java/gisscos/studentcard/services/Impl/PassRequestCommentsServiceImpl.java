@@ -3,9 +3,9 @@ package gisscos.studentcard.services.Impl;
 import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.PassRequestComment;
 import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
-import gisscos.studentcard.repositories.PassRequestCommentRepository;
-import gisscos.studentcard.repositories.PassRequestRepository;
-import gisscos.studentcard.services.PassRequestCommentsService;
+import gisscos.studentcard.repositories.IPassRequestCommentRepository;
+import gisscos.studentcard.repositories.IPassRequestRepository;
+import gisscos.studentcard.services.IPassRequestCommentsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,14 +19,14 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-public class PassRequestCommentsServiceImpl implements PassRequestCommentsService {
+public class PassRequestCommentsServiceImpl implements IPassRequestCommentsService {
 
-    private final PassRequestRepository passRequestRepository;
-    private final PassRequestCommentRepository passRequestCommentRepository;
+    private final IPassRequestRepository passRequestRepository;
+    private final IPassRequestCommentRepository passRequestCommentRepository;
 
     @Autowired
-    public PassRequestCommentsServiceImpl(PassRequestRepository passRequestRepository,
-                                  PassRequestCommentRepository passRequestCommentRepository) {
+    public PassRequestCommentsServiceImpl(IPassRequestRepository passRequestRepository,
+                                          IPassRequestCommentRepository passRequestCommentRepository) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestCommentRepository = passRequestCommentRepository;
     }
