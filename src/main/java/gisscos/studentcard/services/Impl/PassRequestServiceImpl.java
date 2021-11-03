@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -189,7 +190,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок для обработки
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId) {
+    public Optional<List<PassRequest>> getPassRequestsByUniversity(UUID universityId) {
         List<PassRequest> targetRequestList =
                 passRequestRepository.findAllByTargetUniversityId(universityId);
 
@@ -212,13 +213,17 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return Optional.of(targetRequestList);
     }
 
+    @Override
+    public Optional<List<PassRequest>> getPassRequestsByUserId(UUID userId){
+        return Optional.ofNullable(passRequestRepository.findAllByUserId(userId));
+    }
     /**
      * Получение количества заявок для обработки.
      * @param universityId идентификатор ООВО
      * @return количество заявок для обработки
      */
     @Override
-    public Integer getPassRequestsNumberByUniversity(Long universityId) {
+    public Integer getPassRequestsNumberByUniversity(UUID universityId) {
         Optional<List<PassRequest>> list = getPassRequestsByUniversity(universityId);
         log.info("Calculating number of passRequests by universityId");
         return list.map(List::size).orElse(0);

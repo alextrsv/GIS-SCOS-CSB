@@ -4,12 +4,14 @@ import gisscos.studentcard.entities.DynamicQR;
 import gisscos.studentcard.services.IDynamicQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("dynamic-qr")
@@ -22,15 +24,30 @@ public class DynamicQRController {
         this.dynamicQRService = dynamicQRService;
     }
 
-    @GetMapping("/view")
-    private ResponseEntity<DynamicQR> getInfo(@RequestHeader("Authorization") String userToken){
-        return dynamicQRService.getInfo(userToken).map(ResponseEntity::ok)
+    @GetMapping("/view/{userId}")
+    private ResponseEntity<List<DynamicQR>> getInfo(@PathVariable UUID userId,
+                                                    @RequestParam(name = "organizationId") UUID organizationId){
+
+        return dynamicQRService.getInfo(userId, organizationId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping("download/")
-    public ResponseEntity<Resource> downloadQrAsFile(@RequestHeader("Authorization") String userToken){
-        return dynamicQRService.downloadQRAsFile(userToken);
+    @GetMapping("download/{userId}")
+    public ResponseEntity<Resource> downloadQrAsFile(@PathVariable UUID userId,
+                                                     @RequestParam(name = "organizationId") UUID organizationId){
+
+        return dynamicQRService.downloadQRAsFile(userId, organizationId).map(resource ->
+                ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_PNG)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "got dynamic QR code")
+                        .body(resource))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("email/{userId}")
+    public ResponseEntity<Resource> sendViaEmail(@PathVariable UUID userId,
+                                                     @RequestParam(name = "organizationId") UUID organizationId){
+        return dynamicQRService.sendQRViaEmail(userId, organizationId);
     }
 
 }
