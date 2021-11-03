@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface DynamicQRService {
+public interface IDynamicQRService {
 
     Optional<List<DynamicQR>> getInfo(UUID userId, UUID organizationId);
 

@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PassRequestRepository extends JpaRepository<PassRequest, Long> {
+public interface IPassRequestRepository extends JpaRepository<PassRequest, Long> {
+
+    List<PassRequest> findAllByUserId(Long aLong);
 
     List<PassRequest> findAllByUniversityId(UUID universityId);
 

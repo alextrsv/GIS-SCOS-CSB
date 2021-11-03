@@ -4,33 +4,35 @@ import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.clients.VamRestClient;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudyPlanDTO;
+import gisscos.studentcard.services.IPassRequestService;
+import gisscos.studentcard.services.IPermanentQRService;
 import gisscos.studentcard.services.OrganizationService;
-import gisscos.studentcard.services.PassRequestService;
-import gisscos.studentcard.services.PermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
  * сервис для работы со статическими QR
  */
 @Service
-public class PermanentQRServiceImpl implements PermanentQRService {
+public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private final VamRestClient vamRestClient;
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final PassRequestService passRequestService;
+    private final IPassRequestService passRequestService;
 
     private final OrganizationService organizationService;
 
     @Autowired
-    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, PassRequestService passRequestService, OrganizationService organizationService) {
+    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, IPassRequestService passRequestService, OrganizationService organizationService) {
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
         this.passRequestService = passRequestService;

@@ -1,6 +1,5 @@
 package gisscos.studentcard.entities.dto;
 
-import gisscos.studentcard.entities.PassRequestComment;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import lombok.Data;
@@ -18,6 +17,9 @@ public class PassRequestDTO {
     private UUID userId;
     private UUID universityId;
     private UUID targetUniversityId;
+    private String universityName;
+    private String targetUniversityName;
+    private String targetUniversityAddress;
     private LocalDate creationDate;
     private LocalDate startDate;
     private LocalDate endDate;

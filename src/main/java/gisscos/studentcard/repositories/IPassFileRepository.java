@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PassFileRepository extends JpaRepository<PassFile, Long> {
+public interface IPassFileRepository extends JpaRepository<PassFile, Long> {
 
     @Query("select pf from PassFile pf where pf.name = :filename")
     Optional<PassFile> findByName(@Param("filename") String fileName);

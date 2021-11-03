@@ -3,13 +3,10 @@ package gisscos.studentcard.scheduler;
 import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.clients.VamRestClient;
 import gisscos.studentcard.entities.DynamicQR;
-import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
 import gisscos.studentcard.entities.dto.StudentDTO;
-import gisscos.studentcard.entities.dto.StudentsDTO;
-import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.QRStatus;
-import gisscos.studentcard.repositories.DynamicQRRepository;
+import gisscos.studentcard.repositories.IDynamicQRRepository;
 import gisscos.studentcard.services.OrganizationService;
 import gisscos.studentcard.utils.HashingUtil;
 import lombok.NonNull;
@@ -20,14 +17,15 @@ import org.springframework.stereotype.Component;
 
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class GenerationQRJob extends QuartzJobBean {
 
-    private final DynamicQRRepository dynamicQRRepository;
+    private final IDynamicQRRepository dynamicQRRepository;
 
     private final VamRestClient vamRestClient;
 
@@ -36,7 +34,7 @@ public class GenerationQRJob extends QuartzJobBean {
     private final OrganizationService organizationService;
 
     @Autowired
-    public GenerationQRJob(DynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, OrganizationService organizationService, GisScosApiRestClient gisScosApiRestClient) {
+    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, OrganizationService organizationService, GisScosApiRestClient gisScosApiRestClient) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.vamRestClient = vamRestClient;
         this.organizationService = organizationService;

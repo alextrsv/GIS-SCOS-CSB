@@ -6,12 +6,10 @@ import gisscos.studentcard.entities.DynamicQR;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.enums.QRStatus;
-import gisscos.studentcard.repositories.DynamicQRRepository;
-import gisscos.studentcard.repositories.UserRepository;
-import gisscos.studentcard.services.DynamicQRService;
+import gisscos.studentcard.repositories.IDynamicQRRepository;
+import gisscos.studentcard.services.IDynamicQRService;
 import gisscos.studentcard.utils.mail.MailUtil;
 import gisscos.studentcard.utils.mail.QRMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,11 +20,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class DynamicQRServiceImpl implements DynamicQRService {
+public class DynamicQRServiceImpl implements IDynamicQRService {
 
-    final DynamicQRRepository dynamicQRRepository;
 
-    final UserRepository userRepository;
+    private final IDynamicQRRepository dynamicQRRepository;
 
     private final VamRestClient vamRestClient;
 
@@ -34,9 +31,8 @@ public class DynamicQRServiceImpl implements DynamicQRService {
 
     private final MailUtil mailUtil;
 
-    public DynamicQRServiceImpl(DynamicQRRepository dynamicQRRepository, UserRepository userRepository, MailUtil mailUtil, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient) {
+    public DynamicQRServiceImpl(IDynamicQRRepository dynamicQRRepository, MailUtil mailUtil, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient) {
         this.dynamicQRRepository = dynamicQRRepository;
-        this.userRepository = userRepository;
         this.mailUtil = mailUtil;
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
@@ -57,7 +53,6 @@ public class DynamicQRServiceImpl implements DynamicQRService {
         else return Optional.empty();
 
     }
-
 
     @Override
     public Optional<Resource> downloadQRAsFile(UUID userId, UUID organizationId) {

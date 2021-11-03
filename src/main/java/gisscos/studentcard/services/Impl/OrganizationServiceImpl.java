@@ -4,8 +4,7 @@ import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.services.OrganizationService;
-import gisscos.studentcard.services.PassRequestService;
-import org.springframework.beans.factory.annotation.Autowired;
+import gisscos.studentcard.services.IPassRequestService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +14,9 @@ import java.util.stream.Collectors;
 @Service
 public class OrganizationServiceImpl implements OrganizationService {
 
-    private final PassRequestService passRequestService;
+    private final IPassRequestService passRequestService;
 
-    public OrganizationServiceImpl(PassRequestService passRequestService) {
+    public OrganizationServiceImpl(IPassRequestService passRequestService) {
         this.passRequestService = passRequestService;
     }
 

@@ -5,7 +5,7 @@ import org.springframework.core.io.Resource;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface PermanentQRService {
+public interface IPermanentQRService {
 
     Optional<Resource> downloadQRAsFile(UUID userId);
 }

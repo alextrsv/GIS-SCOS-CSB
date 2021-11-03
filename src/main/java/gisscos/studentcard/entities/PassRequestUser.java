@@ -20,8 +20,9 @@ public class PassRequestUser {
 
     /** Id пользователя, прикрепленного к заявке. Генерируется автоматически */
     @Id
+    @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Setter(AccessLevel.PROTECTED) Long id;
+    private Long id;
     /** Заявка, к которой прикреплен пользователь (в таблице хранится только её id) */
     private Long passRequestId;
     /** Id пользователя, прикрепленного к заявке */

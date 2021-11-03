@@ -1,15 +1,17 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.entities.PassRequest;
-import gisscos.studentcard.entities.PassRequestComment;
+import gisscos.studentcard.entities.PassRequestChangeLogEntry;
 import gisscos.studentcard.entities.PassRequestUser;
+import gisscos.studentcard.entities.comparators.PassRequestCreationDateComparator;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
-import gisscos.studentcard.repositories.PassRequestRepository;
-import gisscos.studentcard.repositories.PassRequestUserRepository;
-import gisscos.studentcard.services.PassRequestService;
+import gisscos.studentcard.repositories.IPassRequestChangeLogRepository;
+import gisscos.studentcard.repositories.IPassRequestRepository;
+import gisscos.studentcard.repositories.IPassRequestUserRepository;
+import gisscos.studentcard.services.IPassRequestService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,16 +28,19 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
-public class PassRequestServiceImpl implements PassRequestService {
+public class PassRequestServiceImpl implements IPassRequestService {
 
-    private final PassRequestRepository passRequestRepository;
-    private final PassRequestUserRepository passRequestUserRepository;
+    private final IPassRequestRepository passRequestRepository;
+    private final IPassRequestUserRepository passRequestUserRepository;
+    private final IPassRequestChangeLogRepository passRequestChangeLogRepository;
 
     @Autowired
-    public PassRequestServiceImpl(PassRequestRepository passRequestRepository,
-                                  PassRequestUserRepository passRequestUserRepository) {
+    public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
+                                  IPassRequestUserRepository passRequestUserRepository,
+                                  IPassRequestChangeLogRepository passRequestChangeLogRepository) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
+        this.passRequestChangeLogRepository = passRequestChangeLogRepository;
     }
 
     /**
@@ -52,7 +57,8 @@ public class PassRequestServiceImpl implements PassRequestService {
                 dto.getUserId(), dto.getTargetUniversityId(),
                 dto.getUniversityId(), dto.getStartDate(),
                 dto.getEndDate(), dto.getStatus(),
-                dto.getType()
+                dto.getType(), dto.getTargetUniversityAddress(),
+                dto.getTargetUniversityName(), dto.getUniversityName()
         );
 
         if (dto.getType() == PassRequestType.GROUP) {
@@ -106,22 +112,47 @@ public class PassRequestServiceImpl implements PassRequestService {
      */
     @Override
     public Optional<PassRequest> getPassRequestById(Long id) {
+        log.info("getting pass request by id: {}", id);
         return getPassRequest(id);
+    }
+
+    /**
+     * Получить список заявок по id пользователя
+     * @param id пользователя
+     * @return список заявок
+     */
+    @Override
+    public Optional<List<PassRequest>> getPassRequestsByUserId(Long id) {
+        log.info("getting pass request by user id: {}", id);
+        List<PassRequest> requestList = passRequestRepository.findAllByUserId(id);
+
+        if (requestList.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(requestList);
     }
 
     /**
      * Получить список заявок по статусу
      * @param dto заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto) {
+    public Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto,
+                                                              Long page,
+                                                              Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByUniversityId(dto.getUniversityId());
         log.info("Getting passRequests by status");
         return Optional.of(
                 requests.stream()
                         .filter(r -> r.getStatus() == dto.getStatus())
+                        .sorted(new PassRequestCreationDateComparator())
+                        .skip(pageSize * (page - 1))
+                        .limit(pageSize)
                         .collect(Collectors.toList())
         );
     }
@@ -215,11 +246,41 @@ public class PassRequestServiceImpl implements PassRequestService {
             passRequest.get().setStartDate(dto.getStartDate());
             passRequest.get().setUniversityId(dto.getUniversityId());
             passRequest.get().setTargetUniversityId(dto.getTargetUniversityId());
+            passRequest.get().setTargetUniversityAddress(dto.getTargetUniversityAddress());
+            passRequest.get().setTargetUniversityName(dto.getTargetUniversityName());
+            passRequest.get().setUniversityName(dto.getUniversityName());
             passRequestRepository.save(passRequest.get());
 
             log.info("pass request with id: {} was updated", dto.getId());
             return passRequest;
         } else
+            log.warn("pass request with id: {} not found", dto.getId());
+            return Optional.empty();
+    }
+
+    /**
+     * Обновление статуса заявки
+     * @param dto DTO обновленной заявки
+     * @return обновленная заявка
+     */
+    @Override
+    public Optional<PassRequest> updatePassRequestStatus(PassRequestDTO dto) {
+        Optional<PassRequest> passRequest = getPassRequest(dto);
+
+        if (passRequest.isPresent()) {
+            PassRequestChangeLogEntry entry = new PassRequestChangeLogEntry(
+                    "PassRequestStatus", passRequest.get().getStatus().toString(),
+                    dto.getStatus().toString(), dto.getId()
+            );
+            passRequestChangeLogRepository.save(entry);
+
+            passRequest.get().setStatus(dto.getStatus());
+            passRequestRepository.save(passRequest.get());
+
+            log.info("pass request with id: {} was updated", dto.getId());
+            return passRequest;
+        } else
+            log.warn("pass request with id: {} not found", dto.getId());
             return Optional.empty();
     }
 

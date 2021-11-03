@@ -1,7 +1,7 @@
 package gisscos.studentcard.controllers;
 
 import gisscos.studentcard.entities.DynamicQR;
-import gisscos.studentcard.services.DynamicQRService;
+import gisscos.studentcard.services.IDynamicQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -17,10 +17,10 @@ import java.util.UUID;
 @RequestMapping("dynamic-qr")
 public class DynamicQRController {
 
-    private final DynamicQRService dynamicQRService;
+    private final IDynamicQRService dynamicQRService;
 
     @Autowired
-    public DynamicQRController(DynamicQRService dynamicQRService) {
+    public DynamicQRController(IDynamicQRService dynamicQRService) {
         this.dynamicQRService = dynamicQRService;
     }
 

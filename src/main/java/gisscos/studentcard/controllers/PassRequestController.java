@@ -6,8 +6,8 @@ import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
-import gisscos.studentcard.services.PassRequestCommentsService;
-import gisscos.studentcard.services.PassRequestService;
+import gisscos.studentcard.services.IPassRequestCommentsService;
+import gisscos.studentcard.services.IPassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +24,12 @@ import java.util.UUID;
 @RequestMapping("/pass_requests")
 public class PassRequestController {
 
-    private final PassRequestService passRequestService;
-    private final PassRequestCommentsService passRequestCommentsService;
+    private final IPassRequestService passRequestService;
+    private final IPassRequestCommentsService passRequestCommentsService;
 
     @Autowired
-    public PassRequestController(PassRequestService passRequestService,
-                                 PassRequestCommentsService passRequestCommentsService) {
+    public PassRequestController(IPassRequestService passRequestService,
+                                 IPassRequestCommentsService passRequestCommentsService) {
         this.passRequestService = passRequestService;
         this.passRequestCommentsService = passRequestCommentsService;
     }
@@ -78,13 +78,28 @@ public class PassRequestController {
     }
 
     /**
+     * Получение заявки по id пользователя
+     * @param id заявки
+     * @return заявка
+     */
+    @GetMapping("/user/get/{id}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable Long id) {
+        return passRequestService.getPassRequestsByUserId(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
      * Получение заявок по статусу
      * @param dto заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы
      * @return заявки
      */
-    @GetMapping("/get/status")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto) {
-        return passRequestService.getPassRequestByStatus(dto).map(ResponseEntity::ok)
+    @GetMapping("/get/status/{page}/{pageSize}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto,
+                                                                    @PathVariable Long page,
+                                                                    @PathVariable Long pageSize) {
+        return passRequestService.getPassRequestByStatus(dto, page, pageSize).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -145,11 +160,22 @@ public class PassRequestController {
     }
 
     /**
+     * Редактирование статуса заявки
+     * @param dto DTO заявки
+     * @return отредактированная заявка
+     */
+    @PutMapping("/edit/status")
+    public ResponseEntity<PassRequest> editPassRequestStatus(@RequestBody PassRequestDTO dto) {
+        return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
      * Редактирование комментария
      * @param dto комментария с id
      * @return отредактированный комментарий
      */
-    @PutMapping("/comments/edit")
+    @PutMapping("/edit/comments")
     public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PassRequestCommentDTO dto) {
         return passRequestCommentsService.updateComment(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());

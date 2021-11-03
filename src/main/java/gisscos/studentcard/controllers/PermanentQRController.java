@@ -1,6 +1,6 @@
 package gisscos.studentcard.controllers;
 
-import gisscos.studentcard.services.PermanentQRService;
+import gisscos.studentcard.services.IPermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -18,10 +18,10 @@ import java.util.UUID;
 @RequestMapping("permanent-qr/")
 public class PermanentQRController {
 
-    private final PermanentQRService permanentQRService;
+    private final IPermanentQRService permanentQRService;
 
     @Autowired
-    public PermanentQRController(PermanentQRService permanentQRService) {
+    public PermanentQRController(IPermanentQRService permanentQRService) {
         this.permanentQRService = permanentQRService;
     }
 
