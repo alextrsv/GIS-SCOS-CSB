@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Класс, описывающий сущность динамического QR-кода
@@ -26,9 +27,9 @@ public class DynamicQR {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     /** id владельца QR-кода */
-    private Long userId;
+    private UUID userId;
     /** id университета, к которому относится QR-код */
-    private Long universityId;
+    private UUID universityId;
     /** статус QR-кода */
     private QRStatus status;
     /** Дата создание QR-кода */
@@ -45,7 +46,7 @@ public class DynamicQR {
     String content;
 
 
-    public DynamicQR(Long userId, Long universityId, QRStatus status,
+    public DynamicQR(UUID userId, UUID universityId, QRStatus status,
                      String characterSet, ErrorCorrectionLevel errorCorrectionLevel, int margin) {
         this.creationDate = LocalDate.now();
         this.endDate = creationDate.plusDays(1);
@@ -57,7 +58,7 @@ public class DynamicQR {
         this.margin = margin;
     }
 
-    public DynamicQR(Long userId, Long universityId, QRStatus status, String content) {
+    public DynamicQR(UUID userId, UUID universityId, QRStatus status, String content) {
         this.creationDate = LocalDate.now();
         this.endDate = creationDate.plusDays(1);
         this.userId = userId;

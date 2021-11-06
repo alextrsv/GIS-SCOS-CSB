@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Контроллер для работы с заявками
@@ -90,11 +91,15 @@ public class PassRequestController {
     /**
      * Получение заявок по статусу
      * @param dto заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы
      * @return заявки
      */
-    @GetMapping("/get/status")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto) {
-        return passRequestService.getPassRequestByStatus(dto).map(ResponseEntity::ok)
+    @GetMapping("/get/status/{page}/{pageSize}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto,
+                                                                    @PathVariable Long page,
+                                                                    @PathVariable Long pageSize) {
+        return passRequestService.getPassRequestByStatus(dto, page, pageSize).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -104,7 +109,7 @@ public class PassRequestController {
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests/{universityId}")
-    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable Long universityId) {
+    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable UUID universityId) {
         return passRequestService.getPassRequestsByUniversity(universityId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -115,7 +120,7 @@ public class PassRequestController {
      * @return количество заявок для обработки
      */
     @GetMapping("/get/requests/count/{universityId}")
-    public ResponseEntity<Integer> getPassRequestsNumberForProcessing(@PathVariable Long universityId) {
+    public ResponseEntity<Integer> getPassRequestsNumberForProcessing(@PathVariable UUID universityId) {
         return ResponseEntity.of(
                 Optional.of(passRequestService.getPassRequestsNumberByUniversity(universityId))
         );

@@ -3,6 +3,7 @@ package gisscos.studentcard.services.Impl;
 import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.PassRequestChangeLogEntry;
 import gisscos.studentcard.entities.PassRequestUser;
+import gisscos.studentcard.entities.comparators.PassRequestCreationDateComparator;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -134,16 +136,23 @@ public class PassRequestServiceImpl implements IPassRequestService {
     /**
      * Получить список заявок по статусу
      * @param dto заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto) {
+    public Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto,
+                                                              Long page,
+                                                              Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByUniversityId(dto.getUniversityId());
         log.info("Getting passRequests by status");
         return Optional.of(
                 requests.stream()
                         .filter(r -> r.getStatus() == dto.getStatus())
+                        .sorted(new PassRequestCreationDateComparator())
+                        .skip(pageSize * (page - 1))
+                        .limit(pageSize)
                         .collect(Collectors.toList())
         );
     }
@@ -181,7 +190,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок для обработки
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId) {
+    public Optional<List<PassRequest>> getPassRequestsByUniversity(UUID universityId) {
         List<PassRequest> targetRequestList =
                 passRequestRepository.findAllByTargetUniversityId(universityId);
 
@@ -204,13 +213,17 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return Optional.of(targetRequestList);
     }
 
+    @Override
+    public Optional<List<PassRequest>> getPassRequestsByUserId(UUID userId){
+        return Optional.ofNullable(passRequestRepository.findAllByUserId(userId));
+    }
     /**
      * Получение количества заявок для обработки.
      * @param universityId идентификатор ООВО
      * @return количество заявок для обработки
      */
     @Override
-    public Integer getPassRequestsNumberByUniversity(Long universityId) {
+    public Integer getPassRequestsNumberByUniversity(UUID universityId) {
         Optional<List<PassRequest>> list = getPassRequestsByUniversity(universityId);
         log.info("Calculating number of passRequests by universityId");
         return list.map(List::size).orElse(0);
