@@ -22,11 +22,11 @@ public class UserDetailsService {
     /** Время ожидания в случае отсутствия ответа */
     private static final int REQUEST_TIMEOUT = 1000;
     /** Веб клиент для доступа к АПИ ГИС СЦОСа */
-    private final WebClient localApiClient;
+    private final WebClient scosApiClient;
 
     @Autowired
-    public UserDetailsService(WebClient localApiClient) {
-        this.localApiClient = localApiClient;
+    public UserDetailsService(WebClient scosApiClient) {
+        this.scosApiClient = scosApiClient;
     }
 
     /**
@@ -78,7 +78,7 @@ public class UserDetailsService {
      * @return dto пользователя из ответа на запрос
      */
     private UserDetailsDTO loadUserRoleByIdSync(final Principal principal) {
-        return localApiClient
+        return scosApiClient
                 .get()
                 .uri(String.join("", "/users/", principal.getName()))
                 .retrieve()
