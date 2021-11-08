@@ -34,6 +34,18 @@ public class PassRequestController {
     }
 
     /**
+     * TEMP METHOD SHOULD BE REMOVED
+     * @param timeMillis wait time
+     */
+    private void waitForUI(long timeMillis) {
+        try {
+            Thread.sleep(timeMillis);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
      * Создание новой заявки
      * @param dto DTO заявки
      * @return созданная заявка
@@ -83,6 +95,7 @@ public class PassRequestController {
      */
     @GetMapping("/user/get/{id}")
     public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable Long id) {
+        waitForUI(2000);
         return passRequestService.getPassRequestsByUserId(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
