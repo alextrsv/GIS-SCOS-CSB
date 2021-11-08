@@ -6,7 +6,7 @@ import java.util.stream.Stream;
  * Статус заявки.
  * USER_ORGANISATION_REVIEW - отправлена на рассмотрение в свою ООВО.
  * TARGET_ORGANISATION_REVIEW - отправлена на рассмотрение в целевую ООВО.
- * REJECTED_BY_USER_ORGANIZATION - отклонена своей ООВО.
+ * PROCESSED_IN_TARGET_ORGANIZATION - обрабатывается целевой ООВО.
  * REJECTED_BY_TARGET_ORGANIZATION - отклонена целевой ООВО.
  * CANCELED_BY_CREATOR - отменена создателем.
  * EXPIRED - истек срок действия заявки.
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 public enum PassRequestStatus {
     USER_ORGANISATION_REVIEW,
     TARGET_ORGANISATION_REVIEW,
-    REJECTED_BY_USER_ORGANIZATION,
+    PROCESSED_IN_TARGET_ORGANIZATION,
     REJECTED_BY_TARGET_ORGANIZATION,
     CANCELED_BY_CREATOR,
     EXPIRED,
