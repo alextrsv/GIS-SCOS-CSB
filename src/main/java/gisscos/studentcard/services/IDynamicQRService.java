@@ -10,10 +10,13 @@ import java.util.UUID;
 
 public interface IDynamicQRService {
 
-    Optional<List<DynamicQR>> getInfo(UUID userId, UUID organizationId);
+    Optional<List<DynamicQR>> getQRByUserAndOrganization(UUID userId, UUID organizationId);
 
     Optional<Resource> downloadQRAsFile(UUID userId, UUID organizationId);
 
+    Optional<List<DynamicQR>> getAllPermittedQRsAsFile(UUID userId);
+
     ResponseEntity<Resource> sendQRViaEmail(UUID userId, UUID organizationId);
 
+    Optional<List<String>> getQRsContentByOrganization(UUID organizationId);
 }
