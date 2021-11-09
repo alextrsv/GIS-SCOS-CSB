@@ -57,10 +57,10 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
                 "\norganization: " + getOrganizationName(studentDTO.getOrganization_id()) +
                 "\nstatus: " + "" +
                 "\nrole: " + "" +
-                "\nstud-bilet: " + "" +
+                "\nstud-bilet: " + "scos" + id.toString().substring(0, 6) +
                 "\neducation_form: " +  "gis- error" + //getEducationForm(studentDTO.getStudy_plans()) +
                 "\nstart_year: " + getCurrentStudyPlan(studentDTO.getStudy_plans()).get().getStart_year() +
-                "\nstud-bilet-duration: " + "" +
+                "\nstud-bilet-duration: " +  getCurrentStudyPlan(studentDTO.getStudy_plans()).get().getEnd_year() +
                 "\naccessed organizations: " + getPermittedOrganizationsAsString(studentDTO));
         System.out.println(content);
         return content;
