@@ -10,10 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 
 @Slf4j
@@ -60,23 +57,37 @@ public class VamRestClient {
     }
 
     /** 5.1.5 Получение списка студентов */
-    public List<StudentDTO> makeGetStudentsRequest(){
+    public StudentsDTO makeGetStudentsRequest(int pageSize){
 
-        String urlTemplate = UriComponentsBuilder.newInstance()
-                .scheme("https")
-                .host(host)
-                .path(vamPrefix)
-                .pathSegment(STUDENTS_ENDPOINT)
-                .encode()
-                .toUriString();
+        List<StudentDTO> allStudents = new ArrayList<>();
+        int current_page = 1;
+        int page_amount = 0;
 
-        ResponseEntity<StudentsDTO> response = restTemplate.exchange(
-                urlTemplate,
-                HttpMethod.GET,
-                buildVamRequest(),
-                StudentsDTO.class
-        );
-        return Objects.requireNonNull(response.getBody(), "students list is Empty").getResults();
+
+        do {
+            String urlTemplate = UriComponentsBuilder.newInstance()
+                    .scheme("https")
+                    .host(host)
+                    .path(vamPrefix)
+                    .pathSegment(STUDENTS_ENDPOINT)
+                    .queryParam("page_size", pageSize)
+                    .queryParam("page", current_page)
+                    .encode()
+                    .toUriString();
+
+            ResponseEntity<StudentsDTO> response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildVamRequest(),
+                    StudentsDTO.class
+            );
+            page_amount = Objects.requireNonNull(response.getBody()).getLast_page();
+            current_page++;
+            allStudents.addAll(response.getBody().getResults());
+        }while (current_page < page_amount);
+
+        System.out.println("allStudents size: " + allStudents.size());
+        return new StudentsDTO(allStudents, page_amount);
     }
 
     /** 5.1.6 Получение студента */

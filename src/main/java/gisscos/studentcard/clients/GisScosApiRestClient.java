@@ -30,7 +30,7 @@ public class GisScosApiRestClient {
 
 
     /** 4.1.10.3 Получение объекта записи об организации по global_id организации */
-     public OrganizationDTO makeGetOrganizationRequest(UUID global_id){
+     public synchronized OrganizationDTO makeGetOrganizationRequest(UUID global_id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
