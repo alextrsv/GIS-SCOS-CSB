@@ -11,6 +11,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Component
 public class WebClientComponent {
 
+    /** Адрес DEV АПИ VAM */
+    @Value("${web.client.dev-vam-url}")
+    private String DEV_VAM_URL;
     /** Адрес TEST АПИ VAM */
     @Value("${web.client.test-vam-url}")
     private String TEST_VAM_URL;
@@ -29,7 +32,7 @@ public class WebClientComponent {
      * @return веб клиент
      */
     @Bean
-    public WebClient scosApiClient() {
+    public WebClient devScosApiClient() {
         return WebClient
                 .builder()
                 .baseUrl(DEV_SCOS_URL)
@@ -42,10 +45,23 @@ public class WebClientComponent {
      * @return веб клиент
      */
     @Bean
-    public WebClient vamApiClient() {
+    public WebClient testVamApiClient() {
         return WebClient
                 .builder()
                 .baseUrl(TEST_VAM_URL)
+                .defaultHeader(HEADER_NAME, HEADER_VALUE)
+                .build();
+    }
+
+    /**
+     * Бин веб клиента для взаимодействия с DEV АПИ ВАМа
+     * @return веб клиент
+     */
+    @Bean
+    public WebClient devVamApiClient() {
+        return WebClient
+                .builder()
+                .baseUrl(DEV_VAM_URL)
                 .defaultHeader(HEADER_NAME, HEADER_VALUE)
                 .build();
     }
