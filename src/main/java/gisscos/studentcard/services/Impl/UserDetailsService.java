@@ -1,7 +1,12 @@
 package gisscos.studentcard.services.Impl;
 
+import gisscos.studentcard.entities.CacheStudent;
+import gisscos.studentcard.entities.dto.StudentDTO;
+import gisscos.studentcard.entities.dto.StudentsDTO;
 import gisscos.studentcard.entities.dto.UserDetailsDTO;
 import gisscos.studentcard.entities.enums.ScosUserRole;
+import gisscos.studentcard.repositories.IValidateStudentCacheRepository;
+import gisscos.studentcard.services.IUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,23 +15,33 @@ import reactor.util.retry.Retry;
 
 import java.security.Principal;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Сервис данных пользователя
  */
 @Slf4j
 @Service
-public class UserDetailsService {
+public class UserDetailsService implements IUserDetailsService {
+
+    private final IValidateStudentCacheRepository studentCashRepository;
 
     /** Время ожидания в случае отсутствия ответа */
     private static final int REQUEST_TIMEOUT = 1000;
-    /** Веб клиент для доступа к АПИ ГИС СЦОСа */
-    private final WebClient scosApiClient;
+    /** Веб клиент для доступа к DEV АПИ ГИС СЦОСа */
+    private final WebClient devScosApiClient;
+    /** Веб клиент для доступа к DEV АПИ ВАМа */
+    private final WebClient devVamApiClient;
 
     @Autowired
-    public UserDetailsService(WebClient scosApiClient) {
-        this.scosApiClient = scosApiClient;
+    public UserDetailsService(WebClient devScosApiClient, WebClient devVamApiClient,
+                              IValidateStudentCacheRepository studentCashRepository) {
+        this.devScosApiClient = devScosApiClient;
+        this.devVamApiClient = devVamApiClient;
+        this.studentCashRepository = studentCashRepository;
     }
 
     /**
@@ -34,6 +49,7 @@ public class UserDetailsService {
      * @param principal информация о пользователе
      * @return true/false в зависимости от роли пользователя
      */
+    @Override
     public boolean isSecurityOfficer(Principal principal) {
         return hasRole(principal, ScosUserRole.SECURITY_OFFICER);
     }
@@ -43,6 +59,7 @@ public class UserDetailsService {
      * @param principal информация о пользователе
      * @return true/false в зависимости от роли пользователя
      */
+    @Override
     public boolean isUniversity(Principal principal) {
         return hasRole(principal, ScosUserRole.UNIVERSITY);
     }
@@ -52,12 +69,35 @@ public class UserDetailsService {
      * @param principal информация о пользователе
      * @return true/false в зависимости от роли пользователя
      */
+    @Override
     public boolean isSuperUser(Principal principal) {
         return hasRole(principal, ScosUserRole.SUPER_USER);
     }
 
     /**
-     * Имеет ли роль
+     * Является ли пользователь студентом?
+     * @param principal информация о пользователе
+     * @return true/false в зависимости от роли пользователя
+     */
+    @Override
+    public boolean isStudent(Principal principal) {
+        Optional<CacheStudent> student =
+                getStudentFromCacheByScosId(UUID.fromString(principal.getName()));
+
+        if (student.isPresent()) {
+            return true;
+        } else {
+            Optional<StudentDTO> studentDTO = getStudentByEmail(principal);
+            if (studentDTO.isPresent()) {
+                saveStudentInCash(studentDTO.get());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Имеет ли роль?
      * @param principal информация о пользователе
      * @param role искомая роль
      * @return true - имеет, false - не имеет
@@ -65,7 +105,7 @@ public class UserDetailsService {
     private boolean hasRole(Principal principal, ScosUserRole role) {
         return Arrays
                 .asList(
-                        loadUserRoleByIdSync(principal)
+                        loadUserInfoByIdSync(principal)
                                 .getRoles()
                 )
                 .contains(role.toString());
@@ -77,8 +117,8 @@ public class UserDetailsService {
      * @param principal информация о пользователе
      * @return dto пользователя из ответа на запрос
      */
-    private UserDetailsDTO loadUserRoleByIdSync(final Principal principal) {
-        return scosApiClient
+    private UserDetailsDTO loadUserInfoByIdSync(final Principal principal) {
+        return devScosApiClient
                 .get()
                 .uri(String.join("", "/users/", principal.getName()))
                 .retrieve()
@@ -86,5 +126,71 @@ public class UserDetailsService {
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
                 .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
                 .block();
+    }
+
+    private Optional<StudentDTO> getStudentByEmail(final Principal principal) {
+        UserDetailsDTO userDetails = loadUserInfoByIdSync(principal);
+        StudentsDTO students = getStudents("email", userDetails.getEmail());
+        return students
+                .getResults()
+                .stream()
+                .filter(
+                        student ->
+                                student.getEmail().equals(userDetails.getEmail())
+                )
+                .findFirst();
+    }
+
+    /**
+     * Получить список студентов по одному параметру
+     * @param parameter один из допустимых параметров для поиска:
+     * inn - ИНН,
+     * snils - СНИЛС,
+     * email - почта,
+     * scos_id - идентификатор в СЦОСе,
+     * study_year - курс обучения студента,
+     * filter - фильтр для поиска по ФИО (прим. - ван)
+     * organization_id - идентификатор организации в СЦОС или её ОГРН,
+     * from_date - дата, начиная с которой, будут отображаться изменения
+     * @param value знаение параметра поиска
+     * @return результат поиска по заданному параметру
+     */
+    private StudentsDTO getStudents(String parameter, String value) {
+        return devVamApiClient
+                .get()
+                .uri(String.join("", "/students?", parameter, "=", value))
+                .retrieve()
+                .bodyToMono(StudentsDTO.class)
+                .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
+                .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
+                .block();
+    }
+
+    /**
+     * Получить студента из кэша по идентификатору СЦОСа
+     * @param id идентификатор СЦОСа
+     * @return студент, если не найден - Optional.empty()
+     */
+    private Optional<CacheStudent> getStudentFromCacheByScosId(UUID id) {
+        return studentCashRepository.findByScosId(id);
+    }
+
+    /**
+     * Сохранить студента в кэш
+     * @param studentDTO студента из ВАМа
+     */
+    private void saveStudentInCash(StudentDTO studentDTO) {
+        studentCashRepository.save(
+                new CacheStudent(UUID.fromString(studentDTO.getScos_id()))
+        );
+    }
+
+    /**
+     * Удалить устаревшие записи о валидированных студентах
+     * @return успешно ли удаление?
+     */
+    @Override
+    public boolean removeOldValidations() {
+        return studentCashRepository.deleteByValidationDateBefore(LocalDate.now().minusMonths(1));
     }
 }
