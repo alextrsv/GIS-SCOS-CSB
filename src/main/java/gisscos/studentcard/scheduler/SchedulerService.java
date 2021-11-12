@@ -1,7 +1,6 @@
 package gisscos.studentcard.scheduler;
 
 import org.quartz.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -10,13 +9,26 @@ import java.util.UUID;
 public class SchedulerService {
 
 
-    @Autowired
-    private Scheduler scheduler;
+    private final Scheduler scheduler;
 
+    public SchedulerService(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
+//
+//
+//    public void startGeneratingQRJob(){
+//        JobDetail jobDetail = buildJobDetail();
+//        Trigger trigger = buildTrigger(jobDetail);
+//        try {
+//            scheduler.scheduleJob(jobDetail, trigger);
+//        } catch (SchedulerException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-    public void startGeneratingQRJob(){
-        JobDetail jobDetail = buildJobDetail();
-        Trigger trigger = buildTrigger(jobDetail);
+    public void startGettingStudentsQRJob(){
+        JobDetail jobDetail = buildGetStudentsJobDetail();
+        Trigger trigger = buildGetStudentsTrigger(jobDetail);
         try {
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (SchedulerException e) {
@@ -24,21 +36,37 @@ public class SchedulerService {
         }
     }
 
+//    private JobDetail buildJobDetail(){
+//        return JobBuilder.newJob(GenerationQRJob.class)
+//                .withIdentity(UUID.randomUUID().toString())
+//                .withDescription("generation dynamics QR-codes")
+//                .storeDurably()
+//                .build();
+//    }
+//
+//    private CronTrigger buildTrigger(JobDetail jobDetail){
+//        return TriggerBuilder.newTrigger()
+//                .forJob(jobDetail)
+//                .withIdentity(jobDetail.getKey().getName(), "email-triggers")
+//                .withDescription("generate new one-day dynamic QR-code")
+//                .withSchedule(CronScheduleBuilder.cronSchedule("0/10 * * * * ?"))
+//                .build();
+//    }
 
-    private JobDetail buildJobDetail(){
-        return JobBuilder.newJob(GenerationQRJob.class)
+    private JobDetail buildGetStudentsJobDetail(){
+        return JobBuilder.newJob(GetAllStudentsJob.class)
                 .withIdentity(UUID.randomUUID().toString())
-                .withDescription("generation dynamics QR-codes")
+                .withDescription("downloading all students from VAM")
                 .storeDurably()
                 .build();
     }
 
-    private CronTrigger buildTrigger(JobDetail jobDetail){
+    private CronTrigger buildGetStudentsTrigger(JobDetail jobDetail){
         return TriggerBuilder.newTrigger()
                 .forJob(jobDetail)
-                .withIdentity(jobDetail.getKey().getName(), "email-triggers")
-                .withDescription("generate new one-day dynamic QR-code")
-                .withSchedule(CronScheduleBuilder.cronSchedule("0/10 * * * * ?"))
+                .withIdentity(jobDetail.getKey().getName(), "downloading students trigger")
+                .withDescription("download all students from VAM")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0/30 * * * * ?"))
                 .build();
     }
 }

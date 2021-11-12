@@ -15,12 +15,13 @@ public class RunAfterStartup {
         this.schedulerService = schedulerService;
     }
 
-//    @Autowired
-//    GenerationQRJob generationQRJob;
+    @Autowired
+    GetAllStudentsJob getAllStudentsJob;
 
     @EventListener(ApplicationReadyEvent.class)
     public void runAfterStartup() {
-        schedulerService.startGeneratingQRJob();
-//        generationQRJob.generateQR();
+//        schedulerService.startGeneratingQRJob();
+//        schedulerService.startGettingStudentsQRJob();
+        getAllStudentsJob.doJob();
     }
 }
