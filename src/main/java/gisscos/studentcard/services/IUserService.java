@@ -4,7 +4,7 @@ import gisscos.studentcard.entities.dto.UserDTO;
 
 import java.util.List;
 
-public interface UserService {
+public interface IUserService {
 
     List<String> getPermittedOrganizations(UserDTO user);
 
@@ -13,4 +13,8 @@ public interface UserService {
     String getPermittedOrganizationsNamesAsString(UserDTO user);
 
     String getUserRolesAsString(UserDTO user);
+
+    String makeContent(UserDTO user);
+
+    String makeUsefullContent(UserDTO userDTO);
 }

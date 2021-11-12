@@ -2,15 +2,20 @@ package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.clients.VamRestClient;
-import gisscos.studentcard.entities.dto.UserDTO;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudyPlanDTO;
-import gisscos.studentcard.services.*;
+import gisscos.studentcard.entities.dto.UserDTO;
+import gisscos.studentcard.entities.enums.QRDataVerifyStatus;
+import gisscos.studentcard.services.IPermanentQRService;
+import gisscos.studentcard.services.StudentService;
+import gisscos.studentcard.services.UserService;
+import gisscos.studentcard.utils.HashingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,13 +52,13 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         2.1. Если ответ пустой, то это выдаем ошибку - пользователя нет
         2.2. Иначе, если ответ не пустой - работаем с пользователем.
         */
-        Optional<StudentDTO> studentDTOWrapper = vamRestClient.makeGetStudentRequest(userId);
+        Optional<StudentDTO> studentDTOWrapper = getStudent(userId);
         if (studentDTOWrapper.isPresent())
-            content = makeStudentContent(studentDTOWrapper.get());
+            content = studentService.makeContent(studentDTOWrapper.get());
         else{
             Optional<UserDTO> userWrapper = gisScosApiRestClient.makeGetUserRequest(userId);
             if (userWrapper.isPresent()){
-                content = makeStaffContent(userWrapper.get());
+                content = userService.makeContent(userWrapper.get());
             }else return Optional.empty();
         }
 
@@ -61,63 +66,45 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         return Converter.getResource(qrCodeImage);
     }
 
-    private String makeStaffContent(UserDTO user) {
-        String content =  ("surname: " + user.getLast_name() +
-                "\nname: " + user.getFirst_name() +
-                "\nmiddle-name: " + user.getPatronymic_name() +
-                "\norganization: " + userService.getOrganizationsNamesAsString(user) +
-                "\nstatus: " + "status" +
-                "\nrole: " + userService.getUserRolesAsString(user) +
-                "\naccessed organizations: " + userService.getPermittedOrganizationsNamesAsString(user));
-        System.out.println(content);
-        return content;
-    }
-
-    private String makeStudentContent(StudentDTO studentDTO) {
-        String content = ("surname: " + studentDTO.getSurname() +
-                "\nname: " + studentDTO.getName() +
-                "\nmiddle-name: " + studentDTO.getMiddle_name() +
-                "\norganization: " + studentService.getOrganizationsName(studentDTO) +
-                "\nstatus: " + "status" +
-                "\nrole: " + "student" +
-                "\nstud-bilet: " + "scos" + studentDTO.getId().toString().substring(0, 6) +
-                "\neducation_form: " +  getEducationForm(studentDTO.getStudy_plans()) +
-                "\nstart_year: " + getStartYear(studentDTO) +
-                "\nstud-bilet-duration: " +  getEndYear(studentDTO) +
-                "\naccessed organizations: " + studentService.getPermittedOrganizationsNamesAsString(studentDTO));
-        System.out.println(content);
-        return content;
-    }
-
-
-    private String getStartYear(StudentDTO studentDTO) {
-        if(studentDTO.getStudy_plans().size() != 0)
-            return getCurrentStudyPlan(studentDTO.getStudy_plans()).get().getStart_year();
-        else return "";
-    }
-
-    private String getEndYear(StudentDTO studentDTO) {
-        if(studentDTO.getStudy_plans().size() != 0)
-            return  getCurrentStudyPlan(studentDTO.getStudy_plans()).get().getEnd_year();
-        else return "";
-    }
-
-    private String getEducationForm(List<StudyPlanDTO> studyPlanDTOS) {
-        Optional<StudyPlanDTO> studyPlanDTO = getCurrentStudyPlan(studyPlanDTOS);
-        if (studyPlanDTO.isPresent())
-            return vamRestClient.makeGetStudyPlanRequest(studyPlanDTO.get().getId()).getEducation_form();
-        else return "";
-    }
-
-    private Optional<StudyPlanDTO> getCurrentStudyPlan(List<StudyPlanDTO> studyPlanDTOS) {
-
-        for (StudyPlanDTO plan : studyPlanDTOS) {
-            int currentYear = 2019; //LocalDateTime.now().getYear();
-            if (Integer.parseInt(plan.getStart_year()) <= currentYear &&
-                    Integer.parseInt(plan.getEnd_year()) >= currentYear)
-                return Optional.of(plan);
+    @Override
+    public Optional<QRDataVerifyStatus> verifyData(UUID userId, String dataHash) {
+        QRDataVerifyStatus verifyStatus = null;
+        Optional<StudentDTO> studentDTOWrapper = getStudent(userId);
+        if (studentDTOWrapper.isPresent())
+            verifyStatus = verifyStudentData(studentDTOWrapper.get(), dataHash);
+        else{
+            Optional<UserDTO> userWrapper = gisScosApiRestClient.makeGetUserRequest(userId);
+            if (userWrapper.isPresent()){
+                verifyStatus = verufyUserData(userWrapper.get(), dataHash);
+            }else return Optional.empty();
         }
-        return Optional.empty();
+        return Optional.ofNullable(verifyStatus);
     }
+
+    private QRDataVerifyStatus verufyUserData(UserDTO userDTO, String hash) {
+        try {
+            String newHash = HashingUtil.getHash(userService.makeUsefullContent(userDTO));
+            if (newHash.equals(hash)) return QRDataVerifyStatus.OK;
+            else return QRDataVerifyStatus.INVALID;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private QRDataVerifyStatus verifyStudentData(StudentDTO studentDTO, String hash) {
+        try {
+            if (HashingUtil.getHash(studentService.makeUsefullContent(studentDTO)).equals(hash)) return QRDataVerifyStatus.OK;
+            else return QRDataVerifyStatus.INVALID;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private Optional<StudentDTO> getStudent(UUID userId){
+        return vamRestClient.makeGetStudentRequest(userId);
+    }
+
 
 }
