@@ -104,7 +104,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
         StudentDTO studentDTO = vamRestClient.makeGetStudentRequest(userId).get();
         studentDTO.setEmail("sasha2.tara2000@yandex.ru");
 
-        OrganizationDTO organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
+        OrganizationDTO organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId).get();
 
         QRMessage qrMessage = new QRMessage(studentDTO, getActiveQRByOrganization(userId, organizationId).get(), organizationDTO );
 

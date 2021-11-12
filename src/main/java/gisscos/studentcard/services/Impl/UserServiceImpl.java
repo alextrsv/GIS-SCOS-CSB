@@ -46,13 +46,13 @@ public class UserServiceImpl implements IUserService {
     @Override
     public String getOrganizationsNamesAsString(UserDTO user) {
         return user.getUserOrganizationsId().stream()
-                .map(id -> gisScosApiRestClient.makeGetOrganizationRequest(id).getFull_name()).collect(Collectors.joining(", "));
+                .map(id -> gisScosApiRestClient.makeGetOrganizationRequest(id).get().getFull_name()).collect(Collectors.joining(", "));
     }
 
     @Override
     public String getPermittedOrganizationsNamesAsString(UserDTO user) {
         return getPermittedOrganizations(user).stream()
-                .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).getFull_name())
+                .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).get().getFull_name())
                 .collect(Collectors.joining(", "));
     }
 

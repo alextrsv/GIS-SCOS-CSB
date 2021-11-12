@@ -53,13 +53,13 @@ public class StudentServiceImpl implements IStudentService {
 
     @Override
     public String getOrganizationsName(StudentDTO studentDTO) {
-        return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).getFull_name();
+        return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).get().getFull_name();
     }
 
     @Override
     public String getPermittedOrganizationsNamesAsString(StudentDTO studentDTO) {
         return getPermittedOrganizations(studentDTO).stream()
-                .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).getFull_name())
+                .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).get().getFull_name())
                 .collect(Collectors.joining(", "));
     }
 
