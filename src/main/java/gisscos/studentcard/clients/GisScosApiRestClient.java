@@ -1,20 +1,25 @@
 package gisscos.studentcard.clients;
 
+import gisscos.studentcard.entities.User;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
+import gisscos.studentcard.entities.dto.StudentDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
 public class GisScosApiRestClient {
 
     private final static String GET_ORGANIZATION_ENDPOINT = "organizations";
+    private final static String GET_USER_ENDPOINT = "users";
 
     RestTemplate restTemplate = new RestTemplate();
 
@@ -30,7 +35,7 @@ public class GisScosApiRestClient {
 
 
     /** 4.1.10.3 Получение объекта записи об организации по global_id организации */
-     public synchronized OrganizationDTO makeGetOrganizationRequest(UUID global_id){
+     public synchronized OrganizationDTO makeGetOrganizationRequest(String global_id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
@@ -48,6 +53,32 @@ public class GisScosApiRestClient {
                 OrganizationDTO.class
         );
         return Objects.requireNonNull(response.getBody(), "organization isn't present");
+    }
+
+    /** НОВЫЙ Получение Получение списка сотрудников Организации */
+    public synchronized Optional<User> makeGetUserRequest(UUID userId){
+
+        String urlTemplate = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(host)
+                .path(gisScosPrefix)
+                .pathSegment(GET_USER_ENDPOINT)
+                .pathSegment(userId.toString())
+                .encode()
+                .toUriString();
+
+        ResponseEntity<User> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildGisScosRequest(),
+                    User.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(response.getBody());
     }
 
     private HttpEntity buildGisScosRequest() {

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -47,12 +48,17 @@ public class VamRestClient {
         System.out.println(urlTemplate);
         log.info(urlTemplate);
 
-        ResponseEntity<StudyPlanDTO> response = restTemplate.exchange(
-                urlTemplate,
-                HttpMethod.GET,
-                buildVamRequest(),
-                StudyPlanDTO.class
-        );
+        ResponseEntity<StudyPlanDTO> response;
+//        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildVamRequest(),
+                    StudyPlanDTO.class
+            );
+//        }catch (HttpClientErrorException.NotFound notFoundEx){
+//            return Optional.empty();
+//        }
         return response.getBody();
     }
 
@@ -91,7 +97,7 @@ public class VamRestClient {
     }
 
     /** 5.1.6 Получение студента */
-    public StudentDTO makeGetStudentRequest(UUID id){
+    public Optional<StudentDTO> makeGetStudentRequest(UUID id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
@@ -102,14 +108,18 @@ public class VamRestClient {
                 .encode()
                 .toUriString();
 
-        ResponseEntity<StudentDTO> response = restTemplate.exchange(
-                urlTemplate,
-                HttpMethod.GET,
-                buildVamRequest(),
-                StudentDTO.class
-        );
-
-        return Objects.requireNonNull(response.getBody(), "student isn't present");
+        ResponseEntity<StudentDTO> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildVamRequest(),
+                    StudentDTO.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(response.getBody());
     }
 
     private HttpEntity buildVamRequest() {
