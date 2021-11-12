@@ -1,6 +1,5 @@
 package gisscos.studentcard.entities.dto;
 
-import gisscos.studentcard.entities.dto.EmploymentDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class UserDTO {
 
     private UUID user_id;
     private String email;
