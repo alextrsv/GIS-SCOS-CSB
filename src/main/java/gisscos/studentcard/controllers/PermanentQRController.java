@@ -1,6 +1,5 @@
 package gisscos.studentcard.controllers;
 
-import gisscos.studentcard.entities.dto.PermanentQRDTO;
 import gisscos.studentcard.entities.enums.QRDataVerifyStatus;
 import gisscos.studentcard.services.IPermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -5,9 +5,8 @@ import gisscos.studentcard.clients.VamRestClient;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudentsDTO;
 import gisscos.studentcard.repositories.IDynamicQRRepository;
-import gisscos.studentcard.services.OrganizationService;
-import gisscos.studentcard.services.StudentService;
-import gisscos.studentcard.services.UserService;
+import gisscos.studentcard.services.IStudentService;
+import gisscos.studentcard.services.IUserService;
 import lombok.NonNull;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,18 +26,18 @@ public class GenerationQRJob extends QuartzJobBean {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final UserService userService;
+    private final IUserService IUserService;
 
-    private final StudentService studentService;
+    private final IStudentService IStudentService;
 
 
     @Autowired
-    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, StudentService studentService, UserService userService) {
+    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, IStudentService IStudentService, IUserService IUserService) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
-        this.studentService = studentService;
-        this.userService = userService;
+        this.IStudentService = IStudentService;
+        this.IUserService = IUserService;
     }
 
     @Override
@@ -63,7 +62,7 @@ public class GenerationQRJob extends QuartzJobBean {
         List<Checker> checkerList = new ArrayList<>();
 
         for (int i = 0; i < threadAmount; i++){
-            Checker checker = new Checker(dynamicQRRepository, gisScosApiRestClient, userService, studentService);
+            Checker checker = new Checker(dynamicQRRepository, gisScosApiRestClient, IUserService, IStudentService);
             checker.setThreadNumber(i);
             checker.setAllStudents(allStudents);
             checker.setItemsPerThread(itemsPerThread);

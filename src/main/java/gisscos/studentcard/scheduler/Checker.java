@@ -6,9 +6,8 @@ import gisscos.studentcard.entities.dto.OrganizationDTO;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.IDynamicQRRepository;
-import gisscos.studentcard.services.OrganizationService;
-import gisscos.studentcard.services.StudentService;
-import gisscos.studentcard.services.UserService;
+import gisscos.studentcard.services.IStudentService;
+import gisscos.studentcard.services.IUserService;
 import gisscos.studentcard.utils.HashingUtil;
 
 import java.security.NoSuchAlgorithmException;
@@ -24,9 +23,9 @@ public class Checker extends Thread {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final UserService userService;
+    private final IUserService IUserService;
 
-    private final StudentService studentService;
+    private final IStudentService IStudentService;
 
     List<StudentDTO> allStudents;
     int itemsPerThread;
@@ -34,11 +33,11 @@ public class Checker extends Thread {
     int startIndx;
     int endIndex;
 
-    public Checker(IDynamicQRRepository dynamicQRRepository, GisScosApiRestClient gisScosApiRestClient, UserService userService, StudentService studentService) {
+    public Checker(IDynamicQRRepository dynamicQRRepository, GisScosApiRestClient gisScosApiRestClient, IUserService IUserService, IStudentService IStudentService) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.gisScosApiRestClient = gisScosApiRestClient;
-        this.userService = userService;
-        this.studentService = studentService;
+        this.IUserService = IUserService;
+        this.IStudentService = IStudentService;
     }
 
     @Override
@@ -54,7 +53,7 @@ public class Checker extends Thread {
 
             System.out.println("thr: " + threadNumber + "  currentIndx: " + i + "  student: " + studentDTO.getId() + "");
 
-            List<String> permittedOrgsID = studentService.getPermittedOrganizations(studentDTO);
+            List<String> permittedOrgsID = IStudentService.getPermittedOrganizations(studentDTO);
 
             List<DynamicQR> usersQRs = dynamicQRRepository.getByUserId(studentDTO.getId());
 

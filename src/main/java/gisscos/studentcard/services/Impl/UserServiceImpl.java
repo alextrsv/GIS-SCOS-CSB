@@ -5,7 +5,7 @@ import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.dto.UserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.services.IPassRequestService;
-import gisscos.studentcard.services.UserService;
+import gisscos.studentcard.services.IUserService;
 import gisscos.studentcard.utils.HashingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements IUserService {
 
     private final IPassRequestService passRequestService;
 

@@ -3,12 +3,11 @@ package gisscos.studentcard.services.Impl;
 import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.clients.VamRestClient;
 import gisscos.studentcard.entities.dto.StudentDTO;
-import gisscos.studentcard.entities.dto.StudyPlanDTO;
 import gisscos.studentcard.entities.dto.UserDTO;
 import gisscos.studentcard.entities.enums.QRDataVerifyStatus;
 import gisscos.studentcard.services.IPermanentQRService;
-import gisscos.studentcard.services.StudentService;
-import gisscos.studentcard.services.UserService;
+import gisscos.studentcard.services.IStudentService;
+import gisscos.studentcard.services.IUserService;
 import gisscos.studentcard.utils.HashingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,17 +28,17 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final UserService userService;
+    private final IUserService IUserService;
 
-    private final StudentService studentService;
+    private final IStudentService IStudentService;
 
 
     @Autowired
-    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, UserService userService, StudentService studentService) {
+    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, IUserService IUserService, IStudentService IStudentService) {
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
-        this.userService = userService;
-        this.studentService = studentService;
+        this.IUserService = IUserService;
+        this.IStudentService = IStudentService;
     }
 
     @Override
@@ -54,11 +52,11 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         */
         Optional<StudentDTO> studentDTOWrapper = getStudent(userId);
         if (studentDTOWrapper.isPresent())
-            content = studentService.makeContent(studentDTOWrapper.get());
+            content = IStudentService.makeContent(studentDTOWrapper.get());
         else{
             Optional<UserDTO> userWrapper = gisScosApiRestClient.makeGetUserRequest(userId);
             if (userWrapper.isPresent()){
-                content = userService.makeContent(userWrapper.get());
+                content = IUserService.makeContent(userWrapper.get());
             }else return Optional.empty();
         }
 
@@ -83,7 +81,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private QRDataVerifyStatus verufyUserData(UserDTO userDTO, String hash) {
         try {
-            String newHash = HashingUtil.getHash(userService.makeUsefullContent(userDTO));
+            String newHash = HashingUtil.getHash(IUserService.makeUsefullContent(userDTO));
             if (newHash.equals(hash)) return QRDataVerifyStatus.OK;
             else return QRDataVerifyStatus.INVALID;
         } catch (NoSuchAlgorithmException e) {
@@ -94,7 +92,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private QRDataVerifyStatus verifyStudentData(StudentDTO studentDTO, String hash) {
         try {
-            if (HashingUtil.getHash(studentService.makeUsefullContent(studentDTO)).equals(hash)) return QRDataVerifyStatus.OK;
+            if (HashingUtil.getHash(IStudentService.makeUsefullContent(studentDTO)).equals(hash)) return QRDataVerifyStatus.OK;
             else return QRDataVerifyStatus.INVALID;
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
