@@ -29,7 +29,7 @@ public class DynamicQR {
     /** id владельца QR-кода */
     private UUID userId;
     /** id университета, к которому относится QR-код */
-    private UUID universityId;
+    private String universityId;
     /** статус QR-кода */
     private QRStatus status;
     /** Дата создание QR-кода */
@@ -46,7 +46,7 @@ public class DynamicQR {
     String content;
 
 
-    public DynamicQR(UUID userId, UUID universityId, QRStatus status,
+    public DynamicQR(UUID userId, String universityId, QRStatus status,
                      String characterSet, ErrorCorrectionLevel errorCorrectionLevel, int margin) {
         this.creationDate = LocalDate.now();
         this.endDate = creationDate.plusDays(1);
@@ -58,7 +58,7 @@ public class DynamicQR {
         this.margin = margin;
     }
 
-    public DynamicQR(UUID userId, UUID universityId, QRStatus status, String content) {
+    public DynamicQR(UUID userId, String universityId, QRStatus status, String content) {
         this.creationDate = LocalDate.now();
         this.endDate = creationDate.plusDays(1);
         this.userId = userId;
