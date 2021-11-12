@@ -8,4 +8,6 @@ import java.util.List;
 public interface IDynamicQRUserService {
 
     List<DynamicQRUser> addAll(List<StudentDTO> studentDTOList);
+
+    List<String> getPermittedOrganizations(DynamicQRUser user);
 }
