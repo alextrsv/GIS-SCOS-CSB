@@ -1,8 +1,7 @@
 package gisscos.studentcard.clients;
 
-import gisscos.studentcard.entities.User;
+import gisscos.studentcard.entities.dto.UserDTO;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
-import gisscos.studentcard.entities.dto.StudentDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -56,7 +55,7 @@ public class GisScosApiRestClient {
     }
 
     /** НОВЫЙ Получение Получение списка сотрудников Организации */
-    public synchronized Optional<User> makeGetUserRequest(UUID userId){
+    public synchronized Optional<UserDTO> makeGetUserRequest(UUID userId){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
@@ -67,13 +66,13 @@ public class GisScosApiRestClient {
                 .encode()
                 .toUriString();
 
-        ResponseEntity<User> response;
+        ResponseEntity<UserDTO> response;
         try {
             response = restTemplate.exchange(
                     urlTemplate,
                     HttpMethod.GET,
                     buildGisScosRequest(),
-                    User.class
+                    UserDTO.class
             );
         }catch (HttpClientErrorException.NotFound notFoundEx){
             return Optional.empty();
