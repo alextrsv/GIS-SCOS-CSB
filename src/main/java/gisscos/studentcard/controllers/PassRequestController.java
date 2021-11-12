@@ -109,7 +109,7 @@ public class PassRequestController {
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests/{universityId}")
-    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable UUID universityId) {
+    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable String universityId) {
         return passRequestService.getPassRequestsByUniversity(universityId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -120,7 +120,7 @@ public class PassRequestController {
      * @return количество заявок для обработки
      */
     @GetMapping("/get/requests/count/{universityId}")
-    public ResponseEntity<Integer> getPassRequestsNumberForProcessing(@PathVariable UUID universityId) {
+    public ResponseEntity<Integer> getPassRequestsNumberForProcessing(@PathVariable String universityId) {
         return ResponseEntity.of(
                 Optional.of(passRequestService.getPassRequestsNumberByUniversity(universityId))
         );
