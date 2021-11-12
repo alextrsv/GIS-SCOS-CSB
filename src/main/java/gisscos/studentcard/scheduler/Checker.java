@@ -53,6 +53,8 @@ public class Checker extends Thread {
 
             List<DynamicQR> usersQRs = dynamicQRRepository.getByUserId(studentDTO.getId());
 
+
+            //для разрешенных организаций
             permittedOrgsUUID.forEach(organizationUUID -> {
                 Optional<DynamicQR> dynamicQR =
                         usersQRs.stream()
@@ -64,6 +66,8 @@ public class Checker extends Thread {
                 else addNewQR(studentDTO, organizationUUID);
             });
 
+
+            //проверка уже хранящихся QR-ов на актуальность (не истек ли срок действия заявки на прозод)
             dynamicQRRepository.getByUserId(studentDTO.getId())
                     .forEach(dynamicQR -> {
                         if (!permittedOrgsUUID.contains(dynamicQR.getUniversityId()))

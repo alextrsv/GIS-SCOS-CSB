@@ -21,13 +21,17 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<UUID> getPermittedOrganizations(StudentDTO studentDTO) {
+    public synchronized List<UUID> getPermittedOrganizations(StudentDTO studentDTO) {
         List<UUID> acceptedOrganizationsUUID = passRequestService.getPassRequestsByUserId(studentDTO.getId()).get()
                 .stream()
                 .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
                 .map(PassRequest::getTargetUniversityId)
                 .collect(Collectors.toList());
-        acceptedOrganizationsUUID.add(studentDTO.getOrganization_id());
+        try {
+            acceptedOrganizationsUUID.add(UUID.fromString(studentDTO.getOrganization_id()));
+        }catch(java.lang.IllegalArgumentException exception){
+            System.err.println("No such university/UUID is invalid");
+        }
         return acceptedOrganizationsUUID;
     }
 }

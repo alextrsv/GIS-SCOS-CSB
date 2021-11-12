@@ -7,5 +7,5 @@ import java.util.UUID;
 
 public interface OrganizationService {
 
-    List<UUID> getPermittedOrganizations(StudentDTO studentDTO);
+     List<UUID> getPermittedOrganizations(StudentDTO studentDTO);
 }
