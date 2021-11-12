@@ -1,8 +1,6 @@
 package gisscos.studentcard.clients;
 
-import gisscos.studentcard.entities.dto.StudentDTO;
-import gisscos.studentcard.entities.dto.StudentsDTO;
-import gisscos.studentcard.entities.dto.StudyPlanDTO;
+import gisscos.studentcard.entities.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -63,37 +61,39 @@ public class VamRestClient {
     }
 
     /** 5.1.5 Получение списка студентов */
-    public StudentsDTO makeGetStudentsRequest(int pageSize){
+    public StudentsDTO makeGetStudentsRequest(int pageSize, int pageNumber, String organizationId){
 
-        List<StudentDTO> allStudents = new ArrayList<>();
-        int current_page = 1;
-        int page_amount = 0;
-
-
-        do {
-            String urlTemplate = UriComponentsBuilder.newInstance()
+        String urlTemplate = "";
+        if (organizationId != null) {
+            urlTemplate = UriComponentsBuilder.newInstance()
                     .scheme("https")
                     .host(host)
                     .path(vamPrefix)
                     .pathSegment(STUDENTS_ENDPOINT)
                     .queryParam("page_size", pageSize)
-                    .queryParam("page", current_page)
+                    .queryParam("page", pageNumber)
+                    .queryParam("organization_id", organizationId)
+                    .encode()
+                    .toUriString();
+        } else
+            urlTemplate = UriComponentsBuilder.newInstance()
+                    .scheme("https")
+                    .host(host)
+                    .path(vamPrefix)
+                    .pathSegment(STUDENTS_ENDPOINT)
+                    .queryParam("page_size", pageSize)
+                    .queryParam("page", pageNumber)
                     .encode()
                     .toUriString();
 
-            ResponseEntity<StudentsDTO> response = restTemplate.exchange(
-                    urlTemplate,
-                    HttpMethod.GET,
-                    buildVamRequest(),
-                    StudentsDTO.class
-            );
-            page_amount = Objects.requireNonNull(response.getBody()).getLast_page();
-            current_page++;
-            allStudents.addAll(response.getBody().getResults());
-        }while (current_page < page_amount);
+        ResponseEntity<StudentsDTO> response = restTemplate.exchange(
+                urlTemplate,
+                HttpMethod.GET,
+                buildVamRequest(),
+                StudentsDTO.class
+        );
 
-        System.out.println("allStudents size: " + allStudents.size());
-        return new StudentsDTO(allStudents, page_amount);
+        return response.getBody();
     }
 
     /** 5.1.6 Получение студента */
@@ -121,6 +121,7 @@ public class VamRestClient {
         }
         return Optional.ofNullable(response.getBody());
     }
+
 
     private HttpEntity buildVamRequest() {
         HttpHeaders headers = new HttpHeaders();

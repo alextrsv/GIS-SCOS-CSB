@@ -1,5 +1,6 @@
 package gisscos.studentcard.clients;
 
+import gisscos.studentcard.entities.dto.OrganizationsDTO;
 import gisscos.studentcard.entities.dto.UserDTO;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,10 +10,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 public class GisScosApiRestClient {
@@ -33,28 +31,59 @@ public class GisScosApiRestClient {
 
 
 
-    /** 4.1.10.3 Получение объекта записи об организации по global_id организации */
-     public synchronized OrganizationDTO makeGetOrganizationRequest(String global_id){
+    /** Получение списка организаций */
+    public Optional<OrganizationDTO[]> makeGetOrganizationsRequest(){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
                 .host(host)
                 .path(gisScosPrefix)
                 .pathSegment(GET_ORGANIZATION_ENDPOINT)
-                .queryParam("global_id", global_id)
                 .encode()
                 .toUriString();
 
-        ResponseEntity<OrganizationDTO> response = restTemplate.exchange(
-                urlTemplate,
-                HttpMethod.GET,
-                buildGisScosRequest(),
-                OrganizationDTO.class
-        );
-        return Objects.requireNonNull(response.getBody(), "organization isn't present");
+        ResponseEntity<OrganizationDTO[]> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildGisScosRequest(),
+                    OrganizationDTO[].class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(response.getBody());
     }
 
-    /** НОВЫЙ Получение Получение списка сотрудников Организации */
+    /** 4.1.10.3 Получение объекта записи об организации по global_id организации */
+    public Optional<OrganizationDTO> makeGetOrganizationRequest(String organizationId){
+
+        String urlTemplate = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(host)
+                .path(gisScosPrefix)
+                .pathSegment(GET_ORGANIZATION_ENDPOINT)
+                .queryParam("global_id", organizationId)
+                .encode()
+                .toUriString();
+
+        ResponseEntity<OrganizationDTO> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildGisScosRequest(),
+                    OrganizationDTO.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(response.getBody());
+    }
+
+
+    /** НОВЫЙ Получение Получение сотрудника Организации */
     public synchronized Optional<UserDTO> makeGetUserRequest(UUID userId){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
