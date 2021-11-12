@@ -6,6 +6,8 @@ import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudentsDTO;
 import gisscos.studentcard.repositories.IDynamicQRRepository;
 import gisscos.studentcard.services.OrganizationService;
+import gisscos.studentcard.services.StudentService;
+import gisscos.studentcard.services.UserService;
 import lombok.NonNull;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +27,18 @@ public class GenerationQRJob extends QuartzJobBean {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final OrganizationService organizationService;
+    private final UserService userService;
+
+    private final StudentService studentService;
+
 
     @Autowired
-    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, OrganizationService organizationService, GisScosApiRestClient gisScosApiRestClient) {
+    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, StudentService studentService, UserService userService) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.vamRestClient = vamRestClient;
-        this.organizationService = organizationService;
         this.gisScosApiRestClient = gisScosApiRestClient;
+        this.studentService = studentService;
+        this.userService = userService;
     }
 
     @Override
@@ -57,7 +63,7 @@ public class GenerationQRJob extends QuartzJobBean {
         List<Checker> checkerList = new ArrayList<>();
 
         for (int i = 0; i < threadAmount; i++){
-            Checker checker = new Checker(dynamicQRRepository, gisScosApiRestClient, organizationService);
+            Checker checker = new Checker(dynamicQRRepository, gisScosApiRestClient, userService, studentService);
             checker.setThreadNumber(i);
             checker.setAllStudents(allStudents);
             checker.setItemsPerThread(itemsPerThread);

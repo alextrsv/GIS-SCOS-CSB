@@ -7,6 +7,8 @@ import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.IDynamicQRRepository;
 import gisscos.studentcard.services.OrganizationService;
+import gisscos.studentcard.services.StudentService;
+import gisscos.studentcard.services.UserService;
 import gisscos.studentcard.utils.HashingUtil;
 
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +24,9 @@ public class Checker extends Thread {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final OrganizationService organizationService;
+    private final UserService userService;
+
+    private final StudentService studentService;
 
     List<StudentDTO> allStudents;
     int itemsPerThread;
@@ -30,10 +34,11 @@ public class Checker extends Thread {
     int startIndx;
     int endIndex;
 
-    public Checker(IDynamicQRRepository dynamicQRRepository, GisScosApiRestClient gisScosApiRestClient, OrganizationService organizationService) {
+    public Checker(IDynamicQRRepository dynamicQRRepository, GisScosApiRestClient gisScosApiRestClient, UserService userService, StudentService studentService) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.gisScosApiRestClient = gisScosApiRestClient;
-        this.organizationService = organizationService;
+        this.userService = userService;
+        this.studentService = studentService;
     }
 
     @Override
@@ -49,35 +54,35 @@ public class Checker extends Thread {
 
             System.out.println("thr: " + threadNumber + "  currentIndx: " + i + "  student: " + studentDTO.getId() + "");
 
-            List<UUID> permittedOrgsUUID = organizationService.getPermittedOrganizations(studentDTO);
+            List<String> permittedOrgsID = studentService.getPermittedOrganizations(studentDTO);
 
             List<DynamicQR> usersQRs = dynamicQRRepository.getByUserId(studentDTO.getId());
 
 
             //для разрешенных организаций
-            permittedOrgsUUID.forEach(organizationUUID -> {
+            permittedOrgsID.forEach(organizationID -> {
                 Optional<DynamicQR> dynamicQR =
                         usersQRs.stream()
-                                .filter(qr -> qr.getUniversityId().equals(organizationUUID))
+                                .filter(qr -> qr.getUniversityId().equals(organizationID))
                                 .filter(qr -> qr.getStatus() != QRStatus.EXPIRED && qr.getStatus() != QRStatus.DELETED)
                                 .findAny();
                 if (dynamicQR.isPresent())
                     updateQR(dynamicQR.get());
-                else addNewQR(studentDTO, organizationUUID);
+                else addNewQR(studentDTO, organizationID);
             });
 
 
             //проверка уже хранящихся QR-ов на актуальность (не истек ли срок действия заявки на прозод)
             dynamicQRRepository.getByUserId(studentDTO.getId())
                     .forEach(dynamicQR -> {
-                        if (!permittedOrgsUUID.contains(dynamicQR.getUniversityId()))
+                        if (!permittedOrgsID.contains(dynamicQR.getUniversityId()))
                             expireQR(dynamicQR);
                     });
         }
 
     }
 
-    private void addNewQR(StudentDTO studentDTO, UUID organizationUUID) {
+    private void addNewQR(StudentDTO studentDTO, String organizationUUID) {
         DynamicQR newQR = new DynamicQR();
         newQR.setCreationDate(LocalDate.now());
         newQR.setEndDate(newQR.getCreationDate().plusDays(1));
@@ -100,7 +105,7 @@ public class Checker extends Thread {
         dynamicQRRepository.save(dynamicQR);
     }
 
-    private String makeNewContent(UUID organizationId)  {
+    private String makeNewContent(String organizationId)  {
         OrganizationDTO organization = new OrganizationDTO();
 //        try {
 //            organization = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);

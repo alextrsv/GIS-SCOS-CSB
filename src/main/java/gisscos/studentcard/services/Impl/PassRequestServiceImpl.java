@@ -190,7 +190,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок для обработки
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestsByUniversity(UUID universityId) {
+    public Optional<List<PassRequest>> getPassRequestsByUniversity(String universityId) {
         List<PassRequest> targetRequestList =
                 passRequestRepository.findAllByTargetUniversityId(universityId);
 
@@ -223,7 +223,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return количество заявок для обработки
      */
     @Override
-    public Integer getPassRequestsNumberByUniversity(UUID universityId) {
+    public Integer getPassRequestsNumberByUniversity(String universityId) {
         Optional<List<PassRequest>> list = getPassRequestsByUniversity(universityId);
         log.info("Calculating number of passRequests by universityId");
         return list.map(List::size).orElse(0);
@@ -311,7 +311,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 return request;
             }
             log.warn("Impossible to cancel pass request! " +
-                    "User is not author or pass request status invalid.");
+                    "UserDTO is not author or pass request status invalid.");
             return Optional.empty();
         }
         log.warn("Impossible to cancel pass request! Pass request not found.");
