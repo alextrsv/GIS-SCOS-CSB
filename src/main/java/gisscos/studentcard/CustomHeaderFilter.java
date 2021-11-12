@@ -20,6 +20,7 @@ public class CustomHeaderFilter extends OncePerRequestFilter {
     public void doFilterInternal(@NonNull final HttpServletRequest request, final HttpServletResponse response,
                                  final FilterChain chain) throws IOException, ServletException {
         response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Headers", "*");
         chain.doFilter(request, response);
     }
 }
