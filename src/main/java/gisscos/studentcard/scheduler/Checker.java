@@ -2,10 +2,11 @@ package gisscos.studentcard.scheduler;
 
 import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.entities.DynamicQR;
+import gisscos.studentcard.entities.DynamicQRUser;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
-import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.IDynamicQRRepository;
+import gisscos.studentcard.services.IDynamicQRUserService;
 import gisscos.studentcard.services.IStudentService;
 import gisscos.studentcard.services.IUserService;
 import gisscos.studentcard.utils.HashingUtil;
@@ -21,23 +22,17 @@ public class Checker extends Thread {
 
     private final IDynamicQRRepository dynamicQRRepository;
 
-    private final GisScosApiRestClient gisScosApiRestClient;
+    private final IDynamicQRUserService dynamicQRUserService;
 
-    private final IUserService IUserService;
-
-    private final IStudentService IStudentService;
-
-    List<StudentDTO> allStudents;
+    List<DynamicQRUser> allUsers;
     int itemsPerThread;
     int threadNumber;
     int startIndx;
     int endIndex;
 
-    public Checker(IDynamicQRRepository dynamicQRRepository, GisScosApiRestClient gisScosApiRestClient, IUserService IUserService, IStudentService IStudentService) {
+    public Checker(IDynamicQRRepository dynamicQRRepository, IDynamicQRUserService dynamicQRUserService) {
         this.dynamicQRRepository = dynamicQRRepository;
-        this.gisScosApiRestClient = gisScosApiRestClient;
-        this.IUserService = IUserService;
-        this.IStudentService = IStudentService;
+        this.dynamicQRUserService = dynamicQRUserService;
     }
 
     @Override
@@ -49,14 +44,13 @@ public class Checker extends Thread {
 
 
         for (int i = startIndx; i < endIndex; i++) {
-            StudentDTO studentDTO = allStudents.get(i);
+            DynamicQRUser user = allUsers.get(i);
 
-            System.out.println("thr: " + threadNumber + "  currentIndx: " + i + "  student: " + studentDTO.getId() + "");
+            System.out.println("thr: " + threadNumber + "  currentIndx: " + i + "  user: " + user.getId() + "");
 
-            List<String> permittedOrgsID = IStudentService.getPermittedOrganizations(studentDTO);
+            List<String> permittedOrgsID = dynamicQRUserService.getPermittedOrganizations(user);
 
-            List<DynamicQR> usersQRs = dynamicQRRepository.getByUserId(studentDTO.getId());
-
+            List<DynamicQR> usersQRs = dynamicQRRepository.getByUserId(user.getUserId());
 
             //для разрешенных организаций
             permittedOrgsID.forEach(organizationID -> {
@@ -67,12 +61,11 @@ public class Checker extends Thread {
                                 .findAny();
                 if (dynamicQR.isPresent())
                     updateQR(dynamicQR.get());
-                else addNewQR(studentDTO, organizationID);
+                else addNewQR(user, organizationID);
             });
 
-
             //проверка уже хранящихся QR-ов на актуальность (не истек ли срок действия заявки на прозод)
-            dynamicQRRepository.getByUserId(studentDTO.getId())
+            dynamicQRRepository.getByUserId(user.getUserId())
                     .forEach(dynamicQR -> {
                         if (!permittedOrgsID.contains(dynamicQR.getUniversityId()))
                             expireQR(dynamicQR);
@@ -81,12 +74,12 @@ public class Checker extends Thread {
 
     }
 
-    private void addNewQR(StudentDTO studentDTO, String organizationUUID) {
+    private void addNewQR(DynamicQRUser dynamicQRUser, String organizationUUID) {
         DynamicQR newQR = new DynamicQR();
         newQR.setCreationDate(LocalDate.now());
         newQR.setEndDate(newQR.getCreationDate().plusDays(1));
         newQR.setUniversityId(organizationUUID);
-        newQR.setUserId(studentDTO.getId());
+        newQR.setUserId(dynamicQRUser.getUserId());
         newQR.setContent(makeNewContent(organizationUUID));
         newQR.setStatus(QRStatus.NEW);
 
@@ -145,14 +138,13 @@ public class Checker extends Thread {
         this.endIndex = endIndex;
     }
 
-    public List<StudentDTO> getAllStudents() {
-        return allStudents;
+    public List<DynamicQRUser> getAllUsers() {
+        return allUsers;
     }
 
-    public void setAllStudents(List<StudentDTO> allStudents) {
-        this.allStudents = allStudents;
+    public void setAllUsers(List<DynamicQRUser> allUsers) {
+        this.allUsers = allUsers;
     }
-
 
     public int getThreadNumber() {
         return threadNumber;

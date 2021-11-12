@@ -4,7 +4,6 @@ import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.clients.VamRestClient;
 import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
-import gisscos.studentcard.entities.dto.OrganizationsDTO;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudentsDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
@@ -50,8 +49,6 @@ public class GetAllStudentsJob extends QuartzJobBean {
         System.out.println("качаю студентов...");
 
         List<OrganizationDTO> organizationDTOList = List.of(gisScosApiRestClient.makeGetOrganizationsRequest().get());
-
-//        List<OrganizationDTO> organizationDTOList = getOrganizationsResponse.getOrganizationDTOS();
 
         organizationDTOList.forEach(this::downloadStudentsByOrganization);
     }

@@ -14,17 +14,17 @@ public class SchedulerService {
     public SchedulerService(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
-//
-//
-//    public void startGeneratingQRJob(){
-//        JobDetail jobDetail = buildJobDetail();
-//        Trigger trigger = buildTrigger(jobDetail);
-//        try {
-//            scheduler.scheduleJob(jobDetail, trigger);
-//        } catch (SchedulerException e) {
-//            e.printStackTrace();
-//        }
-//    }
+
+
+    public void startGeneratingQRJob(){
+        JobDetail jobDetail = buildJobDetail();
+        Trigger trigger = buildTrigger(jobDetail);
+        try {
+            scheduler.scheduleJob(jobDetail, trigger);
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void startGettingStudentsQRJob(){
         JobDetail jobDetail = buildGetStudentsJobDetail();
@@ -36,22 +36,22 @@ public class SchedulerService {
         }
     }
 
-//    private JobDetail buildJobDetail(){
-//        return JobBuilder.newJob(GenerationQRJob.class)
-//                .withIdentity(UUID.randomUUID().toString())
-//                .withDescription("generation dynamics QR-codes")
-//                .storeDurably()
-//                .build();
-//    }
-//
-//    private CronTrigger buildTrigger(JobDetail jobDetail){
-//        return TriggerBuilder.newTrigger()
-//                .forJob(jobDetail)
-//                .withIdentity(jobDetail.getKey().getName(), "email-triggers")
-//                .withDescription("generate new one-day dynamic QR-code")
-//                .withSchedule(CronScheduleBuilder.cronSchedule("0/10 * * * * ?"))
-//                .build();
-//    }
+    private JobDetail buildJobDetail(){
+        return JobBuilder.newJob(GenerationQRJob.class)
+                .withIdentity(UUID.randomUUID().toString())
+                .withDescription("generation dynamics QR-codes")
+                .storeDurably()
+                .build();
+    }
+
+    private CronTrigger buildTrigger(JobDetail jobDetail){
+        return TriggerBuilder.newTrigger()
+                .forJob(jobDetail)
+                .withIdentity(jobDetail.getKey().getName(), "email-triggers")
+                .withDescription("generate new one-day dynamic QR-code")
+                .withSchedule(CronScheduleBuilder.cronSchedule("0/10 * * * * ?"))
+                .build();
+    }
 
     private JobDetail buildGetStudentsJobDetail(){
         return JobBuilder.newJob(GetAllStudentsJob.class)
