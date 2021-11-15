@@ -13,5 +13,7 @@ public interface IValidateStudentCacheRepository extends JpaRepository<CacheStud
 
     Optional<CacheStudent> findByScosId(UUID uuid);
 
+    Optional<CacheStudent> findByEmail(String email);
+
     boolean deleteByValidationDateBefore(LocalDate date);
 }
