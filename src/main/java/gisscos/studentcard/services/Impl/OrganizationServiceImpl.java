@@ -27,7 +27,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
                 .map(PassRequest::getTargetUniversityId)
                 .collect(Collectors.toList());
-        acceptedOrganizationsUUID.add(studentDTO.getOrganization_id());
+        acceptedOrganizationsUUID.add(UUID.fromString(studentDTO.getOrganization_id()));
         return acceptedOrganizationsUUID;
     }
 }

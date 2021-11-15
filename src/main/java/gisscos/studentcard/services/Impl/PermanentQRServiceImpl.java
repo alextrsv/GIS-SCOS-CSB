@@ -54,7 +54,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         String content = new String ("surname: " + studentDTO.getSurname() +
                 "\nname: " + studentDTO.getName() +
                 "\nmiddle-name: " + studentDTO.getMiddle_name() +
-                "\norganization: " + getOrganizationName(studentDTO.getOrganization_id()) +
+                "\norganization: " + getOrganizationName(UUID.fromString(studentDTO.getOrganization_id())) +
                 "\nstatus: " + "" +
                 "\nrole: " + "" +
                 "\nstud-bilet: " + "" +
@@ -71,7 +71,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         String str =  organizationService.getPermittedOrganizations(studentDTO).stream()
                 .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).getFull_name())
                 .collect(Collectors.joining(", "));
-        str += gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).getFull_name();
+        str += gisScosApiRestClient.makeGetOrganizationRequest(UUID.fromString(studentDTO.getOrganization_id())).getFull_name();
         System.out.println(str);
         return str;
     }

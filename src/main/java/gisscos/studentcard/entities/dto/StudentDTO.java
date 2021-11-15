@@ -23,7 +23,7 @@ public class StudentDTO {
     String external_id;
     String scos_id;
     Integer study_year;
-    UUID organization_id;
+    String organization_id;
     List<StudyPlanDTO> study_plans;
 
 
@@ -41,7 +41,7 @@ public class StudentDTO {
         this.external_id = external_id;
         this.scos_id = scos_id;
         this.study_year = study_year;
-        this.organization_id = organization_id;
+        this.organization_id = organization_id.toString();
 
     }
 }
