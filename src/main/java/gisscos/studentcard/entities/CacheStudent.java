@@ -30,8 +30,15 @@ public class CacheStudent {
     /** Дата валидации студента */
     private LocalDate validationDate;
 
+    private String email;
+
     public CacheStudent(UUID scosId) {
         this.scosId = scosId;
+        this.validationDate = LocalDate.now();
+    }
+
+    public CacheStudent(String email) {
+        this.email = email;
         this.validationDate = LocalDate.now();
     }
 }
