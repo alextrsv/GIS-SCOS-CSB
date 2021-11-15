@@ -186,6 +186,20 @@ public class UserDetailsService implements IUserDetailsService {
     }
 
     /**
+     * Сохранить студента в кэш по почте студента
+     * @param studentDTO студента из ВАМа
+     */
+    private boolean saveStudentInCashByEmail(StudentDTO studentDTO) {
+        if (studentDTO.getEmail() != null) {
+            studentCashRepository.save(
+                    new CacheStudent(studentDTO.getEmail())
+            );
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Удалить устаревшие записи о валидированных студентах
      * @return успешно ли удаление?
      */
