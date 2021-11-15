@@ -89,7 +89,15 @@ public class UserDetailsService implements IUserDetailsService {
         } else {
             Optional<StudentDTO> studentDTO = getStudentByEmail(principal);
             if (studentDTO.isPresent()) {
-                saveStudentInCash(studentDTO.get());
+                student = getStudentFromCacheByEmail(studentDTO.get());
+                if (student.isPresent()) {
+                    return true;
+                }
+                if (saveStudentInCashByScosId(studentDTO.get())) {
+                    return true;
+                } else if (saveStudentInCashByEmail(studentDTO.get())) {
+                    return true;
+                }
                 return true;
             }
         }
