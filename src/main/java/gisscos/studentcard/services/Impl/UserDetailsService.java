@@ -176,6 +176,15 @@ public class UserDetailsService implements IUserDetailsService {
     }
 
     /**
+     * Получить студента из кэша по почте
+     * @param student dto студента
+     * @return студент, если не найден - Optional.empty()
+     */
+    private Optional<CacheStudent> getStudentFromCacheByEmail(StudentDTO student) {
+        return studentCashRepository.findByEmail(student.getEmail());
+    }
+
+    /**
      * Сохранить студента в кэш по идентификатору СЦОСа
      * @param studentDTO студента из ВАМа
      */
