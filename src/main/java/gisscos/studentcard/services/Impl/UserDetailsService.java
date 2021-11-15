@@ -176,13 +176,17 @@ public class UserDetailsService implements IUserDetailsService {
     }
 
     /**
-     * Сохранить студента в кэш
+     * Сохранить студента в кэш по идентификатору СЦОСа
      * @param studentDTO студента из ВАМа
      */
-    private void saveStudentInCash(StudentDTO studentDTO) {
-        studentCashRepository.save(
-                new CacheStudent(UUID.fromString(studentDTO.getScos_id()))
-        );
+    private boolean saveStudentInCashByScosId(StudentDTO studentDTO) {
+        if (studentDTO.getScos_id() != null) {
+            studentCashRepository.save(
+                    new CacheStudent(UUID.fromString(studentDTO.getScos_id()))
+            );
+            return true;
+        }
+        return false;
     }
 
     /**
