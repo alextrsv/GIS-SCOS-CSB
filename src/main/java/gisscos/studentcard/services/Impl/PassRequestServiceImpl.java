@@ -187,30 +187,18 @@ public class PassRequestServiceImpl implements IPassRequestService {
     /**
      * Получение заявок для обработки.
      * @param universityId идентификатор ООВО
+     * @param page номер страницы
      * @return список заявок для обработки
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId) {
-        List<PassRequest> targetRequestList =
-                passRequestRepository.findAllByTargetUniversityId(universityId);
-
-        targetRequestList = targetRequestList.stream()
-                .filter(
-                        request -> request.getStatus() == PassRequestStatus.TARGET_ORGANISATION_REVIEW
-                )
-                .collect(Collectors.toList());
+    public Optional<List<PassRequest>> getPassRequestsForProcessing(Long universityId, Long page) {
         log.info("collect requests sent for consideration to the target OOVO");
-        List<PassRequest> userRequestList = passRequestRepository.findAllByUniversityId(universityId);
-
-        userRequestList = userRequestList.stream()
-                .filter(
-                        request -> request.getStatus() == PassRequestStatus.USER_ORGANISATION_REVIEW
+        return Optional.of(
+                getPassRequestByStatusForUniversity(
+                        PassRequestStatus.TARGET_ORGANISATION_REVIEW,
+                        universityId
                 )
-                .collect(Collectors.toList());
-        log.info("collect requests sent for consideration to their OOVO.");
-        targetRequestList.addAll(userRequestList);
-        log.info("collect all requests together");
-        return Optional.of(targetRequestList);
+        );
     }
 
     /**
