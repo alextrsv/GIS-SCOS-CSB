@@ -331,8 +331,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                     isAuthor(request.get(), dto) ? request.get().getStatus() : null;
             // Если заявку ещё имеет смысл отменять.
             // (с остальными статусами не актуально)
-            if (status == PassRequestStatus.USER_ORGANISATION_REVIEW
-                 || status == PassRequestStatus.TARGET_ORGANISATION_REVIEW) {
+            if (status == PassRequestStatus.TARGET_ORGANISATION_REVIEW) {
 
                 request.get().setStatus(PassRequestStatus.CANCELED_BY_CREATOR);
                 passRequestRepository.save(request.get());
