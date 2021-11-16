@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Сервис для работы с заявками.
@@ -213,15 +214,20 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Получение количества заявок для обработки.
+     * Получение заявок в обработке.
      * @param universityId идентификатор ООВО
-     * @return количество заявок для обработки
+     * @param page номер страницы
+     * @return список заявок в обработке
      */
     @Override
-    public Integer getPassRequestsNumberByUniversity(Long universityId) {
-        Optional<List<PassRequest>> list = getPassRequestsByUniversity(universityId);
-        log.info("Calculating number of passRequests by universityId");
-        return list.map(List::size).orElse(0);
+    public Optional<List<PassRequest>> getPassRequestsInProcessing(Long universityId, Long page) {
+        log.info("collect requests sent in consideration to the target OOVO");
+        return Optional.of(
+                getPassRequestByStatusForUniversity(
+                        PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
+                        universityId
+                )
+        );
     }
 
     /**
