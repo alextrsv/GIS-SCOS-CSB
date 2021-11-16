@@ -1,8 +1,11 @@
 package gisscos.studentcard.services.Impl;
 
+import com.google.gson.Gson;
 import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.clients.VamRestClient;
 import gisscos.studentcard.entities.DynamicQRUser;
+import gisscos.studentcard.entities.dto.OrganizationInQRDTO;
+import gisscos.studentcard.entities.dto.PermanentStudentQRDTO;
 import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudyPlanDTO;
 import gisscos.studentcard.services.IDynamicQRUserService;
@@ -13,10 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class StudentServiceImpl implements IStudentService {
@@ -37,6 +40,9 @@ public class StudentServiceImpl implements IStudentService {
         this.dynamicQRUserService = dynamicQRUserService;
     }
 
+
+
+
     @Override
     public Set<String> getPermittedOrganizations(StudentDTO studentDTO) {
         return dynamicQRUserService.getPermittedOrganizations(new DynamicQRUser(studentDTO));
@@ -47,37 +53,50 @@ public class StudentServiceImpl implements IStudentService {
         return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).get().getShort_name();
     }
 
-    @Override
-    public String getPermittedOrganizationsNamesAsString(StudentDTO studentDTO) {
-        return getPermittedOrganizations(studentDTO).stream()
-                .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).get().getShort_name())
-                .collect(Collectors.joining(", "));
-    }
 
     @Override
     public String makeContent(StudentDTO studentDTO){
         String finalContent = makeUsefullContent(studentDTO);
         try {
-            finalContent += "\nhash: " + HashingUtil.getHash(finalContent);
+            finalContent = finalContent.substring(0, finalContent.length()-1);
+            finalContent += ", \"hash\": \"" + HashingUtil.getHash(finalContent) + "\"}";
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return finalContent;
     }
 
+    private List<OrganizationInQRDTO> getDPermittedOrgs(StudentDTO studentDTO){
+
+        List<OrganizationInQRDTO> orgs = new ArrayList<>();
+
+        dynamicQRUserService.getAcceptedPassRequests(new DynamicQRUser(studentDTO))
+                .forEach(passRequest -> {
+                    orgs.add(new OrganizationInQRDTO(getOrganizationsName(studentDTO), "",
+                            passRequest.getStartDate().toString() + " - " + passRequest.getEndDate().toString()));
+                });
+        return orgs;
+    }
 
     public String makeUsefullContent(StudentDTO studentDTO) {
-        String content = ("surname: " + studentDTO.getSurname() +
-                "\nname: " + studentDTO.getName() +
-                "\nmiddle-name: " + studentDTO.getMiddle_name() +
-                "\norganization: " + getOrganizationsName(studentDTO) +
-                "\nstatus: " + "status" +
-                "\nrole: " + "student" +
-                "\nstud-bilet: " + "scos" + studentDTO.getId().toString().substring(0, 6) +
-                "\neducation_form: " +  getEducationForm(studentDTO.getStudy_plans()) +
-                "\nstart_year: " + getStartYear(studentDTO) +
-                "\nstud-bilet-duration: " +  getEndYear(studentDTO) +
-                "\naccessed organizations: " + getPermittedOrganizationsNamesAsString(studentDTO));
+        PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
+
+        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getId()));
+        permanentStudentQRDTO.setSurname(studentDTO.getSurname());
+        permanentStudentQRDTO.setName(studentDTO.getName());
+        permanentStudentQRDTO.setMiddle_name( studentDTO.getMiddle_name());
+        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));
+        permanentStudentQRDTO.setStatus("status");
+        permanentStudentQRDTO.setRole("student");
+        permanentStudentQRDTO.setStud_bilet("scos" + studentDTO.getId().toString().substring(0, 6));
+        permanentStudentQRDTO.setEducation_form( getEducationForm(studentDTO.getStudy_plans()));
+        permanentStudentQRDTO.setStart_year(getStartYear(studentDTO));
+        permanentStudentQRDTO.setStud_bilet_duration(getEndYear(studentDTO));
+        permanentStudentQRDTO.setAccessed_organizations(getDPermittedOrgs(studentDTO));
+
+        Gson p = new Gson();
+
+        String content = p.toJson(permanentStudentQRDTO);
 
         System.out.println(content);
         return content;

@@ -10,8 +10,6 @@ public interface IStudentService {
 
     String getOrganizationsName(StudentDTO studentDTO);
 
-    String getPermittedOrganizationsNamesAsString(StudentDTO studentDTO);
-
     String makeContent(StudentDTO studentDTO);
 
     String makeUsefullContent(StudentDTO studentDTO);

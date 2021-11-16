@@ -52,33 +52,36 @@ public class DynamicQRUserServiceImpl implements IDynamicQRUserService {
     @Override
     public Set<String> getPermittedOrganizations(DynamicQRUser user) {
 
+        return getAcceptedPassRequests(user).stream()
+                .map(PassRequest::getTargetUniversityId)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<PassRequest> getAcceptedPassRequests(DynamicQRUser user){
         /*
         FOR GROUP TYPE
         1. Получить List<PassRequestUser> по userId
         2. Из полученного списка получить список id заявок
-        3. Для каждого id заявки получить заявку из бд и получить оттуда targetUniversity
+        3. Для каждого id заявки получить заявку из бд
 
         Для SINGLE TYPE
         1. Получить заявки по userId
         2. Отфильртовать их по типу (SINGLE)
-        3. Для каждой получить targetUniversity*/
+        */
 
-        //SINGLE
-        List<String> acceptedOrganizationsID = passRequestService.getPassRequestsByUserId(user.getUserId()).get()
+        List<PassRequest> acceptedRequestsForUser = passRequestService.getPassRequestsByUserId(user.getUserId()).get()
                 .stream()
                 .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
                 .filter(passRequest -> passRequest.getType() == PassRequestType.SINGLE)
-                .map(PassRequest::getTargetUniversityId)
                 .collect(Collectors.toList());
 
-         List<String> groupOrgs = passRequestUserRepository.getByUserId(user.getUserId()).stream()
-                 .map(passRequestUser -> passRequestService.getPassRequestById(passRequestUser.getPassRequestId()))
-                 .filter(passRequest -> passRequest.get().getType() == PassRequestType.GROUP)
-                 .map(passRequest -> passRequest.get().getTargetUniversityId()).collect(Collectors.toList());
+        acceptedRequestsForUser.addAll(passRequestUserRepository.getByUserId(user.getUserId()).stream()
+                .map(passRequestUser -> passRequestService.getPassRequestById(passRequestUser.getPassRequestId()).get())
+                .filter(passRequest -> passRequest.getType() == PassRequestType.GROUP)
+                .collect(Collectors.toList()));
 
-         acceptedOrganizationsID.addAll(groupOrgs);
-
-        return new LinkedHashSet<String>(acceptedOrganizationsID);
+        return new LinkedHashSet<>(acceptedRequestsForUser);
     }
+
 
 }
