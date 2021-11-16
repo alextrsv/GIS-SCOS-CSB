@@ -14,9 +14,11 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
-    Optional<List<PassRequest>> getPassRequestsByUniversity(Long universityId);
+    Optional<List<PassRequest>> getPassRequestsForProcessing(Long universityId, Long page);
 
-    Integer getPassRequestsNumberByUniversity(Long universityId);
+    Optional<List<PassRequest>> getPassRequestsInProcessing(Long universityId, Long page);
+
+    Optional<List<PassRequest>> getProcessedPassRequests(Long universityId, Long page);
 
     Optional<PassRequest> getPassRequestById(Long id);
 
