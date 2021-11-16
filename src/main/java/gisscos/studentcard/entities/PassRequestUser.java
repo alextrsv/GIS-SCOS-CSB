@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.util.UUID;
 
 /**
  * Сущность, описывающая пользователя, указанного в групповой заявке
@@ -26,9 +27,9 @@ public class PassRequestUser {
     /** Заявка, к которой прикреплен пользователь (в таблице хранится только её id) */
     private Long passRequestId;
     /** Id пользователя, прикрепленного к заявке */
-    private Long userId;
+    private UUID userId;
 
-    public PassRequestUser(Long passRequestId, Long userId) {
+    public PassRequestUser(Long passRequestId, UUID userId) {
         this.passRequestId = passRequestId;
         this.userId = userId;
     }
