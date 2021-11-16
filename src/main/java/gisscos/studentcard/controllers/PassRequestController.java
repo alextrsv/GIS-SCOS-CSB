@@ -117,12 +117,27 @@ public class PassRequestController {
     /**
      * Получение заявок для обработки администратором ООВО
      * @param universityId идентификатор ООВО
+     * @param page номер страницы
+     * @param status статус заявок
      * @return список заявок для обработки
      */
-    @GetMapping("/get/requests/{universityId}")
-    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable Long universityId) {
-        return passRequestService.getPassRequestsByUniversity(universityId).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    @GetMapping("/get/requests/{universityId}?page={page}&status={status}")
+    public ResponseEntity<List<PassRequest>> getPassRequestsForUniversity(@PathVariable Long universityId,
+                                                                          @PathVariable Long page,
+                                                                          @PathVariable String status) {
+        switch (status) {
+            case "forProcessing":
+                return passRequestService.getPassRequestsForProcessing(universityId, page).map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+            case "inProcessing":
+                return passRequestService.getPassRequestsInProcessing(universityId, page).map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+            case "processed":
+                return passRequestService.getProcessedPassRequests(universityId, page).map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+            default:
+                return ResponseEntity.notFound().build();
+        }
     }
 
     /**
