@@ -13,10 +13,7 @@ import gisscos.studentcard.utils.HashingUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class Checker extends Thread {
 
@@ -48,7 +45,7 @@ public class Checker extends Thread {
 
             System.out.println("thr: " + threadNumber + "  currentIndx: " + i + "  user: " + user.getId() + "");
 
-            List<String> permittedOrgsID = dynamicQRUserService.getPermittedOrganizations(user);
+            Set<String> permittedOrgsID = dynamicQRUserService.getPermittedOrganizations(user);
 
             List<DynamicQR> usersQRs = dynamicQRRepository.getByUserId(user.getUserId());
 
