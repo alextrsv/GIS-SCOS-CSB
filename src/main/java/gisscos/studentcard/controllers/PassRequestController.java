@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Контроллер для работы с заявками
@@ -138,18 +137,6 @@ public class PassRequestController {
             default:
                 return ResponseEntity.notFound().build();
         }
-    }
-
-    /**
-     * Получение количества заявок для обработки администратором ООВО
-     * @param universityId идентификатор ООВО
-     * @return количество заявок для обработки
-     */
-    @GetMapping("/get/requests/count/{universityId}")
-    public ResponseEntity<Integer> getPassRequestsNumberForProcessing(@PathVariable Long universityId) {
-        return ResponseEntity.of(
-                Optional.of(passRequestService.getPassRequestsNumberByUniversity(universityId))
-        );
     }
 
     /**
