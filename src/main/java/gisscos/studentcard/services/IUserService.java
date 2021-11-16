@@ -2,11 +2,11 @@ package gisscos.studentcard.services;
 
 import gisscos.studentcard.entities.dto.UserDTO;
 
-import java.util.List;
+import java.util.Set;
 
 public interface IUserService {
 
-    List<String> getPermittedOrganizations(UserDTO user);
+    Set<String> getPermittedOrganizations(UserDTO user);
 
     String getOrganizationsNamesAsString(UserDTO user);
 

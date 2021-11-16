@@ -1,9 +1,9 @@
 package gisscos.studentcard.services.Impl;
 
 import gisscos.studentcard.clients.GisScosApiRestClient;
-import gisscos.studentcard.entities.PassRequest;
+import gisscos.studentcard.entities.DynamicQRUser;
 import gisscos.studentcard.entities.dto.UserDTO;
-import gisscos.studentcard.entities.enums.PassRequestStatus;
+import gisscos.studentcard.services.IDynamicQRUserService;
 import gisscos.studentcard.services.IPassRequestService;
 import gisscos.studentcard.services.IUserService;
 import gisscos.studentcard.utils.HashingUtil;
@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,38 +21,30 @@ public class UserServiceImpl implements IUserService {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
+    private final IDynamicQRUserService dynamicQRUserService;
+
     @Autowired
-    public UserServiceImpl(IPassRequestService passRequestService, GisScosApiRestClient gisScosApiRestClient) {
+    public UserServiceImpl(IPassRequestService passRequestService, GisScosApiRestClient gisScosApiRestClient, IDynamicQRUserService dynamicQRUserService) {
         this.passRequestService = passRequestService;
         this.gisScosApiRestClient = gisScosApiRestClient;
+        this.dynamicQRUserService = dynamicQRUserService;
     }
 
     @Override
-    public List<String> getPermittedOrganizations(UserDTO user) {
-
-        List<String> acceptedOrganizationsUUID = passRequestService.getPassRequestsByUserId(user.getUser_id()).get()
-                .stream()
-                .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
-                .map(PassRequest::getTargetUniversityId)
-                .collect(Collectors.toList());
-        try {
-            acceptedOrganizationsUUID.addAll(user.getUserOrganizationsId());
-        }catch(java.lang.IllegalArgumentException exception){
-            System.err.println("No such university/UUID is invalid");
-        }
-        return acceptedOrganizationsUUID;
+    public Set<String> getPermittedOrganizations(UserDTO userDTO) {
+        return dynamicQRUserService.getPermittedOrganizations(new DynamicQRUser(userDTO));
     }
 
     @Override
     public String getOrganizationsNamesAsString(UserDTO user) {
         return user.getUserOrganizationsId().stream()
-                .map(id -> gisScosApiRestClient.makeGetOrganizationRequest(id).get().getFull_name()).collect(Collectors.joining(", "));
+                .map(id -> gisScosApiRestClient.makeGetOrganizationRequest(id).get().getShort_name()).collect(Collectors.joining(", "));
     }
 
     @Override
     public String getPermittedOrganizationsNamesAsString(UserDTO user) {
         return getPermittedOrganizations(user).stream()
-                .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).get().getFull_name())
+                .map(orgId -> gisScosApiRestClient.makeGetOrganizationRequest(orgId).get().getShort_name())
                 .collect(Collectors.joining(", "));
     }
 

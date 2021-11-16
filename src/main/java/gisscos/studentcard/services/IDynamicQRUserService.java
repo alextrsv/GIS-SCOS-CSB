@@ -4,10 +4,11 @@ import gisscos.studentcard.entities.DynamicQRUser;
 import gisscos.studentcard.entities.dto.StudentDTO;
 
 import java.util.List;
+import java.util.Set;
 
 public interface IDynamicQRUserService {
 
     List<DynamicQRUser> addAll(List<StudentDTO> studentDTOList);
 
-    List<String> getPermittedOrganizations(DynamicQRUser user);
+    Set<String> getPermittedOrganizations(DynamicQRUser user);
 }
