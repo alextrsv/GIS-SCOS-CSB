@@ -1,5 +1,6 @@
 package gisscos.studentcard.services.Impl;
 
+import gisscos.studentcard.entities.DynamicQRUser;
 import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.PassRequestChangeLogEntry;
 import gisscos.studentcard.entities.PassRequestUser;
@@ -8,6 +9,7 @@ import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
+import gisscos.studentcard.repositories.IDynamicQRUserRepository;
 import gisscos.studentcard.repositories.IPassRequestChangeLogRepository;
 import gisscos.studentcard.repositories.IPassRequestRepository;
 import gisscos.studentcard.repositories.IPassRequestUserRepository;
@@ -33,14 +35,16 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private final IPassRequestRepository passRequestRepository;
     private final IPassRequestUserRepository passRequestUserRepository;
     private final IPassRequestChangeLogRepository passRequestChangeLogRepository;
+    private final IDynamicQRUserRepository dynamicQRUserRepository;
 
     @Autowired
     public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
                                   IPassRequestUserRepository passRequestUserRepository,
-                                  IPassRequestChangeLogRepository passRequestChangeLogRepository) {
+                                  IPassRequestChangeLogRepository passRequestChangeLogRepository, IDynamicQRUserRepository dynamicQRUserRepository) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
         this.passRequestChangeLogRepository = passRequestChangeLogRepository;
+        this.dynamicQRUserRepository = dynamicQRUserRepository;
     }
 
     /**
@@ -61,12 +65,19 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 dto.getTargetUniversityName(), dto.getUniversityName()
         );
 
+//        ADD NEW USER FROM SINGLE REQUEST
+        if (dto.getType() == PassRequestType.SINGLE && !dynamicQRUserRepository.existsByUserId(dto.getUserId())){
+            dynamicQRUserRepository.save(new DynamicQRUser(dto.getUserId(), dto.getUniversityId()));
+        }
+
         if (dto.getType() == PassRequestType.GROUP) {
             long id = passRequestRepository.save(passRequest).getId();
 
             for (PassRequestUserDTO user : dto.getUsers()) {
                 user.setPassRequestId(id);
                 addUserToPassRequest(user);
+                if (!dynamicQRUserRepository.existsByUserId(user.getUserId()))
+                    dynamicQRUserRepository.save(new DynamicQRUser(user.getUserId(), dto.getUniversityId()));
             }
             if (getPassRequestById(id).isPresent())
                 return getPassRequestById(id).get();
@@ -88,7 +99,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
             // Если такой пользователь в заявке уже есть
             if (passRequestUserRepository
-                    .existsByPassRequestIdAndUserId(dto.getUserId(), dto.getPassRequestId())) {
+                    .existsByPassRequestIdAndUserId( dto.getPassRequestId(), dto.getUserId())) {
                 log.info("the user is already associated to the pass request");
                 return Optional.empty();
             }
