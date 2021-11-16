@@ -2,6 +2,7 @@ package gisscos.studentcard.entities;
 
 
 import gisscos.studentcard.entities.dto.StudentDTO;
+import gisscos.studentcard.entities.dto.UserDTO;
 import lombok.*;
 
 import javax.persistence.Entity;
@@ -29,5 +30,15 @@ public class DynamicQRUser {
     public DynamicQRUser(StudentDTO studentDTO) {
         this.userId = studentDTO.getId();
         this.organizationId = studentDTO.getOrganization_id();
+    }
+
+    public DynamicQRUser(UserDTO userDTO) {
+        this.userId = userDTO.getUser_id();
+        this.organizationId = userDTO.getUserOrganizationsId().get(0);
+    }
+
+    public DynamicQRUser(UUID userId, String organizationId) {
+        this.userId = userId;
+        this.organizationId = organizationId;
     }
 }
