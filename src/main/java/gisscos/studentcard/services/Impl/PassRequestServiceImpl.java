@@ -225,6 +225,46 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
+     * Получение обработанных заявок.
+     * @param universityId идентификатор ООВО
+     * @param page номер страницы
+     * @return список обработанных заявок
+     */
+    @Override
+    public Optional<List<PassRequest>> getProcessedPassRequests(Long universityId, Long page) {
+        Stream<PassRequest> acceptedRequests =
+                getPassRequestByStatusForUniversity(
+                        PassRequestStatus.ACCEPTED, universityId
+                ).stream();
+
+        Stream<PassRequest> expiredRequests =
+                getPassRequestByStatusForUniversity(
+                        PassRequestStatus.EXPIRED,
+                        universityId
+                ).stream();
+
+        Stream<PassRequest> rejectedRequests =
+                getPassRequestByStatusForUniversity(
+                        PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
+                        universityId
+                ).stream();
+
+        Stream<PassRequest> canceledRequests =
+                getPassRequestByStatusForUniversity(
+                        PassRequestStatus.CANCELED_BY_CREATOR,
+                        universityId
+                ).stream();
+
+        log.info("collect considered requests sent for to the OOVO");
+        return Optional.of(
+                Stream.concat(
+                        Stream.concat(acceptedRequests, expiredRequests),
+                        Stream.concat(rejectedRequests, canceledRequests)
+                ).collect(Collectors.toList())
+        );
+    }
+
+    /**
      * Обновление заявки
      * @param dto DTO обновленной заявки
      * @return обновленная заявка
