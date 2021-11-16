@@ -461,4 +461,22 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private Optional<PassRequest> getPassRequest(Long id) {
         return passRequestRepository.findById(id);
     }
+
+    /**
+     * Получить список заявок для университета по статусу
+     * @param status статус заявки
+     * @param universityId идентификатор университета
+     * @return список заявок
+     */
+    private List<PassRequest> getPassRequestByStatusForUniversity(PassRequestStatus status,
+                                                                  Long universityId) {
+        List<PassRequest> targetRequestList =
+                passRequestRepository.findAllByTargetUniversityId(universityId);
+
+        return targetRequestList.stream()
+                .filter(
+                        request -> request.getStatus() == status
+                )
+                .collect(Collectors.toList());
+    }
 }
