@@ -514,13 +514,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
      */
     private List<PassRequest> getPassRequestByStatusForUniversity(PassRequestStatus status,
                                                                   Long universityId) {
-        List<PassRequest> targetRequestList =
-                passRequestRepository.findAllByTargetUniversityId(universityId);
-
-        return targetRequestList.stream()
-                .filter(
-                        request -> request.getStatus() == status
-                )
-                .collect(Collectors.toList());
+        return passRequestRepository
+                .findAllByTargetUniversityIdAndStatus(
+                        universityId,
+                        status
+                );
     }
 }
