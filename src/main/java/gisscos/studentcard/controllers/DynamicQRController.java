@@ -28,12 +28,12 @@ public class DynamicQRController {
     private ResponseEntity<List<DynamicQR>> getInfo(@PathVariable UUID userId,
                                                     @RequestParam(name = "organizationId") UUID organizationId){
 
-        return dynamicQRService.getInfo(userId, organizationId).map(ResponseEntity::ok)
+        return dynamicQRService.getQRByUserAndOrganization(userId, organizationId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping("download/{userId}")
-    public ResponseEntity<Resource> downloadQrAsFile(@PathVariable UUID userId,
+    public ResponseEntity<Resource> downloadQRAsFile(@PathVariable UUID userId,
                                                      @RequestParam(name = "organizationId") UUID organizationId){
 
         return dynamicQRService.downloadQRAsFile(userId, organizationId).map(resource ->
@@ -44,10 +44,25 @@ public class DynamicQRController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @GetMapping("permitted/{userId}")
+    public ResponseEntity<List<DynamicQR>> downloadAllPermittedQRAsFile(@PathVariable UUID userId){
+
+        return dynamicQRService.getAllPermittedQRsAsFile(userId).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+
+    }
+
     @GetMapping("email/{userId}")
     public ResponseEntity<Resource> sendViaEmail(@PathVariable UUID userId,
                                                      @RequestParam(name = "organizationId") UUID organizationId){
         return dynamicQRService.sendQRViaEmail(userId, organizationId);
+    }
+
+
+    @GetMapping("content/")
+    public ResponseEntity<List<String>> downloadQRsContent(@RequestParam(name = "organizationId") UUID organizationId){
+        return dynamicQRService.getQRsContentByOrganization(organizationId).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
 }

@@ -46,7 +46,6 @@ public class GenerationQRJob extends QuartzJobBean {
         System.out.println("Hi! ---" + new Date());
         System.out.println("new QR generating");
         generateQR();
-
     }
 
     /**
@@ -119,5 +118,4 @@ public class GenerationQRJob extends QuartzJobBean {
         String randomUUID = String.valueOf(UUID.randomUUID());
         return HashingUtil.getHash(randomUUID);
     }
-
 }

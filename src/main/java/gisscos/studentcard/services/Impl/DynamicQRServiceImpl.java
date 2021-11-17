@@ -15,9 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class DynamicQRServiceImpl implements IDynamicQRService {
@@ -46,18 +48,17 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
      * todo: в качестве контента сейчас применяется строка "someContent". Нужно заменить на реальные данные (от ГИС СЦОС)
      * */
     @Override
-    public Optional<List<DynamicQR>> getInfo(UUID userId, UUID organizationId) {
+    public Optional<List<DynamicQR>> getQRByUserAndOrganization(UUID userId, UUID organizationId) {
         List<DynamicQR> usersQrs = dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId);
         if (!usersQrs.isEmpty())
             return Optional.ofNullable(dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId));
         else return Optional.empty();
-
     }
 
     @Override
     public Optional<Resource> downloadQRAsFile(UUID userId, UUID organizationId) {
 
-      Optional<DynamicQR> activeQR = getActiveQR(userId, organizationId);
+      Optional<DynamicQR> activeQR = getActiveQRByOrganization(userId, organizationId);
         if (activeQR.isPresent()) {
             BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(activeQR.get().getContent());
             return Converter.getResource(qrCodeImage);
@@ -65,8 +66,8 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
         else return Optional.empty();
     }
 
-    private Optional<DynamicQR> getActiveQR(UUID userId, UUID organizationId){
-        Optional<List<DynamicQR>> dynamicQRs = getInfo(userId, organizationId);
+    private Optional<DynamicQR> getActiveQRByOrganization(UUID userId, UUID organizationId){
+        Optional<List<DynamicQR>> dynamicQRs = getQRByUserAndOrganization(userId, organizationId);
 
         Optional<DynamicQR> activeQR = Optional.empty();
         if (dynamicQRs.isPresent()) {
@@ -78,6 +79,25 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
         return activeQR;
     }
 
+
+    @Override
+    public Optional<List<DynamicQR>> getAllPermittedQRsAsFile(UUID userId) {
+        Optional<List<DynamicQR>> dynamicQRsByUser = Optional.ofNullable(dynamicQRRepository.getByUserId(userId));
+
+        List<DynamicQR> activeQRs = new ArrayList<>();
+
+        if (dynamicQRsByUser.isPresent()) {
+            for (DynamicQR qr : dynamicQRsByUser.get()) {
+                if (qr.getStatus() != QRStatus.EXPIRED && qr.getStatus() != QRStatus.DELETED)
+                    activeQRs.add(qr);
+            }
+        }
+        if (activeQRs.size() != 0)
+            return Optional.of(activeQRs);
+        else return Optional.empty();
+    }
+
+
     @Override
     public ResponseEntity<Resource> sendQRViaEmail(UUID userId, UUID organizationId) {
 
@@ -86,12 +106,19 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
         OrganizationDTO organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
 
-        QRMessage qrMessage = new QRMessage(studentDTO, getActiveQR(userId, organizationId).get(), organizationDTO );
+        QRMessage qrMessage = new QRMessage(studentDTO, getActiveQRByOrganization(userId, organizationId).get(), organizationDTO );
 
         qrMessage.prepareMessage();
 
         mailUtil.sendQRImage(qrMessage);
 
         return null;
+    }
+
+    @Override
+    public Optional<List<String>> getQRsContentByOrganization(UUID organizationId) {
+        return Optional.of(dynamicQRRepository.getByUniversityId(organizationId).stream()
+                .map(DynamicQR::getContent)
+                .collect(Collectors.toList()));
     }
 }
