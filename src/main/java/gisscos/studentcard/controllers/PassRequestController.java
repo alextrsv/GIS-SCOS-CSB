@@ -122,9 +122,9 @@ public class PassRequestController {
      */
     @GetMapping("/get/requests")
     public ResponseEntity<List<PassRequest>> getPassRequestsForUniversity(
-		    @RequestParam(value = "universityId") Long universityId,
-                    @RequestParam(value = "page") Long page,
-                    @RequestParam(value = "status") String status) {
+            @RequestParam(value = "universityId") Long universityId,
+            @RequestParam(value = "page") Long page,
+            @RequestParam(value = "status") String status) {
         switch (status) {
             case "forProcessing":
                 return passRequestService.getPassRequestsForProcessing(universityId, page).map(ResponseEntity::ok)
