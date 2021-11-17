@@ -120,10 +120,11 @@ public class PassRequestController {
      * @param status статус заявок
      * @return список заявок для обработки
      */
-    @GetMapping("/get/requests/{universityId}?page={page}&status={status}")
-    public ResponseEntity<List<PassRequest>> getPassRequestsForUniversity(@PathVariable Long universityId,
-                                                                          @PathVariable Long page,
-                                                                          @PathVariable String status) {
+    @GetMapping("/get/requests")
+    public ResponseEntity<List<PassRequest>> getPassRequestsForUniversity(
+		    @RequestParam(value = "universityId") Long universityId,
+                    @RequestParam(value = "page") int page,
+                    @RequestParam(value = "status") String status) {
         switch (status) {
             case "forProcessing":
                 return passRequestService.getPassRequestsForProcessing(universityId, page).map(ResponseEntity::ok)
