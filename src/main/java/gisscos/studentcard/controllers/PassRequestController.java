@@ -123,7 +123,7 @@ public class PassRequestController {
     @GetMapping("/get/requests")
     public ResponseEntity<List<PassRequest>> getPassRequestsForUniversity(
 		    @RequestParam(value = "universityId") Long universityId,
-                    @RequestParam(value = "page") int page,
+                    @RequestParam(value = "page") Long page,
                     @RequestParam(value = "status") String status) {
         switch (status) {
             case "forProcessing":
