@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Сервис для работы с заявками.
@@ -191,13 +190,19 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок для обработки
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestsForProcessing(Long universityId, Long page) {
+    public Optional<List<PassRequest>> getPassRequestsForProcessing(
+            Long universityId,
+            Long page) {
         log.info("collect requests sent for consideration to the target OOVO");
         return Optional.of(
                 getPassRequestByStatusForUniversity(
                         PassRequestStatus.TARGET_ORGANISATION_REVIEW,
                         universityId
                 )
+                        .stream()
+                        .skip(5L * (page - 1))
+                        .limit(5)
+                        .collect(Collectors.toList())
         );
     }
 
@@ -208,13 +213,19 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок в обработке
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestsInProcessing(Long universityId, Long page) {
+    public Optional<List<PassRequest>> getPassRequestsInProcessing(
+            Long universityId,
+            Long page) {
         log.info("collect requests sent in consideration to the target OOVO");
         return Optional.of(
                 getPassRequestByStatusForUniversity(
                         PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
                         universityId
                 )
+                        .stream()
+                        .skip(5L * (page - 1))
+                        .limit(5)
+                        .collect(Collectors.toList())
         );
     }
 
