@@ -21,11 +21,14 @@ public class PassRequest {
     /** Id заявки в БД. Генерируется автоматически */
     @Id
     @Setter(AccessLevel.PROTECTED)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
+    /** Номер заявки для отображения и поиска по нему на фронте */
+    @GeneratedValue
+    private Long number;
     /** Id пользоватлея - создателя */
     private Long userId;
-    /** Id организации, в которую необходим доступ (целевая ООВО)*/
+    /** Id организации, в которую необходим доступ (целевая ООВО) */
     private Long targetUniversityId;
     /** Название целевой ООВО */
     private String targetUniversityName;
