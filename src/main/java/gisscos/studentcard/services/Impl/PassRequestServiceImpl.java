@@ -236,36 +236,37 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список обработанных заявок
      */
     @Override
-    public Optional<List<PassRequest>> getProcessedPassRequests(Long universityId, Long page) {
-        Stream<PassRequest> acceptedRequests =
-                getPassRequestByStatusForUniversity(
-                        PassRequestStatus.ACCEPTED, universityId
-                ).stream();
+    public Optional<List<PassRequest>> getProcessedPassRequests(
+            Long universityId,
+            Long page) {
 
-        Stream<PassRequest> expiredRequests =
-                getPassRequestByStatusForUniversity(
+        List<PassRequest> requestList = getPassRequestByStatusForUniversity(
+                        PassRequestStatus.ACCEPTED,
+                        universityId
+        );
+
+        requestList.addAll(getPassRequestByStatusForUniversity(
                         PassRequestStatus.EXPIRED,
                         universityId
-                ).stream();
+                ));
 
-        Stream<PassRequest> rejectedRequests =
-                getPassRequestByStatusForUniversity(
+        requestList.addAll(getPassRequestByStatusForUniversity(
                         PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
                         universityId
-                ).stream();
+                ));
 
-        Stream<PassRequest> canceledRequests =
-                getPassRequestByStatusForUniversity(
+        requestList.addAll(getPassRequestByStatusForUniversity(
                         PassRequestStatus.CANCELED_BY_CREATOR,
                         universityId
-                ).stream();
+                ));
 
         log.info("collect considered requests sent for to the OOVO");
         return Optional.of(
-                Stream.concat(
-                        Stream.concat(acceptedRequests, expiredRequests),
-                        Stream.concat(rejectedRequests, canceledRequests)
-                ).collect(Collectors.toList())
+                requestList
+                        .stream()
+                        .skip(5L * (page - 1))
+                        .limit(5)
+                        .collect(Collectors.toList())
         );
     }
 
