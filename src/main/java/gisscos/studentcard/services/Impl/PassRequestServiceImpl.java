@@ -1,5 +1,6 @@
 package gisscos.studentcard.services.Impl;
 
+import gisscos.studentcard.entities.DynamicQRUser;
 import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.PassRequestChangeLogEntry;
 import gisscos.studentcard.entities.PassRequestUser;
@@ -8,6 +9,7 @@ import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
+import gisscos.studentcard.repositories.IDynamicQRUserRepository;
 import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 import gisscos.studentcard.repositories.IPassRequestChangeLogRepository;
 import gisscos.studentcard.repositories.IPassRequestRepository;
@@ -23,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -35,17 +38,20 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private final IPassRequestRepository passRequestRepository;
     private final IPassRequestUserRepository passRequestUserRepository;
     private final IPassRequestChangeLogRepository passRequestChangeLogRepository;
+    private final IDynamicQRUserRepository dynamicQRUserRepository;
 
     private final WebClient devScosApiClient;
 
     @Autowired
     public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
                                   IPassRequestUserRepository passRequestUserRepository,
+                                  IPassRequestChangeLogRepository passRequestChangeLogRepository, IDynamicQRUserRepository dynamicQRUserRepository) {
                                   IPassRequestChangeLogRepository passRequestChangeLogRepository,
                                   WebClient devScosApiClient) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
         this.passRequestChangeLogRepository = passRequestChangeLogRepository;
+        this.dynamicQRUserRepository = dynamicQRUserRepository;
         this.devScosApiClient = devScosApiClient;
     }
 
@@ -68,12 +74,19 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 getRequestNumber()
         );
 
+//        ADD NEW USER FROM SINGLE REQUEST
+        if (dto.getType() == PassRequestType.SINGLE && !dynamicQRUserRepository.existsByUserId(dto.getUserId())){
+            dynamicQRUserRepository.save(new DynamicQRUser(dto.getUserId(), dto.getUniversityId()));
+        }
+
         if (dto.getType() == PassRequestType.GROUP) {
             long id = passRequestRepository.save(passRequest).getId();
 
             for (PassRequestUserDTO user : dto.getUsers()) {
                 user.setPassRequestId(id);
                 addUserToPassRequest(user);
+                if (!dynamicQRUserRepository.existsByUserId(user.getUserId()))
+                    dynamicQRUserRepository.save(new DynamicQRUser(user.getUserId(), dto.getUniversityId()));
             }
             if (getPassRequestById(id).isPresent())
                 return getPassRequestById(id).get();
@@ -95,7 +108,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
             // Если такой пользователь в заявке уже есть
             if (passRequestUserRepository
-                    .existsByPassRequestIdAndUserId(dto.getUserId(), dto.getPassRequestId())) {
+                    .existsByPassRequestIdAndUserId( dto.getPassRequestId(), dto.getUserId())) {
                 log.info("the user is already associated to the pass request");
                 return Optional.empty();
             }
@@ -240,6 +253,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
         ));
     }
 
+    @Override
+    public Optional<List<PassRequest>> getPassRequestsByUserId(UUID userId){
+        return Optional.ofNullable(passRequestRepository.findAllByUserId(userId));
+    }
     /**
      * Получение заявок в обработке.
      * @param universityId идентификатор ООВО
@@ -396,7 +413,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 return request;
             }
             log.warn("Impossible to cancel pass request! " +
-                    "User is not author or pass request status invalid.");
+                    "UserDTO is not author or pass request status invalid.");
             return Optional.empty();
         }
         log.warn("Impossible to cancel pass request! Pass request not found.");

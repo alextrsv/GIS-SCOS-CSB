@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface IPassRequestRepository extends JpaRepository<PassRequest, Long> {
@@ -16,7 +17,11 @@ public interface IPassRequestRepository extends JpaRepository<PassRequest, Long>
 
     List<PassRequest> findAllByTargetUniversityIdAndStatus(String targetUniversityId, PassRequestStatus status);
 
+    List<PassRequest> findAllByTargetUniversityId(String targetUniversityId);
+
     List<PassRequest> findAllByStatus(PassRequestStatus status);
+
+    List<PassRequest> findAllByUserId(UUID userId);
 
     Long countAllByNumberGreaterThan(Long number);
 }

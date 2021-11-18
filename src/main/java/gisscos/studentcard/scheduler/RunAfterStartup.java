@@ -8,11 +8,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class RunAfterStartup {
 
-    @Autowired
+    final
     SchedulerService schedulerService;
+
+    public RunAfterStartup(SchedulerService schedulerService) {
+        this.schedulerService = schedulerService;
+    }
+
+    @Autowired
+    GetAllStudentsJob getAllStudentsJob;
 
     @EventListener(ApplicationReadyEvent.class)
     public void runAfterStartup() {
+        getAllStudentsJob.doJob();
         schedulerService.startGeneratingQRJob();
+//        schedulerService.startGettingStudentsQRJob();
+//        getAllStudentsJob.doJob();
     }
 }

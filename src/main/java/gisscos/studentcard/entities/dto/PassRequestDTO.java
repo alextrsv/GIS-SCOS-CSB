@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Pass request Data transfer object
@@ -13,7 +14,7 @@ import java.util.List;
 @Data
 public class PassRequestDTO {
     private Long id;
-    private Long userId;
+    private String userId;
     private String universityId;
     private String targetUniversityId;
     private String universityName;

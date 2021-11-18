@@ -1,17 +1,14 @@
 package gisscos.studentcard.services;
 
+import gisscos.studentcard.entities.enums.QRDataVerifyStatus;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
+
+import java.util.Optional;
+import java.util.UUID;
 
 public interface IPermanentQRService {
 
-//    BitMatrix addPermanentQR(PermanentQRDTO permanentQRDTO) throws WriterException;
-//
-//    Optional<PermanentQR> getPermanentQRById(Long id);
-//
-//    Optional<PermanentQR> editPermanentQR(PermanentQRDTO permanentQRDTO);
-//
-//    Optional<PermanentQR> deletePermanentQRById(Long id);
+    Optional<Resource> downloadQRAsFile(UUID userId);
 
-    ResponseEntity<Resource> downloadQRAsFile(String userToken);
+    Optional<QRDataVerifyStatus> verifyData(UUID userId, String dataHash);
 }

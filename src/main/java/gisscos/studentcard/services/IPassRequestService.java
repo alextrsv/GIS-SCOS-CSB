@@ -8,6 +8,7 @@ import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface IPassRequestService {
 
@@ -22,6 +23,8 @@ public interface IPassRequestService {
             Optional<String> search
     );
 
+    Optional<List<PassRequest>> getPassRequestsByUserId(UUID userId);
+
     Optional<PassRequest> getPassRequestById(Long id);
 
     Optional<List<PassRequest>> getPassRequestsByUserId(Long id);
@@ -29,6 +32,8 @@ public interface IPassRequestService {
     Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto, Long page, Long pageSize);
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
+
+    Optional<List<PassRequest>> getExpiredPassRequests();
 
     Optional<PassRequest> updatePassRequest(PassRequestDTO dto);
 
@@ -39,6 +44,4 @@ public interface IPassRequestService {
     Optional<PassRequest> deletePassRequestById(Long id);
 
     Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto);
-
-    Optional<List<PassRequest>> getExpiredPassRequests();
 }

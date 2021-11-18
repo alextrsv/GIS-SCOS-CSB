@@ -9,6 +9,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Класс, описывающий сущность заявки
@@ -26,7 +27,7 @@ public class PassRequest {
     /** Номер заявки для отображения и поиска по нему на фронте */
     private Long number;
     /** Id пользоватлея - создателя */
-    private Long userId;
+    private String userId;
     /** Id организации, в которую необходим доступ (целевая ООВО) */
     private String targetUniversityId;
     /** Название целевой ООВО */
@@ -89,7 +90,7 @@ public class PassRequest {
     @ToString.Exclude
     private List<PassRequestChangeLogEntry> changeLog;
 
-    public PassRequest(Long userId, String targetUniversityId, String universityId,
+    public PassRequest(String userId, String targetUniversityId, String universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
                        PassRequestType type, String targetUniversityAddress,
                        String targetUniversityName, String universityName,

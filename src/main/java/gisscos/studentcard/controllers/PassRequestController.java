@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Контроллер для работы с заявками
@@ -32,17 +33,6 @@ public class PassRequestController {
                                  IPassRequestCommentsService passRequestCommentsService) {
         this.passRequestService = passRequestService;
         this.passRequestCommentsService = passRequestCommentsService;
-    }
-
-    /**
-     * TEMP METHOD SHOULD BE REMOVED
-     */
-    private void waitForUI() {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
     }
 
     /**
@@ -95,7 +85,6 @@ public class PassRequestController {
      */
     @GetMapping("/user/get/{id}")
     public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable Long id) {
-        waitForUI();
         return passRequestService.getPassRequestsByUserId(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
