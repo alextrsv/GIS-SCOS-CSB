@@ -4,6 +4,7 @@ import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
+import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,11 +15,12 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
-    Optional<List<PassRequest>> getPassRequestsForProcessing(Long universityId, Long page);
-
-    Optional<List<PassRequest>> getPassRequestsInProcessing(Long universityId, Long page);
-
-    Optional<List<PassRequest>> getProcessedPassRequests(Long universityId, Long page);
+    Optional<List<PassRequest>> getPassRequestsForAdmin(
+            RequestsStatusForAdmin status,
+            String targetUniversityId,
+            Long page,
+            Optional<String> search
+    );
 
     Optional<PassRequest> getPassRequestById(Long id);
 
