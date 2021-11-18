@@ -10,11 +10,13 @@ import java.util.List;
 @Repository
 public interface IPassRequestRepository extends JpaRepository<PassRequest, Long> {
 
-    List<PassRequest> findAllByUserId(Long aLong);
+    List<PassRequest> findAllByUserId(Long userId);
 
-    List<PassRequest> findAllByUniversityId(Long universityId);
+    List<PassRequest> findAllByUniversityId(String universityId);
 
-    List<PassRequest> findAllByTargetUniversityIdAndStatus(Long targetUniversityId, PassRequestStatus status);
+    List<PassRequest> findAllByTargetUniversityIdAndStatus(String targetUniversityId, PassRequestStatus status);
 
     List<PassRequest> findAllByStatus(PassRequestStatus status);
+
+    Long countAllByNumberGreaterThan(Long number);
 }
