@@ -8,13 +8,16 @@ import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
+import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 import gisscos.studentcard.repositories.IPassRequestChangeLogRepository;
 import gisscos.studentcard.repositories.IPassRequestRepository;
 import gisscos.studentcard.repositories.IPassRequestUserRepository;
 import gisscos.studentcard.services.IPassRequestService;
+import gisscos.studentcard.utils.PassRequestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,13 +36,17 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private final IPassRequestUserRepository passRequestUserRepository;
     private final IPassRequestChangeLogRepository passRequestChangeLogRepository;
 
+    private final WebClient devScosApiClient;
+
     @Autowired
     public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
                                   IPassRequestUserRepository passRequestUserRepository,
-                                  IPassRequestChangeLogRepository passRequestChangeLogRepository) {
+                                  IPassRequestChangeLogRepository passRequestChangeLogRepository,
+                                  WebClient devScosApiClient) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
         this.passRequestChangeLogRepository = passRequestChangeLogRepository;
+        this.devScosApiClient = devScosApiClient;
     }
 
     /**
@@ -520,5 +527,34 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         universityId,
                         status
                 );
+    }
+
+    private List<PassRequest> filterRequest(List<PassRequest> requests,
+                                            String search) {
+        switch (PassRequestUtils.getFilterType(search)) {
+            case ORGANIZATION:
+                return PassRequestUtils
+                        .filterRequestListByOrganizations(
+                                requests,
+                                search,
+                                devScosApiClient
+                        );
+            case NUMBER:
+                return requests
+                        .stream()
+                        .filter(
+                                request ->
+                                        request.getNumber() == Long.parseLong(search)
+                        )
+                        .collect(
+                                Collectors.toList()
+                        );
+            default:
+                return List.of();
+        }
+    }
+
+    private Long getRequestNumber() {
+        return passRequestRepository.countAllByNumberGreaterThan(0L) + 1;
     }
 }
