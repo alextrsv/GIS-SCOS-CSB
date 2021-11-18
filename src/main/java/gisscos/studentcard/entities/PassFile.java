@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -21,7 +22,7 @@ public class PassFile {
     @Id
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private UUID id;
 
     /** Имя файла **/
     private String name;
@@ -31,12 +32,12 @@ public class PassFile {
     @JsonIgnore
     private String path;
     /** Идентификатор заявки, к которой прикреплён файл */
-    private Long passRequestId;
+    private UUID passRequestId;
 
 
 
     public PassFile(String name, PassFileType type,
-                    String path, Long passRequestId){
+                    String path, UUID passRequestId){
         this.name = name;
         this.type = type;
         this.path = path;

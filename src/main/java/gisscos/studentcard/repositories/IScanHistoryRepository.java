@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface IScanHistoryRepository extends JpaRepository<ScanHistory, Long> {
+public interface IScanHistoryRepository extends JpaRepository<ScanHistory, UUID> {
 //    List<ScanHistory> getScanHistoriesBySecurityId(UUID securityId);
     Page<ScanHistory> findScanHistoriesBySecurityId(UUID securityId, Pageable pageable);
 

@@ -20,7 +20,7 @@ public class ScanHistory {
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnore
-    private Long id;
+    private UUID id;
     /** id  охранника */
     @JsonIgnore
     private UUID securityId;

@@ -23,7 +23,7 @@ public class PassRequest {
     @Id
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue
-    private Long id;
+    private UUID id;
     /** Номер заявки для отображения и поиска по нему на фронте */
     private Long number;
     /** Id пользоватлея - создателя */

@@ -23,13 +23,13 @@ public class PassRequestUser {
     @Id
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
     /** Заявка, к которой прикреплен пользователь (в таблице хранится только её id) */
-    private Long passRequestId;
+    private UUID passRequestId;
     /** Id пользователя, прикрепленного к заявке */
     private String userId;
 
-    public PassRequestUser(Long passRequestId, String userId) {
+    public PassRequestUser(UUID passRequestId, String userId) {
         this.passRequestId = passRequestId;
         this.userId = userId;
     }

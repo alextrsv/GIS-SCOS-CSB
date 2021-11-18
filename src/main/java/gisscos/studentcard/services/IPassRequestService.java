@@ -25,7 +25,7 @@ public interface IPassRequestService {
 
     Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 
-    Optional<PassRequest> getPassRequestById(Long id);
+    Optional<PassRequest> getPassRequestById(UUID id);
 
     Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto, Long page, Long pageSize);
 
@@ -39,7 +39,7 @@ public interface IPassRequestService {
 
     Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
 
-    Optional<PassRequest> deletePassRequestById(Long id);
+    Optional<PassRequest> deletePassRequestById(UUID id);
 
     Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto);
 }

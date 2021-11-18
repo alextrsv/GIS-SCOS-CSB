@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Сервис для работы с файлами
@@ -60,7 +57,7 @@ public class PassFileServiceImpl implements IPassFileService {
      * @return информация о загруженном файле
      */
     @Override
-    public Optional<PassFile> uploadPassFile(MultipartFile file, Long passRequestId) {
+    public Optional<PassFile> uploadPassFile(MultipartFile file, UUID passRequestId) {
         PassFile passFile;
 
         String path = System.getProperty("user.dir")
@@ -107,7 +104,7 @@ public class PassFileServiceImpl implements IPassFileService {
      * @return список, с информацией о загруженных файлах
      */
     @Override
-    public List<PassFile> uploadPassFiles(MultipartFile[] passFiles, Long passRequestId) {
+    public List<PassFile> uploadPassFiles(MultipartFile[] passFiles, UUID passRequestId) {
         ArrayList<PassFile> uploadedFiles = new ArrayList<>();
 
 

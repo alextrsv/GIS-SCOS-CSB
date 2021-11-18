@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface IPassRequestRepository extends JpaRepository<PassRequest, Long> {
+public interface IPassRequestRepository extends JpaRepository<PassRequest, UUID> {
 
     List<PassRequest> findAllByUserId(String userId);
 

@@ -19,7 +19,7 @@ public class DynamicQRUser {
     @Id
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private UUID id;
 
     /** id юзера в СЦОС */
     private String userId;

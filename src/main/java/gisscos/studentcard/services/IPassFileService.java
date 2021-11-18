@@ -8,11 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface IPassFileService {
-    Optional<PassFile> uploadPassFile(MultipartFile file, Long passRequestId);
+    Optional<PassFile> uploadPassFile(MultipartFile file, UUID passRequestId);
 
-    List<PassFile> uploadPassFiles(MultipartFile[] passFiles, Long passRequestId);
+    List<PassFile> uploadPassFiles(MultipartFile[] passFiles, UUID passRequestId);
 
     ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto);
 

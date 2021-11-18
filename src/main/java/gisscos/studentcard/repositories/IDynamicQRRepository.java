@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface IDynamicQRRepository extends JpaRepository<DynamicQR, Long> {
+public interface IDynamicQRRepository extends JpaRepository<DynamicQR, UUID> {
 
     List<DynamicQR> getByUserId(String userId);
 

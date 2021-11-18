@@ -80,7 +80,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         }
 
         if (dto.getType() == PassRequestType.GROUP) {
-            long id = passRequestRepository.save(passRequest).getId();
+            UUID id = passRequestRepository.save(passRequest).getId();
 
             for (PassRequestUserDTO user : dto.getUsers()) {
                 user.setPassRequestId(id);
@@ -131,7 +131,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return заявка
      */
     @Override
-    public Optional<PassRequest> getPassRequestById(Long id) {
+    public Optional<PassRequest> getPassRequestById(UUID id) {
         log.info("getting pass request by id: {}", id);
         return getPassRequest(id);
     }
@@ -419,7 +419,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * возвращается она, если нет - Optional.empty()
      */
     @Override
-    public Optional<PassRequest> deletePassRequestById(Long id) {
+    public Optional<PassRequest> deletePassRequestById(UUID id) {
         Optional<PassRequest> passRequest = getPassRequest(id);
         if (passRequest.isPresent()) {
             passRequestRepository.deleteById(id);
@@ -551,7 +551,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param id id заявки
      * @return заявка
      */
-    private Optional<PassRequest> getPassRequest(Long id) {
+    private Optional<PassRequest> getPassRequest(UUID id) {
         return passRequestRepository.findById(id);
     }
 

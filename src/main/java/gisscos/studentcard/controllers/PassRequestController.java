@@ -73,7 +73,7 @@ public class PassRequestController {
      * @return заявка
      */
     @GetMapping("/get/{id}")
-    public ResponseEntity<PassRequest> getPassRequestById(@PathVariable Long id) {
+    public ResponseEntity<PassRequest> getPassRequestById(@PathVariable UUID id) {
         return passRequestService.getPassRequestById(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -144,7 +144,7 @@ public class PassRequestController {
      * @return список комментариев
      */
     @GetMapping("/comments/{passRequestId}")
-    public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable Long passRequestId) {
+    public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable UUID passRequestId) {
         return passRequestCommentsService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -208,7 +208,7 @@ public class PassRequestController {
      * @return статус OK (временное решение до spring security)
      */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable Long id) {
+    public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable UUID id) {
         return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }

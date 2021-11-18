@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Класс, описывающий сущность комментариев заявки
@@ -23,11 +24,11 @@ public class PassRequestComment {
     @Id
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
     /** Id пользоватлея - создателя */
     private Long authorId;
     /** Id заявки, к которой прикреплён комментарий */
-    private Long passRequestId;
+    private UUID passRequestId;
     /** Комментарий */
     private String comment;
     /** Дата создания */

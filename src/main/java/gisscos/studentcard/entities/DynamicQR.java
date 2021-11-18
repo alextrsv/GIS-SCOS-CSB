@@ -25,7 +25,7 @@ public class DynamicQR {
     @Id
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private UUID id;
     /** id владельца QR-кода */
     private String userId;
     /** id университета, к которому относится QR-код */
