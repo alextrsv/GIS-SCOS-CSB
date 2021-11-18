@@ -230,7 +230,7 @@ public class PassRequestController {
      * @return удаленный пользователь, если таковой найден
      */
     @DeleteMapping("/delete_user")
-    public ResponseEntity<PassRequestUser> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO dto) {
+    public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto) {
         return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }

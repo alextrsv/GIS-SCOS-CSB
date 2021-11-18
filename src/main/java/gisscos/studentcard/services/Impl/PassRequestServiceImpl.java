@@ -427,8 +427,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return удаленный из заявки пользователь если таковой найден
      */
     @Override
-    public Optional<PassRequestUser> deleteUserFromPassRequest(PassRequestUserDTO dto) {
-        Optional<PassRequest> passRequest = getPassRequest(dto);
+    public Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto) {
+        Optional<PassRequest> passRequest = getPassRequest(dto[0]);
 
         // Если заявка существует и является групповой
         if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
@@ -436,32 +436,24 @@ public class PassRequestServiceImpl implements IPassRequestService {
             // Из списка пользоватлелей заявки выбираются тот,
             // id которого совпадает с искомым id из списка и
             // удаляется если существует.
-            passRequest.get()
-                    .getUsers()
-                    .stream()
-                    .filter(
-                            user -> (Objects.equals(
-                                    user.getUserId(), dto.getUserId())
-                            )
-                    )
-                    .findAny()
-                    .ifPresent(
-                            user -> passRequestUserRepository.deleteById(user.getId())
-                    );
-            log.info("user with id: {} has been deleted from pass request", dto.getUserId());
+            for (PassRequestUserDTO userDTO : dto) {
+                passRequest.get()
+                        .getUsers()
+                        .stream()
+                        .filter(
+                                user -> (Objects.equals(
+                                        user.getUserId(), userDTO.getUserId())
+                                )
+                        )
+                        .findAny()
+                        .ifPresent(
+                                user -> passRequestUserRepository.deleteById(user.getId())
+                        );
+            }
+            log.info("user list with has been deleted from pass request");
             // Удалённый пользователь (по сути PassRequestUserDTO)
-            return passRequest.get()
-                    .getUsers()
-                    .stream()
-                    .filter(
-                            user -> (Objects.equals(
-                                    user.getUserId(), dto.getUserId())
-                            )
-                    )
-                    .findAny();
+            return Optional.of(passRequest.get().getUsers());
         } else {
-            log.warn("user with id: {} hasn't been deleted from pass request " +
-                    "due pass request type isn't \"GROUP\" or pass request isn't present", dto.getUserId());
             return Optional.empty();
         }
     }
