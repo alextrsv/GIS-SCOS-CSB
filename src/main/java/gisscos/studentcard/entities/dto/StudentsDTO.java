@@ -15,5 +15,10 @@ public class StudentsDTO {
     Integer last_page;
     List<StudentDTO> results;
 
+    public StudentsDTO(List<StudentDTO> allStudents, int page_amount) {
+        this.results = allStudents;
+        this.last_page = page_amount;
+    }
+
 //    public StudentsDTO(){}
 }

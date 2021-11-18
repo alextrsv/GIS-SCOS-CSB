@@ -26,7 +26,7 @@ public class DynamicQRController {
 
     @GetMapping("/view/{userId}")
     private ResponseEntity<List<DynamicQR>> getInfo(@PathVariable UUID userId,
-                                                    @RequestParam(name = "organizationId") UUID organizationId){
+                                                    @RequestParam(name = "organizationId") String organizationId){
 
         return dynamicQRService.getQRByUserAndOrganization(userId, organizationId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -34,7 +34,7 @@ public class DynamicQRController {
 
     @GetMapping("download/{userId}")
     public ResponseEntity<Resource> downloadQRAsFile(@PathVariable UUID userId,
-                                                     @RequestParam(name = "organizationId") UUID organizationId){
+                                                     @RequestParam(name = "organizationId") String organizationId){
 
         return dynamicQRService.downloadQRAsFile(userId, organizationId).map(resource ->
                 ResponseEntity.ok()
@@ -54,13 +54,13 @@ public class DynamicQRController {
 
     @GetMapping("email/{userId}")
     public ResponseEntity<Resource> sendViaEmail(@PathVariable UUID userId,
-                                                     @RequestParam(name = "organizationId") UUID organizationId){
+                                                     @RequestParam(name = "organizationId") String organizationId){
         return dynamicQRService.sendQRViaEmail(userId, organizationId);
     }
 
 
     @GetMapping("content/")
-    public ResponseEntity<List<String>> downloadQRsContent(@RequestParam(name = "organizationId") UUID organizationId){
+    public ResponseEntity<List<String>> downloadQRsContent(@RequestParam(name = "organizationId") String organizationId){
         return dynamicQRService.getQRsContentByOrganization(organizationId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }

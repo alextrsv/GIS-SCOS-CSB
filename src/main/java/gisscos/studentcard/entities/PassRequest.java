@@ -27,13 +27,13 @@ public class PassRequest {
     /** Id пользоватлея - создателя */
     private UUID userId;
     /** Id организации, в которую необходим доступ (целевая ООВО)*/
-    private UUID targetUniversityId;
+    private String targetUniversityId;
     /** Название целевой ООВО */
     private String targetUniversityName;
     /** Адрес целевой ООВО */
     private String targetUniversityAddress;
     /** Id организации пользователя */
-    private UUID universityId;
+    private String universityId;
     /** Название ООВО пользователя */
     private String universityName;
     /** Дата создания заявки */
@@ -88,7 +88,7 @@ public class PassRequest {
     @ToString.Exclude
     private List<PassRequestChangeLogEntry> changeLog;
 
-    public PassRequest(UUID userId, UUID targetUniversityId, UUID universityId,
+    public PassRequest(UUID userId, String targetUniversityId, String universityId,
 
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
                        PassRequestType type, String targetUniversityAddress,

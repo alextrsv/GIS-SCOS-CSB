@@ -15,8 +15,8 @@ import java.util.UUID;
 public class PassRequestDTO {
     private Long id;
     private UUID userId;
-    private UUID universityId;
-    private UUID targetUniversityId;
+    private String universityId;
+    private String targetUniversityId;
     private String universityName;
     private String targetUniversityName;
     private String targetUniversityAddress;

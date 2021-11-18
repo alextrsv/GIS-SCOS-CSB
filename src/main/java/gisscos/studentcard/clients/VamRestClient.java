@@ -1,19 +1,15 @@
 package gisscos.studentcard.clients;
 
-import gisscos.studentcard.entities.dto.StudentDTO;
-import gisscos.studentcard.entities.dto.StudentsDTO;
-import gisscos.studentcard.entities.dto.StudyPlanDTO;
+import gisscos.studentcard.entities.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 
 @Slf4j
@@ -50,25 +46,45 @@ public class VamRestClient {
         System.out.println(urlTemplate);
         log.info(urlTemplate);
 
-        ResponseEntity<StudyPlanDTO> response = restTemplate.exchange(
-                urlTemplate,
-                HttpMethod.GET,
-                buildVamRequest(),
-                StudyPlanDTO.class
-        );
+        ResponseEntity<StudyPlanDTO> response;
+//        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildVamRequest(),
+                    StudyPlanDTO.class
+            );
+//        }catch (HttpClientErrorException.NotFound notFoundEx){
+//            return Optional.empty();
+//        }
         return response.getBody();
     }
 
     /** 5.1.5 Получение списка студентов */
-    public List<StudentDTO> makeGetStudentsRequest(){
+    public StudentsDTO makeGetStudentsRequest(int pageSize, int pageNumber, String organizationId){
 
-        String urlTemplate = UriComponentsBuilder.newInstance()
-                .scheme("https")
-                .host(host)
-                .path(vamPrefix)
-                .pathSegment(STUDENTS_ENDPOINT)
-                .encode()
-                .toUriString();
+        String urlTemplate = "";
+        if (organizationId != null) {
+            urlTemplate = UriComponentsBuilder.newInstance()
+                    .scheme("https")
+                    .host(host)
+                    .path(vamPrefix)
+                    .pathSegment(STUDENTS_ENDPOINT)
+                    .queryParam("page_size", pageSize)
+                    .queryParam("page", pageNumber)
+                    .queryParam("organization_id", organizationId)
+                    .encode()
+                    .toUriString();
+        } else
+            urlTemplate = UriComponentsBuilder.newInstance()
+                    .scheme("https")
+                    .host(host)
+                    .path(vamPrefix)
+                    .pathSegment(STUDENTS_ENDPOINT)
+                    .queryParam("page_size", pageSize)
+                    .queryParam("page", pageNumber)
+                    .encode()
+                    .toUriString();
 
         ResponseEntity<StudentsDTO> response = restTemplate.exchange(
                 urlTemplate,
@@ -76,11 +92,12 @@ public class VamRestClient {
                 buildVamRequest(),
                 StudentsDTO.class
         );
-        return Objects.requireNonNull(response.getBody(), "students list is Empty").getResults();
+
+        return response.getBody();
     }
 
     /** 5.1.6 Получение студента */
-    public StudentDTO makeGetStudentRequest(UUID id){
+    public Optional<StudentDTO> makeGetStudentRequest(UUID id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")
@@ -91,15 +108,20 @@ public class VamRestClient {
                 .encode()
                 .toUriString();
 
-        ResponseEntity<StudentDTO> response = restTemplate.exchange(
-                urlTemplate,
-                HttpMethod.GET,
-                buildVamRequest(),
-                StudentDTO.class
-        );
-
-        return Objects.requireNonNull(response.getBody(), "student isn't present");
+        ResponseEntity<StudentDTO> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildVamRequest(),
+                    StudentDTO.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(response.getBody());
     }
+
 
     private HttpEntity buildVamRequest() {
         HttpHeaders headers = new HttpHeaders();

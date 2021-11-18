@@ -13,7 +13,7 @@ public interface IDynamicQRRepository extends JpaRepository<DynamicQR, Long> {
 
     List<DynamicQR> getByUserId(UUID userId);
 
-    List<DynamicQR> getByUserIdAndUniversityId(UUID userId, UUID OrganizationId);
+    List<DynamicQR> getByUserIdAndUniversityId(UUID userId, String OrganizationId);
 
-    List<DynamicQR> getByUniversityId(UUID organizationId);
+    List<DynamicQR> getByUniversityId(String organizationId);
 }

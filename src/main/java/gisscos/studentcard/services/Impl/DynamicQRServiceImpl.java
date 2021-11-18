@@ -48,7 +48,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
      * todo: в качестве контента сейчас применяется строка "someContent". Нужно заменить на реальные данные (от ГИС СЦОС)
      * */
     @Override
-    public Optional<List<DynamicQR>> getQRByUserAndOrganization(UUID userId, UUID organizationId) {
+    public Optional<List<DynamicQR>> getQRByUserAndOrganization(UUID userId, String organizationId) {
         List<DynamicQR> usersQrs = dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId);
         if (!usersQrs.isEmpty())
             return Optional.ofNullable(dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId));
@@ -56,7 +56,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
     }
 
     @Override
-    public Optional<Resource> downloadQRAsFile(UUID userId, UUID organizationId) {
+    public Optional<Resource> downloadQRAsFile(UUID userId, String organizationId) {
 
       Optional<DynamicQR> activeQR = getActiveQRByOrganization(userId, organizationId);
         if (activeQR.isPresent()) {
@@ -66,7 +66,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
         else return Optional.empty();
     }
 
-    private Optional<DynamicQR> getActiveQRByOrganization(UUID userId, UUID organizationId){
+    private Optional<DynamicQR> getActiveQRByOrganization(UUID userId, String organizationId){
         Optional<List<DynamicQR>> dynamicQRs = getQRByUserAndOrganization(userId, organizationId);
 
         Optional<DynamicQR> activeQR = Optional.empty();
@@ -99,12 +99,12 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
 
     @Override
-    public ResponseEntity<Resource> sendQRViaEmail(UUID userId, UUID organizationId) {
+    public ResponseEntity<Resource> sendQRViaEmail(UUID userId, String organizationId) {
 
-        StudentDTO studentDTO = vamRestClient.makeGetStudentRequest(userId);
+        StudentDTO studentDTO = vamRestClient.makeGetStudentRequest(userId).get();
         studentDTO.setEmail("sasha2.tara2000@yandex.ru");
 
-        OrganizationDTO organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
+        OrganizationDTO organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId).get();
 
         QRMessage qrMessage = new QRMessage(studentDTO, getActiveQRByOrganization(userId, organizationId).get(), organizationDTO );
 
@@ -116,7 +116,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
     }
 
     @Override
-    public Optional<List<String>> getQRsContentByOrganization(UUID organizationId) {
+    public Optional<List<String>> getQRsContentByOrganization(String organizationId) {
         return Optional.of(dynamicQRRepository.getByUniversityId(organizationId).stream()
                 .map(DynamicQR::getContent)
                 .collect(Collectors.toList()));

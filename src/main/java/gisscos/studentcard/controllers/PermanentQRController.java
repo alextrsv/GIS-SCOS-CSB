@@ -1,5 +1,6 @@
 package gisscos.studentcard.controllers;
 
+import gisscos.studentcard.entities.enums.QRDataVerifyStatus;
 import gisscos.studentcard.services.IPermanentQRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -34,4 +35,12 @@ public class PermanentQRController {
                         .body(resource))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    @PostMapping("hash")
+    public ResponseEntity<QRDataVerifyStatus> verifyData(@RequestParam UUID userId,
+                                                         @RequestParam String dataHash){
+        return permanentQRService.verifyData(userId, dataHash).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
 }

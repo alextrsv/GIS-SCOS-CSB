@@ -15,9 +15,9 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
-    Optional<List<PassRequest>> getPassRequestsByUniversity(UUID universityId);
+    Optional<List<PassRequest>> getPassRequestsByUniversity(String universityId);
 
-    Integer getPassRequestsNumberByUniversity(UUID universityId);
+    Integer getPassRequestsNumberByUniversity(String universityId);
 
     Optional<List<PassRequest>> getPassRequestsByUserId(UUID userId);
 

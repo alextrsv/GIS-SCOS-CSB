@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class StudentDTO {
+public class StudentDTO extends UserDTO {
 
     UUID id;
     String surname;
@@ -23,14 +23,14 @@ public class StudentDTO {
     String external_id;
     String scos_id;
     Integer study_year;
-    UUID organization_id;
+    String organization_id;
     List<StudyPlanDTO> study_plans;
 
 
 
     public StudentDTO(UUID id, String surname, String name, String middle_name,
                    String snils, String inn, String email, String external_id,
-                   String scos_id, Integer study_year, UUID organization_id) {
+                   String scos_id, Integer study_year, String organization_id) {
         this.id = id;
         this.surname = surname;
         this.name = name;

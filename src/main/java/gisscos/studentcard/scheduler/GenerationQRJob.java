@@ -2,25 +2,23 @@ package gisscos.studentcard.scheduler;
 
 import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.clients.VamRestClient;
-import gisscos.studentcard.entities.DynamicQR;
+import gisscos.studentcard.entities.DynamicQRUser;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
-import gisscos.studentcard.entities.dto.StudentDTO;
-import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.IDynamicQRRepository;
-import gisscos.studentcard.services.OrganizationService;
-import gisscos.studentcard.utils.HashingUtil;
+import gisscos.studentcard.repositories.IDynamicQRUserRepository;
+import gisscos.studentcard.services.IDynamicQRUserService;
+import gisscos.studentcard.services.IStudentService;
+import gisscos.studentcard.services.IUserService;
 import lombok.NonNull;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
-import java.security.NoSuchAlgorithmException;
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 public class GenerationQRJob extends QuartzJobBean {
@@ -31,14 +29,24 @@ public class GenerationQRJob extends QuartzJobBean {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final OrganizationService organizationService;
+    private final IUserService IUserService;
+
+    private final IStudentService IStudentService;
+
+    private final IDynamicQRUserRepository dynamicQRUserRepository;
+
+    private final IDynamicQRUserService dynamicQRUserService;
+
 
     @Autowired
-    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, OrganizationService organizationService, GisScosApiRestClient gisScosApiRestClient) {
+    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, IStudentService IStudentService, IUserService IUserService, IDynamicQRUserRepository dynamicQRUserRepository, IDynamicQRUserService dynamicQRUserService) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.vamRestClient = vamRestClient;
-        this.organizationService = organizationService;
         this.gisScosApiRestClient = gisScosApiRestClient;
+        this.IStudentService = IStudentService;
+        this.IUserService = IUserService;
+        this.dynamicQRUserRepository = dynamicQRUserRepository;
+        this.dynamicQRUserService = dynamicQRUserService;
     }
 
     @Override
@@ -48,74 +56,68 @@ public class GenerationQRJob extends QuartzJobBean {
         generateQR();
     }
 
-    /**
-     * 1. Получить всех студентов
-     * 2. У для каждого получить список разрешений на проход
-     * 3. Для каждой организации в разрешении сгенерировать код, старый, если был, сделать истекшим*/
-    private void generateQR(){
-        List<StudentDTO> allStudents = vamRestClient.makeGetStudentsRequest();
 
-        allStudents.forEach(studentDTO -> {
-            List<UUID> permittedOrgsUUID = organizationService.getPermittedOrganizations(studentDTO);
+    /** Генерация QR-ов
+     * 1. Получить список организаций
+     * 2. Для каждой организации из БД получить пользователей
+     * 3. Проверить разрешения каждого
+     * 4. Сгенерировать код
+     * */
+    public void generateQR(){
 
-            permittedOrgsUUID.forEach(organizationUUID -> {
-                Optional<DynamicQR> dynamicQR =
-                        dynamicQRRepository.getByUserIdAndUniversityId(studentDTO.getId(), organizationUUID)
-                                .stream()
-                                .filter(qr -> qr.getStatus() != QRStatus.EXPIRED && qr.getStatus() != QRStatus.DELETED)
-                                .findAny();
-                if (dynamicQR.isPresent())
-                    updateQR(dynamicQR.get());
-                else addNewQR(studentDTO, organizationUUID);
-            });
+        List<OrganizationDTO> organizationDTOList = List.of(gisScosApiRestClient.makeGetOrganizationsRequest().get());
 
-            dynamicQRRepository.getByUserId(studentDTO.getId())
-                    .forEach(dynamicQR -> {
-                        if (!permittedOrgsUUID.contains(dynamicQR.getUniversityId()))
-                            expireQR(dynamicQR);
-                    });
-        });
+        organizationDTOList.forEach(this::handleUsersOfOrganization);
 
     }
 
-    private void addNewQR(StudentDTO studentDTO, UUID organizationUUID) {
-        DynamicQR newQR = new DynamicQR();
-        newQR.setCreationDate(LocalDate.now());
-        newQR.setEndDate(newQR.getCreationDate().plusDays(1));
-        newQR.setUniversityId(organizationUUID);
-        newQR.setUserId(studentDTO.getId());
-        newQR.setContent(makeNewContent(organizationUUID));
-        newQR.setStatus(QRStatus.NEW);
+    private void handleUsersOfOrganization(OrganizationDTO organizationDTO) {
 
-        dynamicQRRepository.save(newQR);
-    }
+        long start = System.currentTimeMillis();
+//        System.out.println(start);
 
-    private void expireQR(DynamicQR dynamicQR) {
-        dynamicQR.setStatus(QRStatus.EXPIRED);
-        dynamicQRRepository.save(dynamicQR);
-    }
+        int itemsPerThread = 300;
 
-    private void updateQR(DynamicQR dynamicQR)  {
-        dynamicQR.setContent(makeNewContent(dynamicQR.getUniversityId()));
-        dynamicQR.setStatus(QRStatus.UPDATED);
-        dynamicQRRepository.save(dynamicQR);
-    }
+        Optional<String> organizationId = organizationDTO.getOrganizationId();
+        if (organizationId.isEmpty()) return;
 
-    private String makeNewContent(UUID organizationId)  {
-        OrganizationDTO organization = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
-        switch (organization.getQRInterfaceType()){
-            case "wiegand-34":
-                try {
-                    return makeWiegand34QR();
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
+        List<DynamicQRUser> allStudents = dynamicQRUserRepository.getByOrganizationId(organizationDTO.getOrganizationId().get());
+        if (allStudents.isEmpty()) return;
+
+        int threadAmount;
+
+        if (itemsPerThread > allStudents.size())
+            itemsPerThread = allStudents.size();
+
+        threadAmount = allStudents.size()/itemsPerThread;
+
+
+        List<Checker> checkerList = new ArrayList<>();
+
+        for (int i = 0; i < threadAmount; i++){
+            Checker checker = new Checker(dynamicQRRepository, dynamicQRUserService);
+            checker.setThreadNumber(i);
+            checker.setAllUsers(allStudents);
+            checker.setItemsPerThread(itemsPerThread);
+            checker.setStartIndx(itemsPerThread * i);
+            checker.setEndIndex(itemsPerThread * i + itemsPerThread);
+            checkerList.add(checker);
         }
-        return "";
-    }
 
-    private String makeWiegand34QR() throws NoSuchAlgorithmException {
-        String randomUUID = String.valueOf(UUID.randomUUID());
-        return HashingUtil.getHash(randomUUID);
+        for (Checker c: checkerList) {
+            c.start();
+        }
+
+        for (Checker c: checkerList) {
+            try {
+                c.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        long finish = System.currentTimeMillis();
+        long elapsed = finish - start;
+        System.out.println("Прошло времени, мс: " + elapsed);
     }
 }
