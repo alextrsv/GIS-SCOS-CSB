@@ -64,7 +64,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 dto.getUniversityId(), dto.getStartDate(),
                 dto.getEndDate(), dto.getStatus(),
                 dto.getType(), dto.getTargetUniversityAddress(),
-                dto.getTargetUniversityName(), dto.getUniversityName()
+                dto.getTargetUniversityName(), dto.getUniversityName(),
+                getRequestNumber()
         );
 
         if (dto.getType() == PassRequestType.GROUP) {
@@ -190,27 +191,53 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return Optional.empty();
     }
 
+    @Override
+    public Optional<List<PassRequest>> getPassRequestsForAdmin(
+            RequestsStatusForAdmin status,
+            String targetUniversityId,
+            Long page,
+            Optional<String> search
+    ) {
+        switch (status) {
+            case PROCESSED:
+                return getProcessedPassRequests(targetUniversityId, page, search);
+            case IN_PROCESSING:
+                return getPassRequestsInProcessing(targetUniversityId, page, search);
+            case FOR_PROCESSING:
+                return getPassRequestsForProcessing(targetUniversityId, page, search);
+            default:
+                return Optional.empty();
+        }
+    }
+
     /**
      * Получение заявок для обработки.
      * @param universityId идентификатор ООВО
      * @param page номер страницы
      * @return список заявок для обработки
      */
-    @Override
     public Optional<List<PassRequest>> getPassRequestsForProcessing(
-            Long universityId,
-            Long page) {
+            String universityId,
+            Long page,
+            Optional<String> search) {
         log.info("collect requests sent for consideration to the target OOVO");
-        return Optional.of(
+        return search.map(s -> filterRequest(getPassRequestByStatusForUniversity(
+                PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
+                universityId
+        ), s)
+                .stream()
+                .skip(5L * (page - 1))
+                .limit(5)
+                .collect(Collectors.toList())).or(() -> Optional.of(
                 getPassRequestByStatusForUniversity(
-                        PassRequestStatus.TARGET_ORGANISATION_REVIEW,
+                        PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
                         universityId
                 )
                         .stream()
                         .skip(5L * (page - 1))
                         .limit(5)
                         .collect(Collectors.toList())
-        );
+        ));
     }
 
     /**
@@ -219,12 +246,19 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param page номер страницы
      * @return список заявок в обработке
      */
-    @Override
     public Optional<List<PassRequest>> getPassRequestsInProcessing(
-            Long universityId,
-            Long page) {
+            String universityId,
+            Long page,
+            Optional<String> search) {
         log.info("collect requests sent in consideration to the target OOVO");
-        return Optional.of(
+        return search.map(s -> filterRequest(getPassRequestByStatusForUniversity(
+                PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
+                universityId
+        ), s)
+                .stream()
+                .skip(5L * (page - 1))
+                .limit(5)
+                .collect(Collectors.toList())).or(() -> Optional.of(
                 getPassRequestByStatusForUniversity(
                         PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
                         universityId
@@ -233,7 +267,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         .skip(5L * (page - 1))
                         .limit(5)
                         .collect(Collectors.toList())
-        );
+        ));
     }
 
     /**
@@ -242,10 +276,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param page номер страницы
      * @return список обработанных заявок
      */
-    @Override
     public Optional<List<PassRequest>> getProcessedPassRequests(
-            Long universityId,
-            Long page) {
+            String universityId,
+            Long page,
+            Optional<String> search) {
 
         List<PassRequest> requestList = getPassRequestByStatusForUniversity(
                         PassRequestStatus.ACCEPTED,
@@ -268,13 +302,17 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 ));
 
         log.info("collect considered requests sent for to the OOVO");
-        return Optional.of(
+        return search.map(s -> filterRequest(requestList, s)
+                .stream()
+                .skip(5L * (page - 1))
+                .limit(5)
+                .collect(Collectors.toList())).or(() -> Optional.of(
                 requestList
                         .stream()
                         .skip(5L * (page - 1))
                         .limit(5)
                         .collect(Collectors.toList())
-        );
+        ));
     }
 
     /**
@@ -350,7 +388,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                     isAuthor(request.get(), dto) ? request.get().getStatus() : null;
             // Если заявку ещё имеет смысл отменять.
             // (с остальными статусами не актуально)
-            if (status == PassRequestStatus.TARGET_ORGANISATION_REVIEW) {
+            if (status == PassRequestStatus.TARGET_ORGANIZATION_REVIEW) {
 
                 request.get().setStatus(PassRequestStatus.CANCELED_BY_CREATOR);
                 passRequestRepository.save(request.get());
@@ -521,7 +559,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок
      */
     private List<PassRequest> getPassRequestByStatusForUniversity(PassRequestStatus status,
-                                                                  Long universityId) {
+                                                                  String universityId) {
         return passRequestRepository
                 .findAllByTargetUniversityIdAndStatus(
                         universityId,
