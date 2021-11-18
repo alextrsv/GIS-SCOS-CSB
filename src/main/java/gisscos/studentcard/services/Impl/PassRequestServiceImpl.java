@@ -471,13 +471,14 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список удаленных заявок
      */
     @Override
-    public Optional<List<PassRequest>> deleteExpiredPassRequests() {
+    public Optional<List<PassRequest>> getExpiredPassRequests() {
         // Поиск просроченных заявок, изменение их статуса на EXPIRED
         checkExpiredPassRequests();
 
         // Поиск заявок со статусом EXPIRED и CANCELED_BY_CREATOR
         List<PassRequest> expiredList =
                 passRequestRepository.findAllByStatus(PassRequestStatus.EXPIRED);
+        /* Функциональность временно ограничена
         expiredList
                 .addAll(
                         passRequestRepository.findAllByStatus(PassRequestStatus.CANCELED_BY_CREATOR)
@@ -487,7 +488,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
             passRequestRepository.deleteById(request.getId());
         }
         log.info("expired pass requests has been deleted");
-
+        */
+        log.info("expired pass requests has been get");
         return Optional.of(expiredList);
     }
 

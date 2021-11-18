@@ -161,6 +161,15 @@ public class PassRequestController {
     }
 
     /**
+     * Получение просроченных заявок
+     * @return список просроченных заявок, которые были удалены
+     */
+    @GetMapping("/get/expired_requests")
+    public ResponseEntity<List<PassRequest>> getExpiredPassRequests() {
+        return ResponseEntity.of(passRequestService.getExpiredPassRequests());
+    }
+
+    /**
      * Редактирование заявки
      * @param dto DTO заявки
      * @return отредактированная заявка
@@ -224,15 +233,6 @@ public class PassRequestController {
     public ResponseEntity<PassRequestUser> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO dto) {
         return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    /**
-     * Удаление просроченных заявок
-     * @return список просроченных заявок, которые были удалены
-     */
-    @DeleteMapping("/delete/expired_requests")
-    public ResponseEntity<List<PassRequest>> deleteExpiredPassRequests() {
-        return ResponseEntity.of(passRequestService.deleteExpiredPassRequests());
     }
 
     /**
