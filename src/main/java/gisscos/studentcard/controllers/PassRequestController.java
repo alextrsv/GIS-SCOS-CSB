@@ -6,6 +6,7 @@ import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
+import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 import gisscos.studentcard.services.IPassRequestCommentsService;
 import gisscos.studentcard.services.IPassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Контроллер для работы с заявками
@@ -115,30 +117,26 @@ public class PassRequestController {
 
     /**
      * Получение заявок для обработки администратором ООВО
-     * @param universityId идентификатор ООВО
+     * @param targetUniversityId идентификатор ООВО
      * @param page номер страницы
      * @param status статус заявок
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests")
     public ResponseEntity<List<PassRequest>> getPassRequestsForUniversity(
-            @RequestParam(value = "universityId") Long universityId,
+            @RequestParam(value = "targetUniversityId") String targetUniversityId,
             @RequestParam(value = "page") Long page,
-            @RequestParam(value = "status") String status) {
-        switch (status) {
-            case "forProcessing":
-                return passRequestService.getPassRequestsForProcessing(universityId, page).map(ResponseEntity::ok)
-                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-            case "inProcessing":
-                return passRequestService.getPassRequestsInProcessing(universityId, page).map(ResponseEntity::ok)
-                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-            case "processed":
-                return passRequestService.getProcessedPassRequests(universityId, page).map(ResponseEntity::ok)
-                        .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-            default:
-                return ResponseEntity.notFound().build();
+            @RequestParam(value = "status") String status,
+            @RequestParam(value = "search", required = false) Optional<String> search) {
+            return passRequestService.getPassRequestsForAdmin(
+                    RequestsStatusForAdmin.of(status),
+                            targetUniversityId,
+                            page,
+                            search
+                    )
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
         }
-    }
 
     /**
      * Получить список пользователей групповой заявки
