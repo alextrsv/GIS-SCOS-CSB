@@ -49,7 +49,7 @@ public class SchedulerService {
                 .forJob(jobDetail)
                 .withIdentity(jobDetail.getKey().getName(), "email-triggers")
                 .withDescription("generate new one-day dynamic QR-code")
-                .withSchedule(CronScheduleBuilder.cronSchedule("0/10 * * * * ?"))
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 30 21 ? * * *"))
                 .build();
     }
 
@@ -66,7 +66,7 @@ public class SchedulerService {
                 .forJob(jobDetail)
                 .withIdentity(jobDetail.getKey().getName(), "downloading students trigger")
                 .withDescription("download all students from VAM")
-                .withSchedule(CronScheduleBuilder.cronSchedule("0/30 * * * * ?"))
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 0 0 28 AUG ? *"))
                 .build();
     }
 }
