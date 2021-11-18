@@ -14,8 +14,8 @@ import java.util.List;
 public class PassRequestDTO {
     private Long id;
     private Long userId;
-    private Long universityId;
-    private Long targetUniversityId;
+    private String universityId;
+    private String targetUniversityId;
     private String universityName;
     private String targetUniversityName;
     private String targetUniversityAddress;
