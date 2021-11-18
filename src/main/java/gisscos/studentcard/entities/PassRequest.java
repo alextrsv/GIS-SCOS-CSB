@@ -24,18 +24,17 @@ public class PassRequest {
     @GeneratedValue
     private Long id;
     /** Номер заявки для отображения и поиска по нему на фронте */
-    @GeneratedValue
     private Long number;
     /** Id пользоватлея - создателя */
     private Long userId;
     /** Id организации, в которую необходим доступ (целевая ООВО) */
-    private Long targetUniversityId;
+    private String targetUniversityId;
     /** Название целевой ООВО */
     private String targetUniversityName;
     /** Адрес целевой ООВО */
     private String targetUniversityAddress;
     /** Id организации пользователя */
-    private Long universityId;
+    private String universityId;
     /** Название ООВО пользователя */
     private String universityName;
     /** Дата создания заявки */
@@ -90,10 +89,11 @@ public class PassRequest {
     @ToString.Exclude
     private List<PassRequestChangeLogEntry> changeLog;
 
-    public PassRequest(Long userId, Long targetUniversityId, Long universityId,
+    public PassRequest(Long userId, String targetUniversityId, String universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
                        PassRequestType type, String targetUniversityAddress,
-                       String targetUniversityName, String universityName) {
+                       String targetUniversityName, String universityName,
+                       Long number) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
         this.targetUniversityId = targetUniversityId;
@@ -105,5 +105,6 @@ public class PassRequest {
         this.targetUniversityAddress = targetUniversityAddress;
         this.targetUniversityName = targetUniversityName;
         this.universityName = universityName;
+        this.number = number;
     }
 }
