@@ -45,8 +45,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Autowired
     public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
                                   IPassRequestUserRepository passRequestUserRepository,
-                                  IPassRequestChangeLogRepository passRequestChangeLogRepository, IDynamicQRUserRepository dynamicQRUserRepository) {
                                   IPassRequestChangeLogRepository passRequestChangeLogRepository,
+                                  IDynamicQRUserRepository dynamicQRUserRepository,
                                   WebClient devScosApiClient) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
@@ -142,13 +142,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestsByUserId(Long id) {
+    public Optional<List<PassRequest>> getPassRequestsByUserId(String id) {
         log.info("getting pass request by user id: {}", id);
         List<PassRequest> requestList = passRequestRepository.findAllByUserId(id);
-
-        if (requestList.isEmpty()) {
-            return Optional.empty();
-        }
 
         return Optional.of(requestList);
     }
@@ -253,10 +249,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
         ));
     }
 
-    @Override
-    public Optional<List<PassRequest>> getPassRequestsByUserId(UUID userId){
-        return Optional.ofNullable(passRequestRepository.findAllByUserId(userId));
-    }
     /**
      * Получение заявок в обработке.
      * @param universityId идентификатор ООВО

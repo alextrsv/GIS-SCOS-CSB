@@ -73,11 +73,19 @@ public class GetAllStudentsJob extends QuartzJobBean {
 
             //для каждого студента организации создается подтвержденная заявка на проход в свой университет
             studentsOnPage.forEach(studentDTO -> {
-                autoRequestsList.add(new PassRequest(studentDTO.getId(), organizationDTO.getOrganizationId().get(), organizationDTO.getOrganizationId().get(),
+                autoRequestsList.add(new PassRequest(
+                        studentDTO.getId(),
+                        organizationDTO.getOrganizationId().get(),
+                        organizationDTO.getOrganizationId().get(),
                         LocalDate.of(LocalDate.now().getYear(), 8, 1),
                         LocalDate.of(LocalDate.now().getYear() + 1, 7, 1),
-                        PassRequestStatus.ACCEPTED, PassRequestType.SINGLE, "organizationAddress",
-                        organizationDTO.getShort_name(), organizationDTO.getShort_name()));
+                        PassRequestStatus.ACCEPTED,
+                        PassRequestType.SINGLE,
+                        "organizationAddress",
+                        organizationDTO.getShort_name(),
+                        organizationDTO.getShort_name(),
+                        passRequestRepository.countAllByNumberGreaterThan(0L) + 1
+                        ));
             });
 
             dynamicQRUserService.addAll(studentsOnPage);

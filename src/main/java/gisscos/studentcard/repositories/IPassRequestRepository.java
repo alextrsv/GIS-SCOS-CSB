@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 public interface IPassRequestRepository extends JpaRepository<PassRequest, Long> {
 
-    List<PassRequest> findAllByUserId(Long userId);
+    List<PassRequest> findAllByUserId(String userId);
 
     List<PassRequest> findAllByUniversityId(String universityId);
 
@@ -20,8 +20,6 @@ public interface IPassRequestRepository extends JpaRepository<PassRequest, Long>
     List<PassRequest> findAllByTargetUniversityId(String targetUniversityId);
 
     List<PassRequest> findAllByStatus(PassRequestStatus status);
-
-    List<PassRequest> findAllByUserId(UUID userId);
 
     Long countAllByNumberGreaterThan(Long number);
 }

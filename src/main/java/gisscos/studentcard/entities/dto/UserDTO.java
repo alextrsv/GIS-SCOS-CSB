@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class UserDTO {
 
-    private UUID user_id;
+    private String user_id;
     private String email;
     private String last_name;
     private String first_name;

@@ -27,7 +27,7 @@ public class DynamicQR {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     /** id владельца QR-кода */
-    private UUID userId;
+    private String userId;
     /** id университета, к которому относится QR-код */
     private String universityId;
     /** статус QR-кода */
@@ -46,7 +46,7 @@ public class DynamicQR {
     String content;
 
 
-    public DynamicQR(UUID userId, String universityId, QRStatus status,
+    public DynamicQR(String userId, String universityId, QRStatus status,
                      String characterSet, ErrorCorrectionLevel errorCorrectionLevel, int margin) {
         this.creationDate = LocalDate.now();
         this.endDate = creationDate.plusDays(1);
@@ -58,7 +58,7 @@ public class DynamicQR {
         this.margin = margin;
     }
 
-    public DynamicQR(UUID userId, String universityId, QRStatus status, String content) {
+    public DynamicQR(String userId, String universityId, QRStatus status, String content) {
         this.creationDate = LocalDate.now();
         this.endDate = creationDate.plusDays(1);
         this.userId = userId;

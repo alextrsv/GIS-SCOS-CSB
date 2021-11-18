@@ -80,12 +80,12 @@ public class PassRequestController {
 
     /**
      * Получение заявки по id пользователя
-     * @param id заявки
+     * @param userId пользователь, создавший заявку
      * @return заявка
      */
-    @GetMapping("/user/get/{id}")
-    public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable Long id) {
-        return passRequestService.getPassRequestsByUserId(id).map(ResponseEntity::ok)
+    @GetMapping("/user/get/{userId}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable String userId) {
+        return passRequestService.getPassRequestsByUserId(userId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

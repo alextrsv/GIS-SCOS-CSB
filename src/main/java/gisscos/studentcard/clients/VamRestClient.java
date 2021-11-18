@@ -97,7 +97,7 @@ public class VamRestClient {
     }
 
     /** 5.1.6 Получение студента */
-    public Optional<StudentDTO> makeGetStudentRequest(UUID id){
+    public Optional<StudentDTO> makeGetStudentRequest(String id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")

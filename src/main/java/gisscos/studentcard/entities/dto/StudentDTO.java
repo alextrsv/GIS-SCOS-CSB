@@ -13,7 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class StudentDTO extends UserDTO {
 
-    UUID id;
+    String id;
     String surname;
     String name;
     String middle_name;
@@ -28,7 +28,7 @@ public class StudentDTO extends UserDTO {
 
 
 
-    public StudentDTO(UUID id, String surname, String name, String middle_name,
+    public StudentDTO(String id, String surname, String name, String middle_name,
                    String snils, String inn, String email, String external_id,
                    String scos_id, Integer study_year, String organization_id) {
         this.id = id;

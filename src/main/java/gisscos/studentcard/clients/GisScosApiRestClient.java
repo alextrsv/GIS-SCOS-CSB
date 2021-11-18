@@ -84,7 +84,7 @@ public class GisScosApiRestClient {
 
 
     /** НОВЫЙ Получение Получение сотрудника Организации */
-    public synchronized Optional<UserDTO> makeGetUserRequest(UUID userId){
+    public synchronized Optional<UserDTO> makeGetUserRequest(String userId){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")

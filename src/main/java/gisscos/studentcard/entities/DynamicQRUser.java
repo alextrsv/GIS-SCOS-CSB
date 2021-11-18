@@ -22,7 +22,7 @@ public class DynamicQRUser {
     private Long id;
 
     /** id юзера в СЦОС */
-    private UUID userId;
+    private String userId;
     /** id родного университета */
     private String organizationId;
 
@@ -37,7 +37,7 @@ public class DynamicQRUser {
         this.organizationId = userDTO.getUserOrganizationsId().get(0);
     }
 
-    public DynamicQRUser(UUID userId, String organizationId) {
+    public DynamicQRUser(String userId, String organizationId) {
         this.userId = userId;
         this.organizationId = organizationId;
     }

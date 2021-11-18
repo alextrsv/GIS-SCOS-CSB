@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface IPermanentQRService {
 
-    Optional<Resource> downloadQRAsFile(UUID userId);
+    Optional<Resource> downloadQRAsFile(String userId);
 
-    Optional<QRDataVerifyStatus> verifyData(UUID userId, String dataHash);
+    Optional<QRDataVerifyStatus> verifyData(String userId, String dataHash);
 }

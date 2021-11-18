@@ -48,7 +48,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
      * todo: в качестве контента сейчас применяется строка "someContent". Нужно заменить на реальные данные (от ГИС СЦОС)
      * */
     @Override
-    public Optional<List<DynamicQR>> getQRByUserAndOrganization(UUID userId, String organizationId) {
+    public Optional<List<DynamicQR>> getQRByUserAndOrganization(String userId, String organizationId) {
         List<DynamicQR> usersQrs = dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId);
         if (!usersQrs.isEmpty())
             return Optional.ofNullable(dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId));
@@ -56,7 +56,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
     }
 
     @Override
-    public Optional<Resource> downloadQRAsFile(UUID userId, String organizationId) {
+    public Optional<Resource> downloadQRAsFile(String userId, String organizationId) {
 
       Optional<DynamicQR> activeQR = getActiveQRByOrganization(userId, organizationId);
         if (activeQR.isPresent()) {
@@ -66,7 +66,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
         else return Optional.empty();
     }
 
-    private Optional<DynamicQR> getActiveQRByOrganization(UUID userId, String organizationId){
+    private Optional<DynamicQR> getActiveQRByOrganization(String userId, String organizationId){
         Optional<List<DynamicQR>> dynamicQRs = getQRByUserAndOrganization(userId, organizationId);
 
         Optional<DynamicQR> activeQR = Optional.empty();
@@ -81,7 +81,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
 
     @Override
-    public Optional<List<DynamicQR>> getAllPermittedQRsAsFile(UUID userId) {
+    public Optional<List<DynamicQR>> getAllPermittedQRsAsFile(String userId) {
         Optional<List<DynamicQR>> dynamicQRsByUser = Optional.ofNullable(dynamicQRRepository.getByUserId(userId));
 
         List<DynamicQR> activeQRs = new ArrayList<>();
@@ -99,7 +99,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
 
     @Override
-    public ResponseEntity<Resource> sendQRViaEmail(UUID userId, String organizationId) {
+    public ResponseEntity<Resource> sendQRViaEmail(String userId, String organizationId) {
 
         StudentDTO studentDTO = vamRestClient.makeGetStudentRequest(userId).get();
         studentDTO.setEmail("sasha2.tara2000@yandex.ru");

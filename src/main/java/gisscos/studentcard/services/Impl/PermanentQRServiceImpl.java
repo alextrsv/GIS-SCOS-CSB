@@ -42,7 +42,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     }
 
     @Override
-    public Optional<Resource> downloadQRAsFile(UUID userId) {
+    public Optional<Resource> downloadQRAsFile(String userId) {
         String content = null;
           /*нужно понять, пользователь с id - студент или обычный пользователь?
         1. делаем запрос на получение студента - если ответ не пустой, то это студент, работаем с ним
@@ -65,7 +65,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     }
 
     @Override
-    public Optional<QRDataVerifyStatus> verifyData(UUID userId, String dataHash) {
+    public Optional<QRDataVerifyStatus> verifyData(String userId, String dataHash) {
         QRDataVerifyStatus verifyStatus = null;
         Optional<StudentDTO> studentDTOWrapper = getStudent(userId);
         if (studentDTOWrapper.isPresent())
@@ -100,7 +100,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         }
     }
 
-    private Optional<StudentDTO> getStudent(UUID userId){
+    private Optional<StudentDTO> getStudent(String userId){
         return vamRestClient.makeGetStudentRequest(userId);
     }
 

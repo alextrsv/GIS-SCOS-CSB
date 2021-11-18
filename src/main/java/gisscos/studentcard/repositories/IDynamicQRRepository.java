@@ -11,9 +11,9 @@ import java.util.UUID;
 @Repository
 public interface IDynamicQRRepository extends JpaRepository<DynamicQR, Long> {
 
-    List<DynamicQR> getByUserId(UUID userId);
+    List<DynamicQR> getByUserId(String userId);
 
-    List<DynamicQR> getByUserIdAndUniversityId(UUID userId, String OrganizationId);
+    List<DynamicQR> getByUserIdAndUniversityId(String userId, String OrganizationId);
 
     List<DynamicQR> getByUniversityId(String organizationId);
 }

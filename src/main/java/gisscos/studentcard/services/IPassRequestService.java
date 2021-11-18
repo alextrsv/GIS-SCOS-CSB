@@ -23,11 +23,9 @@ public interface IPassRequestService {
             Optional<String> search
     );
 
-    Optional<List<PassRequest>> getPassRequestsByUserId(UUID userId);
+    Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 
     Optional<PassRequest> getPassRequestById(Long id);
-
-    Optional<List<PassRequest>> getPassRequestsByUserId(Long id);
 
     Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto, Long page, Long pageSize);
 

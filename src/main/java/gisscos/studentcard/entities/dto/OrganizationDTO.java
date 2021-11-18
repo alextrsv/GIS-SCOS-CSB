@@ -27,6 +27,14 @@ public class OrganizationDTO {
         else return Optional.empty();
     }
 
+    public OrganizationDTO(String short_name, String full_name, String inn, String ogrn, String kpp) {
+        this.short_name = short_name;
+        this.full_name = full_name;
+        this.inn = inn;
+        this.ogrn = ogrn;
+        this.kpp = kpp;
+    }
+
     public String getQRInterfaceType() {
         return "wiegand-34";
     }

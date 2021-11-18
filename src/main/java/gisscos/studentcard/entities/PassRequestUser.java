@@ -27,9 +27,9 @@ public class PassRequestUser {
     /** Заявка, к которой прикреплен пользователь (в таблице хранится только её id) */
     private Long passRequestId;
     /** Id пользователя, прикрепленного к заявке */
-    private UUID userId;
+    private String userId;
 
-    public PassRequestUser(Long passRequestId, UUID userId) {
+    public PassRequestUser(Long passRequestId, String userId) {
         this.passRequestId = passRequestId;
         this.userId = userId;
     }

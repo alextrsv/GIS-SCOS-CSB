@@ -9,6 +9,6 @@ import java.util.UUID;
  */
 @Data
 public class PassRequestUserDTO {
-    private UUID userId;
+    private String userId;
     private Long passRequestId;
 }
