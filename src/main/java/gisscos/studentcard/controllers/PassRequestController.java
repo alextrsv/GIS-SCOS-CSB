@@ -8,6 +8,7 @@ import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
+import gisscos.studentcard.entities.enums.UserRole;
 import gisscos.studentcard.services.IPassRequestCommentsService;
 import gisscos.studentcard.services.IPassRequestService;
 import gisscos.studentcard.services.IUserDetailsService;
@@ -68,9 +69,13 @@ public class PassRequestController {
      * @return если заявка найдена, список пользователей заявки с учётом уже добавленного
      */
     @PostMapping("/add_user")
-    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto) {
-        return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto,
+                                                                      Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     /**
@@ -79,19 +84,28 @@ public class PassRequestController {
      * @return добавленный комментарий
      */
     @PostMapping("/comments/add")
-    public ResponseEntity<PassRequestComment> addCommentToPassRequest(@RequestBody PassRequestCommentDTO dto) {
+    public ResponseEntity<PassRequestComment> addCommentToPassRequest(@RequestBody PassRequestCommentDTO dto,
+                                                                      Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return passRequestCommentsService.addCommentToPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     /**
      * Получение заявки по id
-     * @param id заявки
+     * @param passRequestId заявки
      * @return заявка
      */
-    @GetMapping("/get/{id}")
-    public ResponseEntity<PassRequest> getPassRequestById(@PathVariable UUID id) {
-        return passRequestService.getPassRequestById(id).map(ResponseEntity::ok)
+    @GetMapping("/get/{passRequestId}")
+    public ResponseEntity<PassRequest> getPassRequestById(@PathVariable UUID passRequestId,
+                                                          Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY ||
+            userDetailsService.getUserRole(principal) == UserRole.UNDEFINED) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return passRequestService.getPassRequestById(passRequestId, principal.getName()).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -133,16 +147,21 @@ public class PassRequestController {
             @RequestParam(value = "targetUniversityId") String targetUniversityId,
             @RequestParam(value = "page") Long page,
             @RequestParam(value = "status") String status,
-            @RequestParam(value = "search", required = false) Optional<String> search) {
+            @RequestParam(value = "search", required = false) Optional<String> search,
+            Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return passRequestService.getPassRequestsForAdmin(
-                    RequestsStatusForAdmin.of(status),
+                            RequestsStatusForAdmin.of(status),
                             targetUniversityId,
                             page,
                             search
                     )
                     .map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+    }
 
     /**
      * Получить список пользователей групповой заявки
@@ -150,9 +169,14 @@ public class PassRequestController {
      * @return список пользователей заявки
      */
     @GetMapping("/get/users")
-    public ResponseEntity<List<PassRequestUser>> getPassRequestUsers(@RequestBody PassRequestDTO dto) {
-        return passRequestService.getPassRequestUsers(dto).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<List<PassRequestUser>> getPassRequestUsers(@RequestBody PassRequestDTO dto,
+                                                                     Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return passRequestService.getPassRequestUsers(dto).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     /**
@@ -161,7 +185,12 @@ public class PassRequestController {
      * @return список комментариев
      */
     @GetMapping("/comments/{passRequestId}")
-    public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable UUID passRequestId) {
+    public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable UUID passRequestId,
+                                                                             Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY ||
+            userDetailsService.getUserRole(principal) == UserRole.UNDEFINED) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return passRequestCommentsService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -181,7 +210,12 @@ public class PassRequestController {
      * @return отредактированная заявка
      */
     @PutMapping("/edit")
-    public ResponseEntity<PassRequest> editPassRequest(@RequestBody PassRequestDTO dto) {
+    public ResponseEntity<PassRequest> editPassRequest(@RequestBody PassRequestDTO dto,
+                                                       Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY ||
+            userDetailsService.getUserRole(principal) == UserRole.UNDEFINED) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return passRequestService.updatePassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -192,9 +226,13 @@ public class PassRequestController {
      * @return отредактированная заявка
      */
     @PutMapping("/edit/status")
-    public ResponseEntity<PassRequest> editPassRequestStatus(@RequestBody PassRequestDTO dto) {
-        return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<PassRequest> editPassRequestStatus(@RequestBody PassRequestDTO dto,
+                                                             Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     /**
@@ -203,7 +241,12 @@ public class PassRequestController {
      * @return отредактированный комментарий
      */
     @PutMapping("/edit/comments")
-    public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PassRequestCommentDTO dto) {
+    public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PassRequestCommentDTO dto,
+                                                                     Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY ||
+            userDetailsService.getUserRole(principal) == UserRole.UNDEFINED) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return passRequestCommentsService.updateComment(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -225,9 +268,13 @@ public class PassRequestController {
      * @return статус OK (временное решение до spring security)
      */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable UUID id) {
-        return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable UUID id,
+                                                             Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     /**
@@ -236,9 +283,13 @@ public class PassRequestController {
      * @return удаленный пользователь, если таковой найден
      */
     @DeleteMapping("/delete_user")
-    public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto) {
-        return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto,
+                                                                           Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     /**
@@ -247,8 +298,12 @@ public class PassRequestController {
      * @return удалённый комментарий
      */
     @DeleteMapping("/comments/delete")
-    public ResponseEntity<PassRequestComment> deletePassRequestComment(@RequestBody PassRequestCommentDTO dto) {
-        return passRequestCommentsService.deletePassRequestComment(dto).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<PassRequestComment> deletePassRequestComment(@RequestBody PassRequestCommentDTO dto,
+                                                                       Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return passRequestCommentsService.deletePassRequestComment(dto).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 }
