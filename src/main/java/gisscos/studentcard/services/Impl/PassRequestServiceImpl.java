@@ -88,8 +88,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 if (!dynamicQRUserRepository.existsByUserId(user.getUserId()))
                     dynamicQRUserRepository.save(new DynamicQRUser(user.getUserId(), dto.getUniversityId()));
             }
-            if (getPassRequestById(id).isPresent())
-                return getPassRequestById(id).get();
+            if (getPassRequestById(id, dto.getUserId()).isPresent())
+                return getPassRequestById(id, dto.getUserId()).get();
         }
         log.info("pass request was added");
         return passRequestRepository.save(passRequest);
@@ -126,13 +126,20 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Получение заявки по id
-     * @param id заявки
+     * @param passRequestId заявки
      * @return заявка
      */
     @Override
-    public Optional<PassRequest> getPassRequestById(UUID id) {
-        log.info("getting pass request by id: {}", id);
-        return getPassRequest(id);
+    public Optional<PassRequest> getPassRequestById(UUID passRequestId, String authorId) {
+        Optional<PassRequest> passRequest = getPassRequest(passRequestId);
+        if (passRequest.isPresent()) {
+            if (passRequest.get().getUserId().equals(authorId)) {
+                log.info("getting pass request by id: {}", passRequestId);
+                return passRequest;
+            }
+        }
+        log.warn("User with {} is not author of request", authorId);
+        return Optional.empty();
     }
 
     /**
