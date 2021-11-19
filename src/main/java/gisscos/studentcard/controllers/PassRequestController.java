@@ -47,8 +47,19 @@ public class PassRequestController {
      * @return созданная заявка
      */
     @PostMapping("/add")
-    public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto) {
-        return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
+    public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto,
+                                                      Principal principal) {
+        switch (userDetailsService.getUserRole(principal)) {
+            case ADMIN:
+                return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
+            case TEACHER:
+            case STUDENT:
+                if (dto.getType() == PassRequestType.SINGLE) {
+                    return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
+                }
+            default:
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
     /**
