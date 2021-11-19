@@ -1,7 +1,6 @@
 package gisscos.studentcard;
 
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -13,7 +12,7 @@ import java.io.IOException;
 /**
  * Компонент - фильтр для добавления заголовка ко всем запросам для UI
  */
-@Component
+//@Component
 public class CustomHeaderFilter extends OncePerRequestFilter {
 
     @Override

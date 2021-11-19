@@ -40,7 +40,7 @@ public class StudentDTO extends UserDTO {
         this.external_id = external_id;
         this.scos_id = scos_id;
         this.study_year = study_year;
-        this.organization_id = organization_id;
+        this.organization_id = organization_id.toString();
 
     }
 }
