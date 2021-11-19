@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.awt.image.BufferedImage;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * сервис для работы со статическими QR

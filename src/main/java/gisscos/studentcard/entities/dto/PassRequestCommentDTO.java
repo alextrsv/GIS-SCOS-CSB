@@ -10,7 +10,7 @@ import java.util.UUID;
 @Data
 public class PassRequestCommentDTO {
     private UUID id;
-    private Long authorId;
+    private String authorId;
     private UUID passRequestId;
     private String comment;
 }

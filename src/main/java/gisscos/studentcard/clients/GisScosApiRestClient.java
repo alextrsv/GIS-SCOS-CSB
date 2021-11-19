@@ -1,8 +1,7 @@
 package gisscos.studentcard.clients;
 
-import gisscos.studentcard.entities.dto.OrganizationsDTO;
-import gisscos.studentcard.entities.dto.UserDTO;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
+import gisscos.studentcard.entities.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -10,7 +9,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Optional;
 
 @Component
 public class GisScosApiRestClient {
