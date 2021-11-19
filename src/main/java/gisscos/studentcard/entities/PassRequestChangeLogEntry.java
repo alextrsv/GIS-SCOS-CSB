@@ -23,7 +23,7 @@ public class PassRequestChangeLogEntry {
     /** Id файла, прикрепленного к заявке в БД. Генерируется автоматически */
     @Id
     @Setter(AccessLevel.PROTECTED)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private UUID id;
     /** Идентификатор заявки, которая была изменена */
     private UUID passRequestId;

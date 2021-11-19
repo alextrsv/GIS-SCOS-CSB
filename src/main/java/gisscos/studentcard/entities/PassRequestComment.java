@@ -23,7 +23,7 @@ public class PassRequestComment {
     /** Id комментария в БД. Генерируется автоматически */
     @Id
     @Setter(AccessLevel.PROTECTED)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private UUID id;
     /** Id пользоватлея - создателя */
     private Long authorId;
