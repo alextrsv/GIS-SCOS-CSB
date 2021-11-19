@@ -156,22 +156,47 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Получить список заявок по статусу
+a     * Получить список заявок по статусу для университета
      * @param dto заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto,
-                                                              Long page,
-                                                              Long pageSize) {
+    public Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto,
+                                                                           Long page,
+                                                                           Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByUniversityId(dto.getUniversityId());
         log.info("Getting passRequests by status");
         return Optional.of(
                 requests.stream()
                         .filter(r -> r.getStatus() == dto.getStatus())
+                        .sorted(new PassRequestCreationDateComparator())
+                        .skip(pageSize * (page - 1))
+                        .limit(pageSize)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    /**
+     * Получить список заявок по статусу для пользователя
+     * @param authorId заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы
+     * @return список заявок с определенным статусом
+     */
+    @Override
+    public Optional<List<PassRequest>> getPassRequestByStatusForUser(String authorId,
+                                                              PassRequestStatus status,
+                                                              Long page,
+                                                              Long pageSize) {
+        List<PassRequest> requests =
+                passRequestRepository.findAllByUserId(authorId);
+        log.info("Getting passRequests by status");
+        return Optional.of(
+                requests.stream()
+                        .filter(r -> r.getStatus() == status)
                         .sorted(new PassRequestCreationDateComparator())
                         .skip(pageSize * (page - 1))
                         .limit(pageSize)

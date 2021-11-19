@@ -6,6 +6,7 @@ import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
+import gisscos.studentcard.entities.enums.PassRequestStatus;
 import gisscos.studentcard.entities.enums.PassRequestType;
 import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 import gisscos.studentcard.entities.enums.UserRole;
@@ -121,17 +122,33 @@ public class PassRequestController {
     }
 
     /**
-     * Получение заявок по статусу
+     * Получение заявок по статусу для университета
      * @param dto заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @return заявки
      */
-    @GetMapping("/get/status/{page}/{pageSize}")
+    @GetMapping("/get/university/status/{page}/{pageSize}")
     public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto,
                                                                     @PathVariable Long page,
                                                                     @PathVariable Long pageSize) {
-        return passRequestService.getPassRequestByStatus(dto, page, pageSize).map(ResponseEntity::ok)
+        return passRequestService.getPassRequestByStatusForUniversity(dto, page, pageSize).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
+     * Получение заявок по статусу для пользователя
+     * @param status заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы
+     * @return заявки
+     */
+    @GetMapping("/get/user/status/{page}/{pageSize}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestParam PassRequestStatus status,
+                                                                    @PathVariable Long page,
+                                                                    @PathVariable Long pageSize,
+                                                                    Principal principal) {
+        return passRequestService.getPassRequestByStatusForUser(principal.getName(), status, page, pageSize).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
