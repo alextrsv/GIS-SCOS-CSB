@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface IPassRequestUserRepository extends JpaRepository<PassRequestUser, Long> {
-    Boolean existsByPassRequestIdAndUserId( Long passRequestId, UUID userId);
+public interface IPassRequestUserRepository extends JpaRepository<PassRequestUser, UUID> {
 
-    List<PassRequestUser> findAllByPassRequestId(Long PassRequestId);
+    Boolean existsByPassRequestIdAndUserId(UUID passRequestId, String userId);
 
-    List<PassRequestUser> getByUserId(UUID userId);
+    List<PassRequestUser> findAllByPassRequestId(UUID PassRequestId);
+
+    List<PassRequestUser> getByUserId(String userId);
 }

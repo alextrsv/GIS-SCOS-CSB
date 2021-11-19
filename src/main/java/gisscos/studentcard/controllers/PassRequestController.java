@@ -6,6 +6,7 @@ import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
+import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 import gisscos.studentcard.services.IPassRequestCommentsService;
 import gisscos.studentcard.services.IPassRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,19 +73,19 @@ public class PassRequestController {
      * @return заявка
      */
     @GetMapping("/get/{id}")
-    public ResponseEntity<PassRequest> getPassRequestById(@PathVariable Long id) {
+    public ResponseEntity<PassRequest> getPassRequestById(@PathVariable UUID id) {
         return passRequestService.getPassRequestById(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     /**
      * Получение заявки по id пользователя
-     * @param id заявки
+     * @param userId пользователь, создавший заявку
      * @return заявка
      */
-    @GetMapping("/user/get/{id}")
-    public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable Long id) {
-        return passRequestService.getPassRequestsByUserId(id).map(ResponseEntity::ok)
+    @GetMapping("/user/get/{userId}")
+    public ResponseEntity<List<PassRequest>> getPassRequestByUserId(@PathVariable String userId) {
+        return passRequestService.getPassRequestsByUserId(userId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -105,26 +106,26 @@ public class PassRequestController {
 
     /**
      * Получение заявок для обработки администратором ООВО
-     * @param universityId идентификатор ООВО
+     * @param targetUniversityId идентификатор ООВО
+     * @param page номер страницы
+     * @param status статус заявок
      * @return список заявок для обработки
      */
-    @GetMapping("/get/requests/{universityId}")
-    public ResponseEntity<List<PassRequest>> getPassRequestsForProcessing(@PathVariable String universityId) {
-        return passRequestService.getPassRequestsByUniversity(universityId).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    /**
-     * Получение количества заявок для обработки администратором ООВО
-     * @param universityId идентификатор ООВО
-     * @return количество заявок для обработки
-     */
-    @GetMapping("/get/requests/count/{universityId}")
-    public ResponseEntity<Integer> getPassRequestsNumberForProcessing(@PathVariable String universityId) {
-        return ResponseEntity.of(
-                Optional.of(passRequestService.getPassRequestsNumberByUniversity(universityId))
-        );
-    }
+    @GetMapping("/get/requests")
+    public ResponseEntity<List<PassRequest>> getPassRequestsForUniversity(
+            @RequestParam(value = "targetUniversityId") String targetUniversityId,
+            @RequestParam(value = "page") Long page,
+            @RequestParam(value = "status") String status,
+            @RequestParam(value = "search", required = false) Optional<String> search) {
+            return passRequestService.getPassRequestsForAdmin(
+                    RequestsStatusForAdmin.of(status),
+                            targetUniversityId,
+                            page,
+                            search
+                    )
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        }
 
     /**
      * Получить список пользователей групповой заявки
@@ -143,9 +144,18 @@ public class PassRequestController {
      * @return список комментариев
      */
     @GetMapping("/comments/{passRequestId}")
-    public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable Long passRequestId) {
+    public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable UUID passRequestId) {
         return passRequestCommentsService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
+     * Получение просроченных заявок
+     * @return список просроченных заявок, которые были удалены
+     */
+    @GetMapping("/get/expired_requests")
+    public ResponseEntity<List<PassRequest>> getExpiredPassRequests() {
+        return ResponseEntity.of(passRequestService.getExpiredPassRequests());
     }
 
     /**
@@ -198,7 +208,7 @@ public class PassRequestController {
      * @return статус OK (временное решение до spring security)
      */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable Long id) {
+    public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable UUID id) {
         return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -209,18 +219,9 @@ public class PassRequestController {
      * @return удаленный пользователь, если таковой найден
      */
     @DeleteMapping("/delete_user")
-    public ResponseEntity<PassRequestUser> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO dto) {
+    public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto) {
         return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    /**
-     * Удаление просроченных заявок
-     * @return список просроченных заявок, которые были удалены
-     */
-    @DeleteMapping("/delete/expired_requests")
-    public ResponseEntity<List<PassRequest>> deleteExpiredPassRequests() {
-        return ResponseEntity.of(passRequestService.deleteExpiredPassRequests());
     }
 
     /**

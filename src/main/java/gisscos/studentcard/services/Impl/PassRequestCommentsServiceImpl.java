@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Сервис для работы с комментариями заявок
@@ -64,7 +65,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
      * @return список комментариев
      */
     @Override
-    public Optional<List<PassRequestComment>> getPassRequestComments(Long passRequestId) {
+    public Optional<List<PassRequestComment>> getPassRequestComments(UUID passRequestId) {
         Optional<PassRequest> request = getRequest(passRequestId);
 
         log.info("Getting comments from pass request");
@@ -134,7 +135,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
      * @param passRequestId id заявки
      * @return заявка
      */
-    private Optional<PassRequest> getRequest(Long passRequestId) {
+    private Optional<PassRequest> getRequest(UUID passRequestId) {
         return passRequestRepository.findById(passRequestId);
     }
 }

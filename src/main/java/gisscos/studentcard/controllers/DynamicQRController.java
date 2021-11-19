@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("dynamic-qr")
@@ -25,7 +24,7 @@ public class DynamicQRController {
     }
 
     @GetMapping("/view/{userId}")
-    private ResponseEntity<List<DynamicQR>> getInfo(@PathVariable UUID userId,
+    private ResponseEntity<List<DynamicQR>> getInfo(@PathVariable String userId,
                                                     @RequestParam(name = "organizationId") String organizationId){
 
         return dynamicQRService.getQRByUserAndOrganization(userId, organizationId).map(ResponseEntity::ok)
@@ -33,7 +32,7 @@ public class DynamicQRController {
     }
 
     @GetMapping("download/{userId}")
-    public ResponseEntity<Resource> downloadQRAsFile(@PathVariable UUID userId,
+    public ResponseEntity<Resource> downloadQRAsFile(@PathVariable String userId,
                                                      @RequestParam(name = "organizationId") String organizationId){
 
         return dynamicQRService.downloadQRAsFile(userId, organizationId).map(resource ->
@@ -45,7 +44,7 @@ public class DynamicQRController {
     }
 
     @GetMapping("permitted/{userId}")
-    public ResponseEntity<List<DynamicQR>> downloadAllPermittedQRAsFile(@PathVariable UUID userId){
+    public ResponseEntity<List<DynamicQR>> downloadAllPermittedQRAsFile(@PathVariable String userId){
 
         return dynamicQRService.getAllPermittedQRsAsFile(userId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -53,7 +52,7 @@ public class DynamicQRController {
     }
 
     @GetMapping("email/{userId}")
-    public ResponseEntity<Resource> sendViaEmail(@PathVariable UUID userId,
+    public ResponseEntity<Resource> sendViaEmail(@PathVariable String userId,
                                                      @RequestParam(name = "organizationId") String organizationId){
         return dynamicQRService.sendQRViaEmail(userId, organizationId);
     }

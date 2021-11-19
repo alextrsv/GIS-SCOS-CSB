@@ -3,17 +3,18 @@ package gisscos.studentcard.entities.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.UUID;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class StudentDTO extends UserDTO {
 
-    UUID id;
+    String id;
     String surname;
     String name;
     String middle_name;
@@ -28,7 +29,7 @@ public class StudentDTO extends UserDTO {
 
 
 
-    public StudentDTO(UUID id, String surname, String name, String middle_name,
+    public StudentDTO(String id, String surname, String name, String middle_name,
                    String snils, String inn, String email, String external_id,
                    String scos_id, Integer study_year, String organization_id) {
         this.id = id;
@@ -41,7 +42,7 @@ public class StudentDTO extends UserDTO {
         this.external_id = external_id;
         this.scos_id = scos_id;
         this.study_year = study_year;
-        this.organization_id = organization_id;
+        this.organization_id = organization_id.toString();
 
     }
 }

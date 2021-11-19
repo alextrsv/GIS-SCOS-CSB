@@ -5,15 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface IDynamicQRRepository extends JpaRepository<DynamicQR, Long> {
+public interface IDynamicQRRepository extends JpaRepository<DynamicQR, UUID> {
 
-    List<DynamicQR> getByUserId(UUID userId);
+    List<DynamicQR> getByUserId(String userId);
 
-    List<DynamicQR> getByUserIdAndUniversityId(UUID userId, String OrganizationId);
+    List<DynamicQR> getByUserIdAndUniversityId(String userId, String OrganizationId);
 
     List<DynamicQR> getByUniversityId(String organizationId);
 }

@@ -7,7 +7,6 @@ import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.util.UUID;
 
@@ -18,11 +17,11 @@ import java.util.UUID;
 public class DynamicQRUser {
     @Id
     @Setter(AccessLevel.PROTECTED)
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
     /** id юзера в СЦОС */
-    private UUID userId;
+    private String userId;
     /** id родного университета */
     private String organizationId;
 
@@ -37,7 +36,7 @@ public class DynamicQRUser {
         this.organizationId = userDTO.getUserOrganizationsId().get(0);
     }
 
-    public DynamicQRUser(UUID userId, String organizationId) {
+    public DynamicQRUser(String userId, String organizationId) {
         this.userId = userId;
         this.organizationId = organizationId;
     }

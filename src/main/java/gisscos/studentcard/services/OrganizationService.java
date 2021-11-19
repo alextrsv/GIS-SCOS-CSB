@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface OrganizationService {
 
-     List<String> getStudentPermittedOrganizations(StudentDTO studentDTO);
+     List<String> getPermittedOrganizations(StudentDTO studentDTO);
+
 }

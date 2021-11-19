@@ -1,6 +1,8 @@
 package gisscos.studentcard.clients;
 
-import gisscos.studentcard.entities.dto.*;
+import gisscos.studentcard.entities.dto.StudentDTO;
+import gisscos.studentcard.entities.dto.StudentsDTO;
+import gisscos.studentcard.entities.dto.StudyPlanDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -9,7 +11,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
 
 
 @Slf4j
@@ -97,7 +101,7 @@ public class VamRestClient {
     }
 
     /** 5.1.6 Получение студента */
-    public Optional<StudentDTO> makeGetStudentRequest(UUID id){
+    public Optional<StudentDTO> makeGetStudentRequest(String id){
 
         String urlTemplate = UriComponentsBuilder.newInstance()
                 .scheme("https")

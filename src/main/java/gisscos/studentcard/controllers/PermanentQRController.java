@@ -10,8 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 /**
  * контроллер для работы со статическими QR-кодами
  */
@@ -26,20 +24,20 @@ public class PermanentQRController {
         this.permanentQRService = permanentQRService;
     }
 
-    @GetMapping("download/{id}")
-    public ResponseEntity<Resource> downloadQrAsFile(@PathVariable UUID id){
-        return permanentQRService.downloadQRAsFile(id).map(resource ->
-                ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_PNG)
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "got permanent QR code")
-                        .body(resource))
+    @PostMapping("hash")
+    public ResponseEntity<QRDataVerifyStatus> verifyData(@RequestParam String userId,
+                                                         @RequestParam String dataHash){
+        return permanentQRService.verifyData(userId, dataHash).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @PostMapping("hash")
-    public ResponseEntity<QRDataVerifyStatus> verifyData(@RequestParam UUID userId,
-                                                         @RequestParam String dataHash){
-        return permanentQRService.verifyData(userId, dataHash).map(ResponseEntity::ok)
+    @GetMapping("download/{id}")
+    public ResponseEntity<Resource> downloadQrAsFile(@PathVariable String id){
+        return permanentQRService.downloadQRAsFile(id).map(resource ->
+                        ResponseEntity.ok()
+                                .contentType(MediaType.IMAGE_PNG)
+                                .header(HttpHeaders.CONTENT_DISPOSITION, "got permanent QR code")
+                                .body(resource))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 

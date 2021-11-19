@@ -4,6 +4,7 @@ import gisscos.studentcard.entities.PassRequest;
 import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
+import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,19 +16,22 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
-    Optional<List<PassRequest>> getPassRequestsByUniversity(String universityId);
+    Optional<List<PassRequest>> getPassRequestsForAdmin(
+            RequestsStatusForAdmin status,
+            String targetUniversityId,
+            Long page,
+            Optional<String> search
+    );
 
-    Integer getPassRequestsNumberByUniversity(String universityId);
+    Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 
-    Optional<List<PassRequest>> getPassRequestsByUserId(UUID userId);
-
-    Optional<PassRequest> getPassRequestById(Long id);
-
-    Optional<List<PassRequest>> getPassRequestsByUserId(Long id);
+    Optional<PassRequest> getPassRequestById(UUID id);
 
     Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto, Long page, Long pageSize);
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
+
+    Optional<List<PassRequest>> getExpiredPassRequests();
 
     Optional<PassRequest> updatePassRequest(PassRequestDTO dto);
 
@@ -35,9 +39,7 @@ public interface IPassRequestService {
 
     Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
 
-    Optional<PassRequest> deletePassRequestById(Long id);
+    Optional<PassRequest> deletePassRequestById(UUID id);
 
-    Optional<PassRequestUser> deleteUserFromPassRequest(PassRequestUserDTO dto);
-
-    Optional<List<PassRequest>> deleteExpiredPassRequests();
+    Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto);
 }

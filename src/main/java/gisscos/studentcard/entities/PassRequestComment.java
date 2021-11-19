@@ -7,9 +7,9 @@ import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Класс, описывающий сущность комментариев заявки
@@ -22,12 +22,12 @@ public class PassRequestComment {
     /** Id комментария в БД. Генерируется автоматически */
     @Id
     @Setter(AccessLevel.PROTECTED)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
     /** Id пользоватлея - создателя */
-    private Long authorId;
+    private String authorId;
     /** Id заявки, к которой прикреплён комментарий */
-    private Long passRequestId;
+    private UUID passRequestId;
     /** Комментарий */
     private String comment;
     /** Дата создания */

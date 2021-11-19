@@ -1,14 +1,11 @@
 package gisscos.studentcard.scheduler;
 
-import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.entities.DynamicQR;
 import gisscos.studentcard.entities.DynamicQRUser;
 import gisscos.studentcard.entities.dto.OrganizationDTO;
 import gisscos.studentcard.entities.enums.QRStatus;
 import gisscos.studentcard.repositories.IDynamicQRRepository;
 import gisscos.studentcard.services.IDynamicQRUserService;
-import gisscos.studentcard.services.IStudentService;
-import gisscos.studentcard.services.IUserService;
 import gisscos.studentcard.utils.HashingUtil;
 
 import java.security.NoSuchAlgorithmException;

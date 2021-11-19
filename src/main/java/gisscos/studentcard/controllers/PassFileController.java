@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Контроллер для работы с прикрепленными к заявкам файлами
@@ -34,7 +35,7 @@ public class PassFileController {
      */
     @PostMapping("/upload")
     private ResponseEntity<PassFile> uploadPassFile(@RequestParam("file") MultipartFile passFile,
-                                                    @RequestParam("passRequestId") Long passRequestId) {
+                                                    @RequestParam("passRequestId") UUID passRequestId) {
         return passFileService.uploadPassFile(passFile, passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -47,7 +48,7 @@ public class PassFileController {
      */
     @PostMapping("/upload/multiple")
     private ResponseEntity<List<PassFile>> uploadPassFiles(@RequestParam("file") MultipartFile[] passFiles,
-                                                           @RequestParam("passRequestId") Long passRequestId) {
+                                                           @RequestParam("passRequestId") UUID passRequestId) {
 
         List<PassFile> uploadedFiles = passFileService.uploadPassFiles(passFiles, passRequestId);
         if (uploadedFiles.isEmpty())

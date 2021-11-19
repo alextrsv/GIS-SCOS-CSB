@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface IDynamicQRUserRepository extends JpaRepository<DynamicQRUser, Long> {
+public interface IDynamicQRUserRepository extends JpaRepository<DynamicQRUser, UUID> {
 
     List<DynamicQRUser> getByOrganizationId(String organizationId);
 
-    Boolean existsByUserId(UUID userId);
+    Boolean existsByUserId(String userId);
 }

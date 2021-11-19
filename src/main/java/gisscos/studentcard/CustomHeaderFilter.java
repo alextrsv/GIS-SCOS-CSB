@@ -1,7 +1,6 @@
 package gisscos.studentcard;
 
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -13,13 +12,14 @@ import java.io.IOException;
 /**
  * Компонент - фильтр для добавления заголовка ко всем запросам для UI
  */
-@Component
+//@Component
 public class CustomHeaderFilter extends OncePerRequestFilter {
 
     @Override
     public void doFilterInternal(@NonNull final HttpServletRequest request, final HttpServletResponse response,
                                  final FilterChain chain) throws IOException, ServletException {
         response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Headers", "*");
         chain.doFilter(request, response);
     }
 }

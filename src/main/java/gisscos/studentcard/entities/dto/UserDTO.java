@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Data
@@ -13,7 +12,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class UserDTO {
 
-    private UUID user_id;
+    private String user_id;
     private String email;
     private String last_name;
     private String first_name;

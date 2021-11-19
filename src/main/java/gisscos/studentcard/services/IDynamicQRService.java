@@ -6,17 +6,16 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface IDynamicQRService {
 
-    Optional<List<DynamicQR>> getQRByUserAndOrganization(UUID userId, String organizationId);
+    Optional<List<DynamicQR>> getQRByUserAndOrganization(String userId, String organizationId);
 
-    Optional<Resource> downloadQRAsFile(UUID userId, String organizationId);
+    Optional<Resource> downloadQRAsFile(String userId, String organizationId);
 
-    Optional<List<DynamicQR>> getAllPermittedQRsAsFile(UUID userId);
+    Optional<List<DynamicQR>> getAllPermittedQRsAsFile(String userId);
 
-    ResponseEntity<Resource> sendQRViaEmail(UUID userId, String organizationId);
+    ResponseEntity<Resource> sendQRViaEmail(String userId, String organizationId);
 
     Optional<List<String>> getQRsContentByOrganization(String organizationId);
 }

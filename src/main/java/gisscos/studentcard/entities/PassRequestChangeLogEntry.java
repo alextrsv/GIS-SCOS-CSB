@@ -7,9 +7,9 @@ import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Класс, описывающий сущность записи в жернале изменений заявки
@@ -22,10 +22,10 @@ public class PassRequestChangeLogEntry {
     /** Id файла, прикрепленного к заявке в БД. Генерируется автоматически */
     @Id
     @Setter(AccessLevel.PROTECTED)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
     /** Идентификатор заявки, которая была изменена */
-    private Long passRequestId;
+    private UUID passRequestId;
     /** Дата изменения */
     private LocalDate date;
     /** Параметр, который был изменён */
@@ -36,7 +36,7 @@ public class PassRequestChangeLogEntry {
     private String newValue;
 
     public PassRequestChangeLogEntry(String parameter, String oldValue,
-                                     String newValue, Long passRequestId) {
+                                     String newValue, UUID passRequestId) {
         this.date = LocalDate.now();
         this.parameter = parameter;
         this.oldValue = oldValue;

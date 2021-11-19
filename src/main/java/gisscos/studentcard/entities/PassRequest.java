@@ -22,11 +22,13 @@ public class PassRequest {
     /** Id заявки в БД. Генерируется автоматически */
     @Id
     @Setter(AccessLevel.PROTECTED)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
+    /** Номер заявки для отображения и поиска по нему на фронте */
+    private Long number;
     /** Id пользоватлея - создателя */
-    private UUID userId;
-    /** Id организации, в которую необходим доступ (целевая ООВО)*/
+    private String userId;
+    /** Id организации, в которую необходим доступ (целевая ООВО) */
     private String targetUniversityId;
     /** Название целевой ООВО */
     private String targetUniversityName;
@@ -88,11 +90,11 @@ public class PassRequest {
     @ToString.Exclude
     private List<PassRequestChangeLogEntry> changeLog;
 
-    public PassRequest(UUID userId, String targetUniversityId, String universityId,
-
+    public PassRequest(String userId, String targetUniversityId, String universityId,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
                        PassRequestType type, String targetUniversityAddress,
-                       String targetUniversityName, String universityName) {
+                       String targetUniversityName, String universityName,
+                       Long number) {
         this.creationDate = LocalDate.now();
         this.userId = userId;
         this.targetUniversityId = targetUniversityId;
@@ -104,5 +106,6 @@ public class PassRequest {
         this.targetUniversityAddress = targetUniversityAddress;
         this.targetUniversityName = targetUniversityName;
         this.universityName = universityName;
+        this.number = number;
     }
 }
