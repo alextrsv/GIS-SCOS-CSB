@@ -6,14 +6,17 @@ import gisscos.studentcard.entities.PassRequestUser;
 import gisscos.studentcard.entities.dto.PassRequestCommentDTO;
 import gisscos.studentcard.entities.dto.PassRequestDTO;
 import gisscos.studentcard.entities.dto.PassRequestUserDTO;
+import gisscos.studentcard.entities.enums.PassRequestType;
 import gisscos.studentcard.entities.enums.RequestsStatusForAdmin;
 import gisscos.studentcard.services.IPassRequestCommentsService;
 import gisscos.studentcard.services.IPassRequestService;
+import gisscos.studentcard.services.IUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,12 +30,15 @@ public class PassRequestController {
 
     private final IPassRequestService passRequestService;
     private final IPassRequestCommentsService passRequestCommentsService;
+    private final IUserDetailsService userDetailsService;
 
     @Autowired
     public PassRequestController(IPassRequestService passRequestService,
-                                 IPassRequestCommentsService passRequestCommentsService) {
+                                 IPassRequestCommentsService passRequestCommentsService,
+                                 IUserDetailsService userDetailsService) {
         this.passRequestService = passRequestService;
         this.passRequestCommentsService = passRequestCommentsService;
+        this.userDetailsService = userDetailsService;
     }
 
     /**
