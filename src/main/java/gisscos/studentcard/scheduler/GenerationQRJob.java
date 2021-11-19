@@ -89,7 +89,8 @@ public class GenerationQRJob extends QuartzJobBean {
         if (itemsPerThread > allStudents.size())
             itemsPerThread = allStudents.size();
 
-        threadAmount = allStudents.size()/itemsPerThread;
+        threadAmount = (int) Math.ceil(allStudents.size()/itemsPerThread);
+        System.out.println("thread amount: " + threadAmount);
 
 
         List<Checker> checkerList = new ArrayList<>();
@@ -100,7 +101,10 @@ public class GenerationQRJob extends QuartzJobBean {
             checker.setAllUsers(allStudents);
             checker.setItemsPerThread(itemsPerThread);
             checker.setStartIndx(itemsPerThread * i);
-            checker.setEndIndex(itemsPerThread * i + itemsPerThread);
+            if (i == threadAmount - 1)
+                checker.setEndIndex(allStudents.size());
+            else
+                checker.setEndIndex(itemsPerThread * i + itemsPerThread);
             checkerList.add(checker);
         }
 
