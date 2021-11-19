@@ -1,11 +1,8 @@
 package gisscos.studentcard;
 
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -14,13 +11,25 @@ import java.io.IOException;
  * Компонент - фильтр для добавления заголовка ко всем запросам для UI
  */
 @Component
-public class CustomHeaderFilter extends OncePerRequestFilter {
+public class CustomHeaderFilter implements Filter {
 
     @Override
-    public void doFilterInternal(@NonNull final HttpServletRequest request, final HttpServletResponse response,
-                                 final FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        final HttpServletResponse response = (HttpServletResponse) res;
         response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Headers", "*");
-        chain.doFilter(request, response);
+        response.setHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
+        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+        response.setHeader("Access-Control-Max-Age", "3600");
+        if ("OPTIONS".equalsIgnoreCase(((HttpServletRequest) req).getMethod())) {
+            response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            chain.doFilter(req, res);
+        }
     }
+
+    @Override
+    public void destroy() {}
+
+    @Override
+    public void init(FilterConfig config) throws ServletException {}
 }
