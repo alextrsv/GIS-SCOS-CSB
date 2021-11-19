@@ -12,19 +12,19 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class WebClientComponent {
 
     /** Адрес DEV АПИ VAM */
-    @Value("${WEB_CLIENT_DEV_VAM_URL}")
+    @Value("${web.client.dev.vam.url}")
     private String DEV_VAM_URL;
     /** Адрес TEST АПИ VAM */
-    @Value("${WEB_CLIENT_TEST_VAM_URL}")
+    @Value("${web.client.test.vam.url}")
     private String TEST_VAM_URL;
     /** Адрес DEV АПИ ГИС СЦОС */
-    @Value("${WEB_CLIENT_DEV_SCOS_URL}")
+    @Value("${web.client.dev.scos.url}")
     private String DEV_SCOS_URL;
     /** Заголовок для идентификации нашего микросервиса (название) */
-    @Value("${WEB_CLIENT_DEV_SCOS_HEADER_NAME}")
+    @Value("${web.client.dev.scos.header.name}")
     private String HEADER_NAME;
     /** Заголовок для идентификации нашего микросервиса (значение) */
-    @Value("${WEB_CLIENT_DEV_SCOS_HEADER_VALUE}")
+    @Value("${web.client.dev.scos.header.value}")
     private String HEADER_VALUE;
 
     /**
