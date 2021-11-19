@@ -22,13 +22,13 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<UUID> getPermittedOrganizations(StudentDTO studentDTO) {
-        List<UUID> acceptedOrganizationsUUID = passRequestService.getPassRequestsByUserId(studentDTO.getId()).get()
+    public List<String> getPermittedOrganizations(StudentDTO studentDTO) {
+        List<String> acceptedOrganizationsUUID = passRequestService.getPassRequestsByUserId(studentDTO.getId()).get()
                 .stream()
                 .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
                 .map(PassRequest::getTargetUniversityId)
                 .collect(Collectors.toList());
-        acceptedOrganizationsUUID.add(UUID.fromString(studentDTO.getOrganization_id()));
+        acceptedOrganizationsUUID.add(studentDTO.getOrganization_id());
         return acceptedOrganizationsUUID;
     }
 }
