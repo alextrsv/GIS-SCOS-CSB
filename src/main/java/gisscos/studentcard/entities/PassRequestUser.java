@@ -22,7 +22,7 @@ public class PassRequestUser {
     /** Id пользователя, прикрепленного к заявке. Генерируется автоматически */
     @Id
     @Setter(AccessLevel.PROTECTED)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     private UUID id;
     /** Заявка, к которой прикреплен пользователь (в таблице хранится только её id) */
     private UUID passRequestId;

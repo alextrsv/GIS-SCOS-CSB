@@ -107,8 +107,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         // Если есть такая заявка и она является групповой
         if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
             // Если такой пользователь в заявке уже есть
-            if (passRequestUserRepository
-                    .existsByPassRequestIdAndUserId( dto.getPassRequestId(), dto.getUserId())) {
+            if (passRequest.get().getUsers().stream().anyMatch(user -> user.getUserId().equals(dto.getUserId()))) {
                 log.info("the user is already associated to the pass request");
                 return Optional.empty();
             }
