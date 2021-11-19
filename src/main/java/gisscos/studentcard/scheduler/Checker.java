@@ -18,6 +18,10 @@ public class Checker extends Thread {
 
     private final IDynamicQRUserService dynamicQRUserService;
 
+    String[] codesArray;
+
+    int lastCodeIndx = 0;
+
     List<DynamicQRUser> allUsers;
     int itemsPerThread;
     int threadNumber;
@@ -93,12 +97,6 @@ public class Checker extends Thread {
 
     private String makeNewContent(String organizationId)  {
         OrganizationDTO organization = new OrganizationDTO();
-//        try {
-//            organization = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
-//        }catch (org.springframework.web.client.HttpClientErrorException.NotFound notFoundEx){
-//            System.err.println("CAN'T FIND SUCH ORGANIZATION");
-//            return  "";
-//        }
         switch (Objects.requireNonNull(organization).getQRInterfaceType()){
             case "wiegand-34":
                 try {
@@ -111,8 +109,9 @@ public class Checker extends Thread {
     }
 
     private String makeWiegand34QR() throws NoSuchAlgorithmException {
-        String randomUUID = String.valueOf(UUID.randomUUID());
-        return HashingUtil.getHash(randomUUID);
+        String code = codesArray[lastCodeIndx];
+        lastCodeIndx++;
+        return code;
     }
 
 
@@ -154,5 +153,6 @@ public class Checker extends Thread {
 
     public void setItemsPerThread(int itemsPerThread) {
         this.itemsPerThread = itemsPerThread;
+        codesArray = CodesGenerator.getWiegand34CodesFromInteger(itemsPerThread);
     }
 }
