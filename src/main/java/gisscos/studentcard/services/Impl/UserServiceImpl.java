@@ -3,6 +3,7 @@ package gisscos.studentcard.services.Impl;
 import com.google.gson.Gson;
 import gisscos.studentcard.clients.GisScosApiRestClient;
 import gisscos.studentcard.entities.DynamicQRUser;
+import gisscos.studentcard.entities.dto.OrganizationDTO;
 import gisscos.studentcard.entities.dto.OrganizationInQRDTO;
 import gisscos.studentcard.entities.dto.PermanentUserQRDTO;
 import gisscos.studentcard.entities.dto.UserDTO;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +39,12 @@ public class UserServiceImpl implements IUserService {
     @Override
     public String getOrganizationsNamesAsString(UserDTO user) {
         return user.getUserOrganizationsId().stream()
-                .map(id -> gisScosApiRestClient.makeGetOrganizationRequest(id).get().getShort_name()).collect(Collectors.joining(", "));
+                .map(id -> {
+                    Optional<OrganizationDTO> organization =  gisScosApiRestClient.makeGetOrganizationRequest(id);
+                    if (organization.isPresent())
+                        return gisScosApiRestClient.makeGetOrganizationRequest(id).get().getShort_name();
+                    else return "";
+                }).collect(Collectors.joining(", "));
     }
 
     public String getOrganizationsName(UserDTO userDTO) {
