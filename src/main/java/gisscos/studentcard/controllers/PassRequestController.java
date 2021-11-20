@@ -198,7 +198,7 @@ public class PassRequestController {
      * @param principal авторизация админа
      * @return заявки
      */
-    @GetMapping("/count/get/user/status")
+    @GetMapping("/count/get/admin/status")
     public ResponseEntity<Map<String, Long>> getPassRequestCountByStatusForAdmin(Principal principal) {
         if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return passRequestService.getPassRequestCountByStatusForAdmin(principal.getName()).map(ResponseEntity::ok)
