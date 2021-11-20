@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -205,6 +202,28 @@ a     * Получить список заявок по статусу для у
     }
 
     /**
+     * Получить количество заявок по статусу для пользователя
+     * @param authorId идентификатор пользователя
+     * @return мапа с парами ключ - значение, где ключ - статус, значение - количество заявок
+     */
+    @Override
+    public Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId) {
+        List<PassRequest> requests =
+                passRequestRepository.findAllByUserId(authorId);
+        log.info("Getting passRequests count by status for user");
+        Map<PassRequestStatus, Long> statusesCount = new HashMap<>();
+        for (PassRequestStatus status : PassRequestStatus.values()) {
+            statusesCount.put(
+                            status,
+                            requests.stream()
+                                    .filter(r -> r.getStatus().equals(status))
+                                    .count()
+            );
+        }
+        return Optional.of(statusesCount);
+    }
+
+    /**
      * Получить список пользователей групповой заявки.
      * @param dto заявки
      * @return список пользователей заявки или Optional.empty
@@ -248,6 +267,11 @@ a     * Получить список заявок по статусу для у
             default:
                 return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<List<PassRequest>> getPassRequestCountByStatusForAdmin(String authorId, PassRequestStatus status) {
+        return Optional.empty();
     }
 
     /**
