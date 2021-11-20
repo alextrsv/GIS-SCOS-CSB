@@ -52,6 +52,7 @@ public class PassRequestController {
     @PostMapping("/add")
     public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto,
                                                       Principal principal) {
+        dto.setUserId(principal.getName());
         switch (userDetailsService.getUserRole(principal)) {
             case ADMIN:
                 return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
