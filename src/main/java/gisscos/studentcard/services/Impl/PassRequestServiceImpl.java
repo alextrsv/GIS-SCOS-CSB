@@ -153,7 +153,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-a     * Получить список заявок по статусу для университета
+     * Получить список заявок по статусу для университета
      * @param dto заявки
      * @param page номер страницы
      * @param pageSize размер страницы
