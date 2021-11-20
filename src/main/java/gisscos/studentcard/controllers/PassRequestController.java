@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -144,11 +145,21 @@ public class PassRequestController {
      * @return заявки
      */
     @GetMapping("/get/user/status/{page}/{pageSize}")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestParam PassRequestStatus status,
-                                                                    @PathVariable Long page,
-                                                                    @PathVariable Long pageSize,
-                                                                    Principal principal) {
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatusForUser(@RequestParam PassRequestStatus status,
+                                                                           @PathVariable Long page,
+                                                                           @PathVariable Long pageSize,
+                                                                           Principal principal) {
         return passRequestService.getPassRequestByStatusForUser(principal.getName(), status, page, pageSize).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    /**
+     * Получение количества заявок по статусу для пользователя
+     * @return заявки
+     */
+    @GetMapping("/count/get/user/status")
+    public ResponseEntity<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(Principal principal) {
+        return passRequestService.getPassRequestCountByStatusForUser(principal.getName()).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
