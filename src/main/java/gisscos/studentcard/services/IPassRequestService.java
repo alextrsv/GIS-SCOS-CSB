@@ -25,7 +25,7 @@ public interface IPassRequestService {
             Optional<String> search
     );
 
-    Optional<List<PassRequest>> getPassRequestCountByStatusForAdmin(String authorId, PassRequestStatus status);
+    Optional<Map<String, Long>> getPassRequestCountByStatusForAdmin(String authorId);
 
     Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 

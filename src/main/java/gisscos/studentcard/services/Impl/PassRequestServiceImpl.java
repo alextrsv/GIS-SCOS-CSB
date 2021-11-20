@@ -250,6 +250,14 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return Optional.empty();
     }
 
+    /**
+     * Получить заявки для администратора
+     * @param status стутус заявок
+     * @param targetUniversityId идентификатор университета администратора
+     * @param page номер страницы (по умолчанию по 5 заявок для админа)
+     * @param search поиск по заявкам. Возможен по названию ООВО и номеру заявки
+     * @return отобранные по критериям заявки
+     */
     @Override
     public Optional<List<PassRequest>> getPassRequestsForAdmin(
             RequestsStatusForAdmin status,
@@ -270,8 +278,29 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     @Override
-    public Optional<List<PassRequest>> getPassRequestCountByStatusForAdmin(String authorId, PassRequestStatus status) {
-        return Optional.empty();
+    public Optional<Map<String, Long>> getPassRequestCountByStatusForAdmin(String authorId) {
+        List<PassRequest> requests =
+                passRequestRepository.findAllByUserId(authorId);
+        log.info("Getting passRequests count by status for user");
+        Map<String, Long> statusesCount = new HashMap<>();
+        statusesCount.put(
+                "forProcessing",
+                requests.stream()
+                        .filter(r -> r.getStatus().equals(PassRequestStatus.TARGET_ORGANIZATION_REVIEW))
+                        .count());
+        statusesCount.put(
+                "inProcessing",
+                requests.stream()
+                        .filter(r -> r.getStatus().equals(PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION))
+                        .count());
+        statusesCount.put(
+                "processed",
+                requests.stream()
+                        .filter(r -> !r.getStatus().equals(PassRequestStatus.TARGET_ORGANIZATION_REVIEW))
+                        .filter(r -> !r.getStatus().equals(PassRequestStatus.WAITING_FOR_APPROVEMENT_BY_USER))
+                        .filter(r -> !r.getStatus().equals(PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION))
+                        .count());
+        return Optional.of(statusesCount);
     }
 
     /**

@@ -156,6 +156,7 @@ public class PassRequestController {
 
     /**
      * Получение количества заявок по статусу для пользователя
+     * @param principal авторизация пользователя
      * @return заявки
      */
     @GetMapping("/count/get/user/status")
@@ -172,7 +173,7 @@ public class PassRequestController {
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests")
-    public ResponseEntity<List<PassRequest>> getPassRequestsForUniversity(
+    public ResponseEntity<List<PassRequest>> getPassRequestsForAdmin(
             @RequestParam(value = "targetUniversityId") String targetUniversityId,
             @RequestParam(value = "page") Long page,
             @RequestParam(value = "status") String status,
@@ -190,6 +191,20 @@ public class PassRequestController {
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+    }
+
+    /**
+     * Получение количества заявок по статусу для администратора
+     * @param principal авторизация админа
+     * @return заявки
+     */
+    @GetMapping("/count/get/user/status")
+    public ResponseEntity<Map<String, Long>> getPassRequestCountByStatusForAdmin(Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return passRequestService.getPassRequestCountByStatusForAdmin(principal.getName()).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     /**
