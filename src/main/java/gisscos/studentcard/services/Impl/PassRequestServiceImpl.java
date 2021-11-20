@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -88,8 +85,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 if (!dynamicQRUserRepository.existsByUserId(user.getUserId()))
                     dynamicQRUserRepository.save(new DynamicQRUser(user.getUserId(), dto.getUniversityId()));
             }
-            if (getPassRequestById(id).isPresent())
-                return getPassRequestById(id).get();
+            if (getPassRequestById(id, dto.getUserId()).isPresent())
+                return getPassRequestById(id, dto.getUserId()).get();
         }
         log.info("pass request was added");
         return passRequestRepository.save(passRequest);
@@ -126,13 +123,20 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Получение заявки по id
-     * @param id заявки
+     * @param passRequestId заявки
      * @return заявка
      */
     @Override
-    public Optional<PassRequest> getPassRequestById(UUID id) {
-        log.info("getting pass request by id: {}", id);
-        return getPassRequest(id);
+    public Optional<PassRequest> getPassRequestById(UUID passRequestId, String authorId) {
+        Optional<PassRequest> passRequest = getPassRequest(passRequestId);
+        if (passRequest.isPresent()) {
+            if (passRequest.get().getUserId().equals(authorId)) {
+                log.info("getting pass request by id: {}", passRequestId);
+                return passRequest;
+            }
+        }
+        log.warn("User with {} is not author of request", authorId);
+        return Optional.empty();
     }
 
     /**
@@ -149,16 +153,16 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Получить список заявок по статусу
+     * Получить список заявок по статусу для университета
      * @param dto заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestByStatus(PassRequestDTO dto,
-                                                              Long page,
-                                                              Long pageSize) {
+    public Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto,
+                                                                           Long page,
+                                                                           Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByUniversityId(dto.getUniversityId());
         log.info("Getting passRequests by status");
@@ -170,6 +174,53 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         .limit(pageSize)
                         .collect(Collectors.toList())
         );
+    }
+
+    /**
+     * Получить список заявок по статусу для пользователя
+     * @param authorId заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы
+     * @return список заявок с определенным статусом
+     */
+    @Override
+    public Optional<List<PassRequest>> getPassRequestByStatusForUser(String authorId,
+                                                              PassRequestStatus status,
+                                                              Long page,
+                                                              Long pageSize) {
+        List<PassRequest> requests =
+                passRequestRepository.findAllByUserId(authorId);
+        log.info("Getting passRequests by status");
+        return Optional.of(
+                requests.stream()
+                        .filter(r -> r.getStatus() == status)
+                        .sorted(new PassRequestCreationDateComparator())
+                        .skip(pageSize * (page - 1))
+                        .limit(pageSize)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    /**
+     * Получить количество заявок по статусу для пользователя
+     * @param authorId идентификатор пользователя
+     * @return мапа с парами ключ - значение, где ключ - статус, значение - количество заявок
+     */
+    @Override
+    public Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId) {
+        List<PassRequest> requests =
+                passRequestRepository.findAllByUserId(authorId);
+        log.info("Getting passRequests count by status for user");
+        Map<PassRequestStatus, Long> statusesCount = new HashMap<>();
+        for (PassRequestStatus status : PassRequestStatus.values()) {
+            statusesCount.put(
+                            status,
+                            requests.stream()
+                                    .filter(r -> r.getStatus().equals(status))
+                                    .count()
+            );
+        }
+        return Optional.of(statusesCount);
     }
 
     /**
@@ -199,6 +250,14 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return Optional.empty();
     }
 
+    /**
+     * Получить заявки для администратора
+     * @param status стутус заявок
+     * @param targetUniversityId идентификатор университета администратора
+     * @param page номер страницы (по умолчанию по 5 заявок для админа)
+     * @param search поиск по заявкам. Возможен по названию ООВО и номеру заявки
+     * @return отобранные по критериям заявки
+     */
     @Override
     public Optional<List<PassRequest>> getPassRequestsForAdmin(
             RequestsStatusForAdmin status,
@@ -216,6 +275,32 @@ public class PassRequestServiceImpl implements IPassRequestService {
             default:
                 return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<Map<String, Long>> getPassRequestCountByStatusForAdmin(String authorId) {
+        List<PassRequest> requests =
+                passRequestRepository.findAllByUserId(authorId);
+        log.info("Getting passRequests count by status for user");
+        Map<String, Long> statusesCount = new HashMap<>();
+        statusesCount.put(
+                "forProcessing",
+                requests.stream()
+                        .filter(r -> r.getStatus().equals(PassRequestStatus.TARGET_ORGANIZATION_REVIEW))
+                        .count());
+        statusesCount.put(
+                "inProcessing",
+                requests.stream()
+                        .filter(r -> r.getStatus().equals(PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION))
+                        .count());
+        statusesCount.put(
+                "processed",
+                requests.stream()
+                        .filter(r -> !r.getStatus().equals(PassRequestStatus.TARGET_ORGANIZATION_REVIEW))
+                        .filter(r -> !r.getStatus().equals(PassRequestStatus.WAITING_FOR_APPROVEMENT_BY_USER))
+                        .filter(r -> !r.getStatus().equals(PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION))
+                        .count());
+        return Optional.of(statusesCount);
     }
 
     /**

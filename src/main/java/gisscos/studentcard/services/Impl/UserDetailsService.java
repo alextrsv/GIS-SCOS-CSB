@@ -5,6 +5,7 @@ import gisscos.studentcard.entities.dto.StudentDTO;
 import gisscos.studentcard.entities.dto.StudentsDTO;
 import gisscos.studentcard.entities.dto.UserDetailsDTO;
 import gisscos.studentcard.entities.enums.ScosUserRole;
+import gisscos.studentcard.entities.enums.UserRole;
 import gisscos.studentcard.repositories.IValidateStudentCacheRepository;
 import gisscos.studentcard.services.IUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,29 @@ public class UserDetailsService implements IUserDetailsService {
         this.devScosApiClient = devScosApiClient;
         this.devVamApiClient = devVamApiClient;
         this.studentCashRepository = studentCashRepository;
+    }
+
+    /**
+     * Получить роль пользователя.
+     * @param principal атворизация пользователя
+     * @return роль.
+     */
+    @Override
+    public UserRole getUserRole(Principal principal) {
+        if (isSecurityOfficer(principal)) {
+            return UserRole.SECURITY;
+        }
+        if (isUniversity(principal)) {
+            return UserRole.ADMIN;
+        }
+        if (isStudent(principal)) {
+            return UserRole.STUDENT;
+        }
+        if (principal.getName().equals("ba878477-1c00-4e3e-9a19-f61a147a2f83")) {
+            return UserRole.TEACHER;
+        }
+
+        return UserRole.UNDEFINED;
     }
 
     /**
