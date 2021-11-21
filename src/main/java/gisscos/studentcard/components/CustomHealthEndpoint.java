@@ -16,14 +16,12 @@ import java.security.Principal;
 @WebEndpoint(id = "custom-health")
 public class CustomHealthEndpoint {
 
-    private final HealthEndpoint delegate;
-    private final IUserDetailsService userService;
+    @Autowired(required = false)
+    private HealthEndpoint delegate;
 
     @Autowired
-    public CustomHealthEndpoint(HealthEndpoint delegate, IUserDetailsService userService) {
-        this.delegate = delegate;
-        this.userService = userService;
-    }
+    private IUserDetailsService userService;
+
 
     @ReadOperation
     public WebEndpointResponse<HealthComponent> health(Principal principal){
