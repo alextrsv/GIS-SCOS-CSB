@@ -27,8 +27,8 @@ public class CustomHealthEndpoint {
     }
 
     @ReadOperation
-    public WebEndpointResponse<HealthComponent> health(Principal principal){
-        if(userService.getUserRole(principal) != UserRole.ADMIN){
+    public WebEndpointResponse<HealthComponent> health(Principal principal) {
+        if (userService.getUserRole(principal) != UserRole.ADMIN) {
             return new WebEndpointResponse<>(null, HttpStatus.FORBIDDEN.value());
         }
 
