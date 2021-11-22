@@ -26,7 +26,7 @@ public class CustomEndpointWebExtension extends HealthEndpointWebExtension {
     @ReadOperation
     public WebEndpointResponse<HealthComponent> health(ApiVersion apiVersion, SecurityContext securityContext) {
         if(!userService.isSuperUser(securityContext.getPrincipal())){
-            return new WebEndpointResponse<>(null, HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return new WebEndpointResponse<>(null, HttpStatus.FORBIDDEN.value());
         }
 
         return health(apiVersion, securityContext, false, NO_PATH);
