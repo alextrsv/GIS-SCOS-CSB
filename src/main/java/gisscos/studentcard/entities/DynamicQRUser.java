@@ -33,7 +33,9 @@ public class DynamicQRUser {
 
     public DynamicQRUser(UserDTO userDTO) {
         this.userId = userDTO.getUser_id();
-        this.organizationId = userDTO.getUserOrganizationsId().get(0);
+        if (userDTO.getEmployments().size() != 0)
+            this.organizationId = userDTO.getUserOrganizationsId().get(0);
+        else this.organizationId = "";
     }
 
     public DynamicQRUser(String userId, String organizationId) {
