@@ -1,5 +1,6 @@
 package gisscos.studentcard.components;
 
+import gisscos.studentcard.entities.enums.UserRole;
 import gisscos.studentcard.services.IUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.security.Principal;
 
 @Component
-@WebEndpoint(id = "custom-health")
+@WebEndpoint(id = "customHealth")
 public class CustomHealthEndpoint {
 
     @Autowired(required = false)
@@ -24,8 +25,8 @@ public class CustomHealthEndpoint {
 
 
     @ReadOperation
-    public WebEndpointResponse<HealthComponent> health(Principal principal){
-        if(!userService.isSuperUser(principal)){
+    public WebEndpointResponse<HealthComponent> health(Principal principal) {
+        if (userService.getUserRole(principal) != UserRole.ADMIN) {
             return new WebEndpointResponse<>(null, HttpStatus.FORBIDDEN.value());
         }
 
