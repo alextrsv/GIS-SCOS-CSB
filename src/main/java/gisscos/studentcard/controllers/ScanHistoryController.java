@@ -2,7 +2,7 @@ package gisscos.studentcard.controllers;
 
 import gisscos.studentcard.entities.ScanHistory;
 import gisscos.studentcard.entities.dto.ScanHistoriesWithPayloadDTO;
-import gisscos.studentcard.entities.enums.UserRole;
+import gisscos.studentcard.entities.dto.ScanHistoryDTO;
 import gisscos.studentcard.services.IScanHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.UUID;
 
 @RestController
@@ -29,27 +30,32 @@ public class ScanHistoryController {
 //        return new ResponseEntity<>("Not valid request parameter: " + e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/add/{userId}")
+    @PostMapping("/add")
     private ResponseEntity<ScanHistory> addNewScanInHistory(
-            @PathVariable UUID userId,
-            @RequestParam(name = "securityId") UUID securityId,
-            @RequestParam(name = "role") UserRole role){
+            @RequestBody ScanHistoryDTO scanHistoryDTO,
+            Principal principal){
 
-        if(scanHistoryService.saveNewScanInHistory(userId, securityId, role).isPresent()) {
+        if(scanHistoryService.saveNewScanInHistory(
+                UUID.fromString(principal.getName()),
+                scanHistoryDTO).isPresent()) {
+
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping("/view/{securityId}/{page}/{size}")
+    @GetMapping("/view/{page}/{size}")
     private ResponseEntity<ScanHistoriesWithPayloadDTO> getScanHistoryBySecurityId(
-            @PathVariable("securityId") UUID securityId,
             @PathVariable("page") int page,
-            @PathVariable("size") int size){
+            @PathVariable("size") int size,
+            @RequestParam("search") String searchByFullName,
+            Principal principal){
 
         return scanHistoryService
                 .getScanHistoriesBySecurityId(
-                        securityId, PageRequest.of(page - 1, size)
+                        UUID.fromString(principal.getName()),
+                        PageRequest.of(page - 1, size),
+                        searchByFullName
                 )
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
