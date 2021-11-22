@@ -1,5 +1,6 @@
 package gisscos.studentcard.components;
 
+import gisscos.studentcard.entities.enums.UserRole;
 import gisscos.studentcard.services.IUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.ApiVersion;
@@ -25,7 +26,7 @@ public class CustomEndpointWebExtension extends HealthEndpointWebExtension {
 
     @ReadOperation
     public WebEndpointResponse<HealthComponent> health(ApiVersion apiVersion, SecurityContext securityContext) {
-        if(!userService.isSuperUser(securityContext.getPrincipal())){
+        if (userService.getUserRole(securityContext.getPrincipal()) != UserRole.ADMIN) {
             return new WebEndpointResponse<>(null, HttpStatus.FORBIDDEN.value());
         }
 
