@@ -33,11 +33,14 @@ public class ScanHistory {
     private Timestamp creationDate;
     /**роль пользователя */
     private UserRole role;
+    /**ФИО пользователя */
+    private String fullName;
 
-    public ScanHistory(UUID userId, UUID securityId, Timestamp creationDate, UserRole role){
+    public ScanHistory(UUID userId, UUID securityId, Timestamp creationDate, UserRole role, String fullName){
         this.userId = userId;
         this.securityId = securityId;
         this.creationDate = creationDate;
         this.role = role;
+        this.fullName = fullName;
     }
 }
