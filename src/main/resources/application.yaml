@@ -1,0 +1,86 @@
+# DB, servlet, security oauth2 resource server config
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO}
+    open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://auth-dev.online.edu.ru/realms/portfolio/protocol/openid-connect/certs
+          issuer-uri: https://auth-dev.online.edu.ru/realms/portfolio
+
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+
+# Upload files dir
+upload:
+  dir: PassFiles
+
+# Actuator
+management:
+  endpoints:
+    web:
+      base-path: /monitor
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+
+# Actuator Frontend
+frontend:
+  url: https://dev.online.edu.ru/stud-bilet/v0/student
+
+# Web client
+web:
+  client:
+    dev:
+      scos:
+        header:
+          name: ${WEB_CLIENT_DEV_SCOS_HEADER_NAME}
+          value: ${WEB_CLIENT_DEV_SCOS_HEADER_VALUE}
+        url: ${WEB_CLIENT_DEV_SCOS_URL}
+      vam:
+        url: ${WEB_CLIENT_DEV_VAM_URL}
+    test:
+      vam:
+        url: ${WEB_CLIENT_TEST_VAM_URL}
+
+# RestTemplate
+gis-scos:
+  host: dev.online.edu.ru
+  prefix: /api/v2/
+vam:
+  prefix: /vam/api/v2/
+  X-CN-UUID: ${VAM_SECRET}
+
+#Java Mail
+email:
+  sender:
+    address: ${EMAIL_ADDRESS}
+
+### Legacy properties
+#
+## Quartz
+#spring.quartz.job-store-type=jdbc
+#spring.quartz.jdbc.initialize-schema=never
+#spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+#spring.quartz.properties.org.quartz.scheduler.instanceName = QRGenerationScheduler
+#spring.quartz.properties.org.quartz.scheduler.instanceId = AUTO
+#spring.quartz.properties.org.quartz.jobStore.isClustered = false
+
+## Actuator
+#management.endpoints.web.discovery.enabled=false
+#management.endpoints.web.exposure.include=custom-health
+#management.endpoints.web.path-mapping.health=internal/health
+#management.endpoints.web.path-mapping.custom-health=/health
+#management.health.diskspace.enabled=false
+#management.health.ping.enabled=false
