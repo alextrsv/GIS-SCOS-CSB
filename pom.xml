@@ -8,11 +8,11 @@
         <version>2.5.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>gis-scos</groupId>
+    <groupId>ru.dev.online.edu.ru</groupId>
     <artifactId>student-card</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.1-SNAPSHOT</version>
     <name>student-card</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Digital student card for online.edu.ru</description>
     <properties>
         <java.version>11</java.version>
         <maven.compiler.source>11</maven.compiler.source>
