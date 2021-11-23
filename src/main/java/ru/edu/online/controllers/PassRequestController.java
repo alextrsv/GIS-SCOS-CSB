@@ -142,15 +142,15 @@ public class PassRequestController {
      * Получение заявок по статусу для пользователя
      * @param status заявки
      * @param page номер страницы
-     * @param pageSize размер страницы
+     * @param itemsPerPage размер страницы
      * @return заявки
      */
-    @GetMapping("/get/user/status/{page}/{pageSize}")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatusForUser(@RequestParam PassRequestStatus status,
-                                                                           @PathVariable Long page,
-                                                                           @PathVariable Long pageSize,
+    @GetMapping("/get/user/status")
+    public ResponseEntity<List<PassRequest>> getPassRequestByStatusForUser(@RequestParam Long page,
+                                                                           @RequestParam Long itemsPerPage,
+                                                                           @RequestParam PassRequestStatus status,
                                                                            Principal principal) {
-        return passRequestService.getPassRequestByStatusForUser(principal.getName(), status, page, pageSize).map(ResponseEntity::ok)
+        return passRequestService.getPassRequestByStatusForUser(principal.getName(), status, page, itemsPerPage).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
