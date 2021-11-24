@@ -2,13 +2,15 @@ package ru.edu.online.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.UserDTO;
-import ru.edu.online.entities.dto.UserDetailsDTO;
 
 import java.security.Principal;
 import java.time.Duration;
+import java.util.Optional;
 
 @Slf4j
 public class ScosApiUtils {
@@ -34,14 +36,38 @@ public class ScosApiUtils {
      * @param globalId идентификатор организации
      * @return организация
      */
-    public static OrganizationDTO getOrganizationByGlobalId(WebClient scosApiClient, String globalId) {
-        return scosApiClient.get()
+    public static Optional<OrganizationDTO> getOrganizationByGlobalId(WebClient scosApiClient, String globalId) {
+        return Optional.ofNullable(scosApiClient.get()
                 .uri(String.join("", "/organizations/?global_id=", globalId))
                 .retrieve()
                 .bodyToMono(OrganizationDTO.class)
-                .block();
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .block());
     }
 
+    /**
+     * Получить организацию по id или ОГРН
+     * @param scosApiClient клиент для отправки запроса
+     * @param idOrOGRN id или ОГРН
+     * @return организация
+     */
+    public static Optional<OrganizationDTO> getOrganization(WebClient scosApiClient, String idOrOGRN) {
+        return Optional.ofNullable(scosApiClient.get()
+                .uri(String.join("", "/organizations/", idOrOGRN))
+                .retrieve()
+                .bodyToMono(OrganizationDTO.class)
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .block());
+    }
+
+    /**
+     * Получить информацию о пользователе со списком ролей
+     * @param scosApiClient клиент для запроса
+     * @param principal авторизация
+     * @return информация о пользователе
+     */
     public static UserDTO getUserDetails(WebClient scosApiClient, Principal principal) {
         return scosApiClient
                 .get()
@@ -49,6 +75,8 @@ public class ScosApiUtils {
                 .retrieve()
                 .bodyToMono(UserDTO.class)
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
                 .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
                 .block();
     }
