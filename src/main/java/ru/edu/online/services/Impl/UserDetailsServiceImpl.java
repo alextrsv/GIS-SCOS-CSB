@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-public class UserDetailsService implements IUserDetailsService {
+public class UserDetailsServiceImpl implements IUserDetailsService {
 
     private final IValidateStudentCacheRepository studentCashRepository;
 
@@ -38,8 +38,8 @@ public class UserDetailsService implements IUserDetailsService {
     private final WebClient devVamApiClient;
 
     @Autowired
-    public UserDetailsService(WebClient devScosApiClient, WebClient devVamApiClient,
-                              IValidateStudentCacheRepository studentCashRepository) {
+    public UserDetailsServiceImpl(WebClient devScosApiClient, WebClient devVamApiClient,
+                                  IValidateStudentCacheRepository studentCashRepository) {
         this.devScosApiClient = devScosApiClient;
         this.devVamApiClient = devVamApiClient;
         this.studentCashRepository = studentCashRepository;
@@ -58,11 +58,11 @@ public class UserDetailsService implements IUserDetailsService {
         if (isUniversity(principal)) {
             return UserRole.ADMIN;
         }
-        if (isStudent(principal)) {
-            return UserRole.STUDENT;
-        }
         if (principal.getName().equals("ba878477-1c00-4e3e-9a19-f61a147a2f83")) {
             return UserRole.TEACHER;
+        }
+        if (isStudent(principal)) {
+            return UserRole.STUDENT;
         }
 
         return UserRole.UNDEFINED;
