@@ -1,12 +1,13 @@
 package ru.edu.online.controllers;
 
-import ru.edu.online.entities.enums.UserRole;
-import ru.edu.online.services.IUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.edu.online.entities.dto.UserProfileDTO;
+import ru.edu.online.entities.enums.UserRole;
+import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
 
@@ -32,5 +33,10 @@ public class UserInfoController {
     @GetMapping("/role")
     public ResponseEntity<UserRole> getRole(Principal principal) {
         return ResponseEntity.ok(userDetailsService.getUserRole(principal));
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<UserProfileDTO> getUser(Principal principal) {
+        return ResponseEntity.of(userDetailsService.getUserProfile(principal));
     }
 }

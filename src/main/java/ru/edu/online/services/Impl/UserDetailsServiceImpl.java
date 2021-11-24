@@ -1,9 +1,7 @@
 package ru.edu.online.services.Impl;
 
 import ru.edu.online.entities.CacheStudent;
-import ru.edu.online.entities.dto.StudentDTO;
-import ru.edu.online.entities.dto.StudentsDTO;
-import ru.edu.online.entities.dto.UserDetailsDTO;
+import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.ScosUserRole;
 import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.repositories.IValidateStudentCacheRepository;
@@ -13,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.util.retry.Retry;
+import ru.edu.online.utils.ScosApiUtils;
 
 import java.security.Principal;
 import java.time.Duration;
@@ -196,6 +195,65 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
                 .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
                 .block();
+    }
+
+    @Override
+    public Optional<UserProfileDTO> getUserProfile(Principal principal) {
+        switch (getUserRole(principal)) {
+            case STUDENT:
+                return Optional.ofNullable(getStudentProfile(principal));
+            case TEACHER:
+                return Optional.of(getTeacherProfile());
+            default:
+                return Optional.empty();
+        }
+    }
+
+    private UserProfileDTO getStudentProfile(Principal principal) {
+        UserDTO user = ScosApiUtils.getUserDetails(devScosApiClient, principal);
+        StudentsDTO students = getStudents("email", user.getEmail());
+        Optional<StudentDTO> student = students.getResults()
+                .stream()
+                .filter(
+                        s ->
+                                s.getEmail().equals(user.getEmail())
+                )
+                .filter(s -> s.getStudy_year() != null)
+                .findFirst();
+        if (student.isPresent()) {
+            OrganizationDTO organization =
+                    ScosApiUtils.getOrganizationByGlobalId(
+                            devScosApiClient,
+                            student.get().getOrganization_id()
+                    );
+
+            UserProfileDTO userProfile = new UserProfileDTO();
+            userProfile.setFirstName(student.get().getName());
+            userProfile.setLastName(student.get().getSurname());
+            userProfile.setPatronymicName(student.get().getMiddle_name());
+            userProfile.setStudyYear(student.get().getStudy_year());
+            userProfile.setStudNumber("25643682");
+            userProfile.setEducationForm("Бюджет");
+            userProfile.setOrganizationFullName(organization.getFull_name());
+            userProfile.setOrganizationShortName(organization.getShort_name());
+            userProfile.setRole(UserRole.STUDENT);
+
+            return userProfile;
+        }
+
+        return null;
+    }
+
+    private UserProfileDTO getTeacherProfile() {
+        UserProfileDTO userProfileDTO = new UserProfileDTO();
+        userProfileDTO.setOrganizationShortName("Университет ИТМО");
+        userProfileDTO.setOrganizationFullName("Федеральное государственное автономное образовательное учреждение высшего образования «Национальный исследовательский университет ИТМО»");
+        userProfileDTO.setFirstName("Преподаватель");
+        userProfileDTO.setLastName("Тестовый");
+        userProfileDTO.setPatronymicName("");
+        userProfileDTO.setRole(UserRole.TEACHER);
+
+        return userProfileDTO;
     }
 
     /**
