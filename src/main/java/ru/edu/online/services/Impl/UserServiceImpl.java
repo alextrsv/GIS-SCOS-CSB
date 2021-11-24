@@ -1,6 +1,8 @@
 package ru.edu.online.services.Impl;
 
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.dto.OrganizationDTO;
@@ -8,11 +10,8 @@ import ru.edu.online.entities.dto.OrganizationInQRDTO;
 import ru.edu.online.entities.dto.PermanentUserQRDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.services.IDynamicQRUserService;
-import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.services.IUserService;
 import ru.edu.online.utils.HashingUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -23,15 +22,13 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements IUserService {
 
-    private final IPassRequestService passRequestService;
-
     private final GisScosApiRestClient gisScosApiRestClient;
 
     private final IDynamicQRUserService dynamicQRUserService;
 
     @Autowired
-    public UserServiceImpl(IPassRequestService passRequestService, GisScosApiRestClient gisScosApiRestClient, IDynamicQRUserService dynamicQRUserService) {
-        this.passRequestService = passRequestService;
+    public UserServiceImpl(GisScosApiRestClient gisScosApiRestClient,
+                           IDynamicQRUserService dynamicQRUserService) {
         this.gisScosApiRestClient = gisScosApiRestClient;
         this.dynamicQRUserService = dynamicQRUserService;
     }
@@ -101,5 +98,4 @@ public class UserServiceImpl implements IUserService {
         System.out.println(content);
         return content;
     }
-
 }
