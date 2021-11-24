@@ -12,11 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.util.retry.Retry;
 import ru.edu.online.utils.ScosApiUtils;
+import ru.edu.online.utils.UserUtils;
 
 import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Сервис данных пользователя
@@ -218,7 +220,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      * @return список пользователей из ООВО админа
      */
     @Override
-    public Optional<List<UserDetailsDTO>> getUsersByOrganization(Principal principal) {
+    public Optional<List<UserDetailsDTO>> getUsersByOrganization(Principal principal,
+                                                                 Long page,
+                                                                 Long pageSize,
+                                                                 Optional<String> search) {
         UserDTO userDTO = ScosApiUtils.getUserDetails(devScosApiClient, principal);
         StudentsDTO students = getStudents(
                 "organization_id",
@@ -241,7 +246,15 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
             users.add(user);
         }
 
-        return Optional.of(users);
+        return search.map(s -> UserUtils.searchByEmail(users, s).
+                stream()
+                .skip(pageSize * (page - 1))
+                .limit(pageSize)
+                .collect(Collectors.toList())).or(() -> Optional.of(users.stream()
+                .skip(pageSize * (page - 1))
+                .limit(pageSize)
+                .collect(Collectors.toList())
+        ));
     }
 
     private UserProfileDTO getStudentProfile(Principal principal) {

@@ -25,5 +25,8 @@ public interface IUserDetailsService {
 
     Optional<UserProfileDTO> getUserProfile(Principal principal);
 
-    Optional<List<UserDetailsDTO>> getUsersByOrganization(Principal principal);
+    Optional<List<UserDetailsDTO>> getUsersByOrganization(Principal principal,
+                                                          Long page,
+                                                          Long pageSize,
+                                                          Optional<String> search);
 }
