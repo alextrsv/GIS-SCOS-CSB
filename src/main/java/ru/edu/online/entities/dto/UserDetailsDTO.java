@@ -11,10 +11,10 @@ import java.util.UUID;
  */
 @Data
 public class UserDetailsDTO {
-    private UUID userId;
-    private UUID esiaId;
+    private String userId;
     private String email;
     private String lastName;
     private String firstName;
+    private String patronymicName;
     private String[] roles;
 }
