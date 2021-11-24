@@ -1,5 +1,8 @@
 package ru.edu.online.services.Impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.dto.StudentDTO;
@@ -9,9 +12,6 @@ import ru.edu.online.services.IPermanentQRService;
 import ru.edu.online.services.IStudentService;
 import ru.edu.online.services.IUserService;
 import ru.edu.online.utils.HashingUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
 import java.security.NoSuchAlgorithmException;

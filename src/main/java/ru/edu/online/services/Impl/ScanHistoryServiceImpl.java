@@ -1,14 +1,14 @@
 package ru.edu.online.services.Impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import ru.edu.online.entities.ScanHistory;
 import ru.edu.online.entities.dto.ScanHistoriesWithPayloadDTO;
 import ru.edu.online.entities.dto.ScanHistoryDTO;
 import ru.edu.online.repositories.IScanHistoryRepository;
 import ru.edu.online.services.IScanHistoryService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.Date;

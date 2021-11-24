@@ -1,9 +1,9 @@
 package ru.edu.online.entities;
 
 
+import lombok.*;
 import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.UserDTO;
-import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

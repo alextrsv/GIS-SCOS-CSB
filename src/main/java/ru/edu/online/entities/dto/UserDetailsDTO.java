@@ -2,8 +2,6 @@ package ru.edu.online.entities.dto;
 
 import lombok.Data;
 
-import java.util.UUID;
-
 /**
  * dto - информации о пользователе по запросу на:
  * https://dev.online.edu.ru/api/v2/users/{user_id}

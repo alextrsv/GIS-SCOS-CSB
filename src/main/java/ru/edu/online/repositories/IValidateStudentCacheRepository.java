@@ -1,8 +1,8 @@
 package ru.edu.online.repositories;
 
-import ru.edu.online.entities.CacheStudent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import ru.edu.online.entities.CacheStudent;
 
 import java.time.LocalDate;
 import java.util.Optional;

@@ -1,10 +1,10 @@
 package ru.edu.online.entities;
 
-import ru.edu.online.entities.enums.PassRequestStatus;
-import ru.edu.online.entities.enums.PassRequestType;
 import lombok.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import ru.edu.online.entities.enums.PassRequestStatus;
+import ru.edu.online.entities.enums.PassRequestType;
 
 import javax.persistence.*;
 import java.time.LocalDate;

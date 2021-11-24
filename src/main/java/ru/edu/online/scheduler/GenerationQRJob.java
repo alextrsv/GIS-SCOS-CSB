@@ -1,5 +1,10 @@
 package ru.edu.online.scheduler;
 
+import lombok.NonNull;
+import org.quartz.JobExecutionContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.stereotype.Component;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.DynamicQRUser;
@@ -9,11 +14,6 @@ import ru.edu.online.repositories.IDynamicQRUserRepository;
 import ru.edu.online.services.IDynamicQRUserService;
 import ru.edu.online.services.IStudentService;
 import ru.edu.online.services.IUserService;
-import lombok.NonNull;
-import org.quartz.JobExecutionContext;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.quartz.QuartzJobBean;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Date;

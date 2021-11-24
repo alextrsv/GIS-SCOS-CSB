@@ -1,14 +1,14 @@
 package ru.edu.online.controllers;
 
-import ru.edu.online.entities.ScanHistory;
-import ru.edu.online.entities.dto.ScanHistoriesWithPayloadDTO;
-import ru.edu.online.entities.dto.ScanHistoryDTO;
-import ru.edu.online.services.IScanHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.edu.online.entities.ScanHistory;
+import ru.edu.online.entities.dto.ScanHistoriesWithPayloadDTO;
+import ru.edu.online.entities.dto.ScanHistoryDTO;
+import ru.edu.online.services.IScanHistoryService;
 
 import java.security.Principal;
 import java.util.UUID;

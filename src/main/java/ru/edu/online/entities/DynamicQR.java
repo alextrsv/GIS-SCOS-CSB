@@ -1,11 +1,11 @@
 package ru.edu.online.entities;
 
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import ru.edu.online.entities.enums.QRStatus;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.edu.online.entities.enums.QRStatus;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

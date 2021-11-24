@@ -1,16 +1,16 @@
 package ru.edu.online.services.Impl;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.util.retry.Retry;
 import ru.edu.online.entities.CacheStudent;
 import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.ScosUserRole;
 import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.repositories.IValidateStudentCacheRepository;
 import ru.edu.online.services.IUserDetailsService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.util.retry.Retry;
 import ru.edu.online.utils.ScosApiUtils;
 import ru.edu.online.utils.UserUtils;
 

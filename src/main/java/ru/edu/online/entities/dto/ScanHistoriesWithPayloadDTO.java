@@ -1,9 +1,9 @@
 package ru.edu.online.entities.dto;
 
-import ru.edu.online.entities.ScanHistory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.edu.online.entities.ScanHistory;
 
 import java.util.List;
 

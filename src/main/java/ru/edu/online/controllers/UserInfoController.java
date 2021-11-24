@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;

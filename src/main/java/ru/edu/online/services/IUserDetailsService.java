@@ -1,6 +1,5 @@
 package ru.edu.online.services;
 
-import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
