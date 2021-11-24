@@ -221,24 +221,26 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 .filter(s -> s.getStudy_year() != null)
                 .findFirst();
         if (student.isPresent()) {
-            OrganizationDTO organization =
+            Optional<OrganizationDTO> organization =
                     ScosApiUtils.getOrganizationByGlobalId(
                             devScosApiClient,
                             student.get().getOrganization_id()
                     );
 
-            UserProfileDTO userProfile = new UserProfileDTO();
-            userProfile.setFirstName(student.get().getName());
-            userProfile.setLastName(student.get().getSurname());
-            userProfile.setPatronymicName(student.get().getMiddle_name());
-            userProfile.setStudyYear(student.get().getStudy_year());
-            userProfile.setStudNumber("25643682");
-            userProfile.setEducationForm("Бюджет");
-            userProfile.setOrganizationFullName(organization.getFull_name());
-            userProfile.setOrganizationShortName(organization.getShort_name());
-            userProfile.setRole(UserRole.STUDENT);
+            if (organization.isPresent()) {
+                UserProfileDTO userProfile = new UserProfileDTO();
+                userProfile.setFirstName(student.get().getName());
+                userProfile.setLastName(student.get().getSurname());
+                userProfile.setPatronymicName(student.get().getMiddle_name());
+                userProfile.setStudyYear(student.get().getStudy_year());
+                userProfile.setStudNumber("25643682");
+                userProfile.setEducationForm("Бюджет");
+                userProfile.setOrganizationFullName(organization.get().getFull_name());
+                userProfile.setOrganizationShortName(organization.get().getShort_name());
+                userProfile.setRole(UserRole.STUDENT);
 
-            return userProfile;
+                return userProfile;
+            }
         }
 
         return null;
