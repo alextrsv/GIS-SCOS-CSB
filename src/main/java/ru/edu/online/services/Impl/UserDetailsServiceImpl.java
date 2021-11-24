@@ -16,9 +16,7 @@ import ru.edu.online.utils.ScosApiUtils;
 import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Сервис данных пользователя
@@ -197,6 +195,11 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 .block();
     }
 
+    /**
+     * Получить данные для профиля пользователя
+     * @param principal авторизация польователя (доступно только для студента и препода)
+     * @return профиль пользователя
+     */
     @Override
     public Optional<UserProfileDTO> getUserProfile(Principal principal) {
         switch (getUserRole(principal)) {
@@ -207,6 +210,38 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
             default:
                 return Optional.empty();
         }
+    }
+
+    /**
+     * Получить пользователей организации
+     * @param principal авторизация админа
+     * @return список пользователей из ООВО админа
+     */
+    @Override
+    public Optional<List<UserDetailsDTO>> getUsersByOrganization(Principal principal) {
+        UserDTO userDTO = ScosApiUtils.getUserDetails(devScosApiClient, principal);
+        StudentsDTO students = getStudents(
+                "organization_id",
+                userDTO.getEmployments()
+                        .stream()
+                        .findFirst()
+                        .get()
+                        .getOgrn());
+
+        List<UserDetailsDTO> users = new ArrayList<>();
+
+        for (StudentDTO student : students.getResults()) {
+            UserDetailsDTO user = new UserDetailsDTO();
+            user.setUserId(student.getId());
+            user.setFirstName(student.getName());
+            user.setLastName(student.getSurname());
+            user.setPatronymicName(student.getMiddle_name());
+            user.setEmail(student.getEmail());
+            user.setRoles(new String[]{"STUDENT"});
+            users.add(user);
+        }
+
+        return Optional.of(users);
     }
 
     private UserProfileDTO getStudentProfile(Principal principal) {

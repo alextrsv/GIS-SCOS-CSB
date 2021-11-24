@@ -1,21 +1,25 @@
 package ru.edu.online.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.edu.online.entities.dto.UserDTO;
+import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
+import java.util.List;
 
 /**
  * Контроллер для работы с пользовательскими данными
  */
 @RestController
-@RequestMapping("/user/info")
+@RequestMapping("/user")
 public class UserInfoController {
 
     private final IUserDetailsService userDetailsService;
@@ -35,8 +39,17 @@ public class UserInfoController {
         return ResponseEntity.ok(userDetailsService.getUserRole(principal));
     }
 
-    @GetMapping("/")
+    @GetMapping("/info")
     public ResponseEntity<UserProfileDTO> getUser(Principal principal) {
         return ResponseEntity.of(userDetailsService.getUserProfile(principal));
+    }
+
+    @GetMapping("/organization")
+    public ResponseEntity<List<UserDetailsDTO>> getUserByOrganisation(Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return ResponseEntity.of(userDetailsService.getUsersByOrganization(principal));
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 }
