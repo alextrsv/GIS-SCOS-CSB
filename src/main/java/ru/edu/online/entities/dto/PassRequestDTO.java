@@ -1,8 +1,8 @@
 package ru.edu.online.entities.dto;
 
+import lombok.Data;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.PassRequestType;
-import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.List;

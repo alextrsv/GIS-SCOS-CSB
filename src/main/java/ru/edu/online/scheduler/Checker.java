@@ -9,7 +9,10 @@ import ru.edu.online.services.IDynamicQRUserService;
 
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class Checker extends Thread {
 

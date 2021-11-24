@@ -1,10 +1,10 @@
 package ru.edu.online.repositories;
 
-import ru.edu.online.entities.ScanHistory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import ru.edu.online.entities.ScanHistory;
 
 import java.util.UUID;
 

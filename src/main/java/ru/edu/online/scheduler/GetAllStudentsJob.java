@@ -1,5 +1,10 @@
 package ru.edu.online.scheduler;
 
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.stereotype.Component;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.PassRequest;
@@ -10,11 +15,6 @@ import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.PassRequestType;
 import ru.edu.online.repositories.IPassRequestRepository;
 import ru.edu.online.services.IDynamicQRUserService;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.quartz.QuartzJobBean;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

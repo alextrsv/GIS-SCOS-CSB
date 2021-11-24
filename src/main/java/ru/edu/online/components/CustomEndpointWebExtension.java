@@ -1,7 +1,5 @@
 package ru.edu.online.components;
 
-import ru.edu.online.entities.enums.UserRole;
-import ru.edu.online.services.IUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.ApiVersion;
 import org.springframework.boot.actuate.endpoint.SecurityContext;
@@ -11,6 +9,8 @@ import org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExten
 import org.springframework.boot.actuate.health.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import ru.edu.online.entities.enums.UserRole;
+import ru.edu.online.services.IUserDetailsService;
 
 @Component
 @EndpointWebExtension(endpoint = HealthEndpoint.class)

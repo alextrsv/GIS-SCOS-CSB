@@ -1,8 +1,5 @@
 package ru.edu.online.clients;
 
-import ru.edu.online.entities.dto.StudentDTO;
-import ru.edu.online.entities.dto.StudentsDTO;
-import ru.edu.online.entities.dto.StudyPlanDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -10,6 +7,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.edu.online.entities.dto.StudentDTO;
+import ru.edu.online.entities.dto.StudentsDTO;
+import ru.edu.online.entities.dto.StudyPlanDTO;
 
 import java.util.Collections;
 import java.util.Optional;

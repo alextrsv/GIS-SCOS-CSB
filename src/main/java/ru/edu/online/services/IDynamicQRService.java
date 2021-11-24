@@ -1,8 +1,8 @@
 package ru.edu.online.services;
 
-import ru.edu.online.entities.DynamicQR;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import ru.edu.online.entities.DynamicQR;
 
 import java.util.List;
 import java.util.Optional;

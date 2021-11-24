@@ -1,6 +1,8 @@
 package ru.edu.online.services.Impl;
 
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.DynamicQRUser;
@@ -12,8 +14,6 @@ import ru.edu.online.services.IDynamicQRUserService;
 import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.services.IStudentService;
 import ru.edu.online.utils.HashingUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package ru.edu.online.repositories;
 
-import ru.edu.online.entities.PassRequestChangeLogEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
+import ru.edu.online.entities.PassRequestChangeLogEntry;
 
 import java.util.UUID;
 

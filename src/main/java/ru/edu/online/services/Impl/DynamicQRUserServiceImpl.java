@@ -1,5 +1,7 @@
 package ru.edu.online.services.Impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.StudentDTO;
@@ -9,8 +11,6 @@ import ru.edu.online.repositories.IDynamicQRUserRepository;
 import ru.edu.online.repositories.IPassRequestUserRepository;
 import ru.edu.online.services.IDynamicQRUserService;
 import ru.edu.online.services.IPassRequestService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

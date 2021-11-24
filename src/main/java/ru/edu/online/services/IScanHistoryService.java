@@ -1,9 +1,9 @@
 package ru.edu.online.services;
 
+import org.springframework.data.domain.Pageable;
 import ru.edu.online.entities.ScanHistory;
 import ru.edu.online.entities.dto.ScanHistoriesWithPayloadDTO;
 import ru.edu.online.entities.dto.ScanHistoryDTO;
-import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -1,7 +1,7 @@
 package ru.edu.online.services;
 
-import ru.edu.online.entities.enums.QRDataVerifyStatus;
 import org.springframework.core.io.Resource;
+import ru.edu.online.entities.enums.QRDataVerifyStatus;
 
 import java.util.Optional;
 

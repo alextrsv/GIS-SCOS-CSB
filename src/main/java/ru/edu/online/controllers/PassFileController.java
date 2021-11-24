@@ -1,14 +1,14 @@
 package ru.edu.online.controllers;
 
-import ru.edu.online.entities.PassFile;
-import ru.edu.online.entities.dto.PassRequestFileIdentifierDTO;
-import ru.edu.online.services.IPassFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.edu.online.entities.PassFile;
+import ru.edu.online.entities.dto.PassRequestFileIdentifierDTO;
+import ru.edu.online.services.IPassFileService;
 
 import java.util.List;
 import java.util.UUID;

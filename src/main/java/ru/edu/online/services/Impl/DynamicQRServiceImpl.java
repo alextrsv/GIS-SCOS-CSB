@@ -1,5 +1,8 @@
 package ru.edu.online.services.Impl;
 
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.DynamicQR;
@@ -10,9 +13,6 @@ import ru.edu.online.repositories.IDynamicQRRepository;
 import ru.edu.online.services.IDynamicQRService;
 import ru.edu.online.utils.mail.MailUtil;
 import ru.edu.online.utils.mail.QRMessage;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
