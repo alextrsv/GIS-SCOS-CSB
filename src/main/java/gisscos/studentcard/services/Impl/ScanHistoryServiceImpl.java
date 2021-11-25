@@ -58,7 +58,9 @@ public class ScanHistoryServiceImpl implements IScanHistoryService {
         }
 
         return Optional.of(new ScanHistoriesWithPayloadDTO(
-                scanHistoriesPage.getContent(), scanHistoriesPage.getTotalPages())
+                scanHistoriesPage.getContent(),
+                scanHistoriesPage.getTotalPages(),
+                scanHistoriesPage.getTotalElements())
         );
     }
 }
