@@ -116,9 +116,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 if (student.isPresent()) {
                     return true;
                 }
-                if (saveStudentInCashByScosId(studentDTO.get())) {
-                    return true;
-                } else if (saveStudentInCashByEmail(studentDTO.get())) {
+                if (saveStudentInCashByEmail(studentDTO.get())) {
                     return true;
                 }
                 return true;
@@ -322,20 +320,6 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     private Optional<CacheStudent> getStudentFromCacheByEmail(StudentDTO student) {
         return studentCashRepository.findByEmail(student.getEmail());
-    }
-
-    /**
-     * Сохранить студента в кэш по идентификатору СЦОСа
-     * @param studentDTO студента из ВАМа
-     */
-    private boolean saveStudentInCashByScosId(StudentDTO studentDTO) {
-        if (studentDTO.getScos_id() != null) {
-            studentCashRepository.save(
-                    new CacheStudent(UUID.fromString(studentDTO.getScos_id()))
-            );
-            return true;
-        }
-        return false;
     }
 
     /**

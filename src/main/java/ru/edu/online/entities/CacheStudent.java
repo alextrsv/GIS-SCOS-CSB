@@ -25,17 +25,10 @@ public class CacheStudent {
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    /** Идентификатор в СЦОСе */
-    private UUID scosId;
     /** Дата валидации студента */
     private LocalDate validationDate;
-
+    /** Почта */
     private String email;
-
-    public CacheStudent(UUID scosId) {
-        this.scosId = scosId;
-        this.validationDate = LocalDate.now();
-    }
 
     public CacheStudent(String email) {
         this.email = email;
