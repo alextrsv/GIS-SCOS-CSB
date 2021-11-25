@@ -1,18 +1,15 @@
 package ru.edu.online.utils;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.enums.PassRequestSearchFilter;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Утилитный класс заявок
@@ -33,19 +30,51 @@ public class PassRequestUtils {
     }
 
     /**
+     * Фильтровать заявки
+     * @param requests заявки
+     * @param search поиск
+     * @param devScosApiClient клиент для запроса
+     * @return список отфильтрованных заявок
+     */
+    public static List<PassRequest> filterRequest(List<PassRequest> requests,
+                                                  String search,
+                                                  WebClient devScosApiClient) {
+        switch (getFilterType(search)) {
+            case ORGANIZATION:
+                return filterRequestListByOrganizations(
+                                requests,
+                                search,
+                                devScosApiClient
+                        );
+            case NUMBER:
+                return requests
+                        .stream()
+                        .filter(
+                                request ->
+                                        request.getNumber() == Long.parseLong(search)
+                        )
+                        .collect(
+                                Collectors.toList()
+                        );
+            default:
+                return List.of();
+        }
+    }
+
+    /**
      * Фильтрация заявок по организациям
      * @param requests заявки
      * @param organizationName название организации (частичное или полное)
-     * @param client клиент для поиска заявки
+     * @param scosApiClient клиент для поиска заявки
      * @return результат поиска
      */
     public static List<PassRequest> filterRequestListByOrganizations(List<PassRequest> requests,
                                                                      String organizationName,
-                                                                     WebClient client) {
+                                                                     WebClient scosApiClient) {
         List<PassRequest> filteredList = new ArrayList<>();
         Optional<OrganizationDTO> organizationDTO;
         for (PassRequest request : requests) {
-            organizationDTO = getOrganizationByPassRequest(request, client);
+            organizationDTO = ScosApiUtils.getOrganization(scosApiClient, request.getAuthorUniversityId());
             if (organizationDTO.isPresent()) {
                 if (organizationDTO.get()
                         .getShort_name()
@@ -60,32 +89,5 @@ public class PassRequestUtils {
         }
 
         return filteredList;
-    }
-
-    /**
-     * Получить организацию заявки
-     * @param request заявка
-     * @param client клиент для поиска организации в СЦОСе
-     * @return организация. Если не найдена, пустая организация
-     */
-    private static Optional<OrganizationDTO> getOrganizationByPassRequest(PassRequest request, WebClient client) {
-        return Optional.ofNullable(client
-                .get()
-                .uri(
-                        String.join(
-                                "",
-                                "organizations",
-                                "?global_id=",
-                                request.getUniversityId()
-                        )
-                ).retrieve()
-                        .onStatus(HttpStatus::is4xxClientError,
-                                error -> Mono.error(new RuntimeException("Organization not found!"))
-                        )
-                .bodyToMono(OrganizationDTO.class)
-                .doOnError(error -> Mono.justOrEmpty(Optional.empty()))
-                .onErrorReturn(new OrganizationDTO("", "", "", "", ""))
-                .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(2000)))
-                .block());
     }
 }
