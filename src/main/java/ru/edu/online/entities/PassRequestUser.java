@@ -16,7 +16,7 @@ import java.util.UUID;
 @Data
 @Entity
 @NoArgsConstructor
-public class User {
+public class PassRequestUser {
 
     /** Id пользователя, прикрепленного к заявке. Генерируется автоматически */
     @Id
@@ -33,21 +33,13 @@ public class User {
     private String lastName;
     /** Отчество */
     private String patronymicName;
-    /** Короткое название ООВО студента */
-    private String universityShortName;
 
-    public User(UUID passRequestId, String scosId) {
-        this.passRequestId = passRequestId;
-        this.scosId = scosId;
-    }
-
-    public User(UUID passRequestId, String scosId, String firstName,
-                String lastName, String patronymicName, String universityShortName) {
+    public PassRequestUser(UUID passRequestId, String scosId, String firstName,
+                           String lastName, String patronymicName) {
         this.passRequestId = passRequestId;
         this.scosId = scosId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.patronymicName = patronymicName;
-        this.universityShortName = universityShortName;
     }
 }
