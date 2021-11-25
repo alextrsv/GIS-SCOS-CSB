@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestComment;
-import ru.edu.online.entities.User;
+import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.dto.PassRequestCommentDTO;
 import ru.edu.online.entities.dto.PassRequestDTO;
 import ru.edu.online.entities.dto.PassRequestUserDTO;
@@ -52,14 +52,16 @@ public class PassRequestController {
     @PostMapping("/add")
     public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto,
                                                       Principal principal) {
-        dto.setUserId(principal.getName());
         switch (userDetailsService.getUserRole(principal)) {
             case ADMIN:
-                return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
-            case TEACHER:
+                if (dto.getType() == PassRequestType.GROUP) {
+                    return passRequestService.addGroupPassRequest(dto, principal).map(ResponseEntity::ok)
+                            .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
+                }
             case STUDENT:
                 if (dto.getType() == PassRequestType.SINGLE) {
-                    return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
+                    return passRequestService.addSinglePassRequest(dto, principal).map(ResponseEntity::ok)
+                            .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
                 }
             default:
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -72,8 +74,8 @@ public class PassRequestController {
      * @return если заявка найдена, список пользователей заявки с учётом уже добавленного
      */
     @PostMapping("/add_user")
-    public ResponseEntity<List<User>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto,
-                                                           Principal principal) {
+    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto,
+                                                                      Principal principal) {
         if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -213,8 +215,8 @@ public class PassRequestController {
      * @return список пользователей заявки
      */
     @GetMapping("/get/users")
-    public ResponseEntity<List<User>> getPassRequestUsers(@RequestBody PassRequestDTO dto,
-                                                          Principal principal) {
+    public ResponseEntity<List<PassRequestUser>> getPassRequestUsers(@RequestBody PassRequestDTO dto,
+                                                                     Principal principal) {
         if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return passRequestService.getPassRequestUsers(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -327,8 +329,8 @@ public class PassRequestController {
      * @return удаленный пользователь, если таковой найден
      */
     @DeleteMapping("/delete_user")
-    public ResponseEntity<List<User>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto,
-                                                                Principal principal) {
+    public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto,
+                                                                           Principal principal) {
         if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
