@@ -27,17 +27,21 @@ public class PassRequest {
     /** Номер заявки для отображения и поиска по нему на фронте */
     private Long number;
     /** Id пользоватлея - создателя */
-    private String userId;
+    private String authorId;
+    /** Имя автора */
+    private String authorFirstName;
+    /** Фамилия автора */
+    private String authorLastName;
+    /** Отчество автора */
+    private String authorPatronymicName;
+    private String authorUniversityId;
+    private String authorUniversityName;
     /** Id организации, в которую необходим доступ (целевая ООВО) */
     private String targetUniversityId;
     /** Название целевой ООВО */
     private String targetUniversityName;
     /** Адрес целевой ООВО */
     private String targetUniversityAddress;
-    /** Id организации пользователя */
-    private String universityId;
-    /** Название ООВО пользователя */
-    private String universityName;
     /** Дата создания заявки */
     @Setter(AccessLevel.PROTECTED)
     private LocalDate creationDate;
@@ -58,7 +62,7 @@ public class PassRequest {
     )
     @LazyCollection(LazyCollectionOption.FALSE)
     @ToString.Exclude
-    private List<User> users;
+    private List<PassRequestUser> passRequestUsers;
 
     /** Список файлов, прикрепленных к заявке */
     @OneToMany(
@@ -90,22 +94,26 @@ public class PassRequest {
     @ToString.Exclude
     private List<PassRequestChangeLogEntry> changeLog;
 
-    public PassRequest(String userId, String targetUniversityId, String universityId,
+    public PassRequest(String authorId, String authorFirstName, String authorLastName,
+                       String authorPatronymicName, String authorUniversityId, String authorUniversityName,
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
                        PassRequestType type, String targetUniversityAddress,
-                       String targetUniversityName, String universityName,
+                       String targetUniversityName, String targetUniversityId,
                        Long number) {
         this.creationDate = LocalDate.now();
-        this.userId = userId;
+        this.authorId = authorId;
         this.targetUniversityId = targetUniversityId;
-        this.universityId = universityId;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
         this.type = type;
         this.targetUniversityAddress = targetUniversityAddress;
         this.targetUniversityName = targetUniversityName;
-        this.universityName = universityName;
         this.number = number;
+        this.authorFirstName = authorFirstName;
+        this.authorLastName = authorLastName;
+        this.authorPatronymicName = authorPatronymicName;
+        this.authorUniversityId = authorUniversityId;
+        this.authorUniversityName = authorUniversityName;
     }
 }
