@@ -142,4 +142,29 @@ public class GisScosApiRestClient {
 
         return new HttpEntity(headers);
     }
+
+    public synchronized Optional<UserDTO> makeGetUserByEmailRequest(String userEmail){
+
+        String urlTemplate = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(host)
+                .path(gisScosPrefix)
+                .pathSegment(GET_USER_ENDPOINT)
+                .queryParam("email", userEmail)
+                .encode()
+                .toUriString();
+
+        ResponseEntity<UserDTO> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildGisScosRequest(),
+                    UserDTO.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(response.getBody());
+    }
 }
