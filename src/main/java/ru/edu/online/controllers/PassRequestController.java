@@ -148,7 +148,7 @@ public class PassRequestController {
     @GetMapping("/get/user/status")
     public ResponseEntity<List<PassRequest>> getPassRequestByStatusForUser(@RequestParam Long page,
                                                                            @RequestParam Long itemsPerPage,
-                                                                           @RequestParam PassRequestStatus status,
+                                                                           @RequestParam String status,
                                                                            Principal principal) {
         return passRequestService.getPassRequestByStatusForUser(principal.getName(), status, page, itemsPerPage).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());

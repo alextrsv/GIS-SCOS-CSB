@@ -185,20 +185,54 @@ public class PassRequestServiceImpl implements IPassRequestService {
      */
     @Override
     public Optional<List<PassRequest>> getPassRequestByStatusForUser(String authorId,
-                                                              PassRequestStatus status,
-                                                              Long page,
-                                                              Long pageSize) {
+                                                                     String status,
+                                                                     Long page,
+                                                                     Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByUserId(authorId);
         log.info("Getting passRequests by status");
-        return Optional.of(
-                requests.stream()
-                        .filter(r -> r.getStatus() == status)
-                        .sorted(new PassRequestCreationDateComparator())
-                        .skip(pageSize * (page - 1))
-                        .limit(pageSize)
-                        .collect(Collectors.toList())
-        );
+        switch (status) {
+            case "accepted":
+                return Optional.of(
+                        requests.stream()
+                                .filter(r -> r.getStatus() == PassRequestStatus.ACCEPTED)
+                                .sorted(new PassRequestCreationDateComparator())
+                                .skip(pageSize * (page - 1))
+                                .limit(pageSize)
+                                .collect(Collectors.toList())
+                );
+            case "rejected":
+                return Optional.of(
+                        requests.stream()
+                                .filter(r -> r.getStatus() == PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION)
+                                .filter(r -> r.getStatus() == PassRequestStatus.CANCELED_BY_CREATOR)
+                                .sorted(new PassRequestCreationDateComparator())
+                                .skip(pageSize * (page - 1))
+                                .limit(pageSize)
+                                .collect(Collectors.toList())
+                );
+            case "processing":
+                return Optional.of(
+                        requests.stream()
+                                .filter(r -> r.getStatus() == PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION)
+                                .filter(r -> r.getStatus() == PassRequestStatus.TARGET_ORGANIZATION_REVIEW)
+                                .sorted(new PassRequestCreationDateComparator())
+                                .skip(pageSize * (page - 1))
+                                .limit(pageSize)
+                                .collect(Collectors.toList())
+                );
+            case "expired":
+                return Optional.of(
+                        requests.stream()
+                                .filter(r -> r.getStatus() == PassRequestStatus.EXPIRED)
+                                .sorted(new PassRequestCreationDateComparator())
+                                .skip(pageSize * (page - 1))
+                                .limit(pageSize)
+                                .collect(Collectors.toList())
+                );
+            default:
+                return Optional.empty();
+        }
     }
 
     /**
