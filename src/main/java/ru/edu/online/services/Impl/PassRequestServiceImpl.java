@@ -204,8 +204,11 @@ public class PassRequestServiceImpl implements IPassRequestService {
             case "rejected":
                 return Optional.of(
                         requests.stream()
-                                .filter(r -> r.getStatus() == PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION)
-                                .filter(r -> r.getStatus() == PassRequestStatus.CANCELED_BY_CREATOR)
+                                .filter(r -> r.getStatus() != PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION)
+                                .filter(r -> r.getStatus() != PassRequestStatus.TARGET_ORGANIZATION_REVIEW)
+                                .filter(r -> r.getStatus() != PassRequestStatus.ACCEPTED)
+                                .filter(r -> r.getStatus() != PassRequestStatus.EXPIRED)
+                                .filter(r -> r.getStatus() != PassRequestStatus.WAITING_FOR_APPROVEMENT_BY_USER)
                                 .sorted(new PassRequestCreationDateComparator())
                                 .skip(pageSize * (page - 1))
                                 .limit(pageSize)
@@ -214,8 +217,11 @@ public class PassRequestServiceImpl implements IPassRequestService {
             case "processing":
                 return Optional.of(
                         requests.stream()
-                                .filter(r -> r.getStatus() == PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION)
-                                .filter(r -> r.getStatus() == PassRequestStatus.TARGET_ORGANIZATION_REVIEW)
+                                .filter(r -> r.getStatus() != PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION)
+                                .filter(r -> r.getStatus() != PassRequestStatus.CANCELED_BY_CREATOR)
+                                .filter(r -> r.getStatus() != PassRequestStatus.ACCEPTED)
+                                .filter(r -> r.getStatus() != PassRequestStatus.EXPIRED)
+                                .filter(r -> r.getStatus() != PassRequestStatus.WAITING_FOR_APPROVEMENT_BY_USER)
                                 .sorted(new PassRequestCreationDateComparator())
                                 .skip(pageSize * (page - 1))
                                 .limit(pageSize)
