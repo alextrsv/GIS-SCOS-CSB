@@ -7,10 +7,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestChangeLogEntry;
-import ru.edu.online.entities.User;
+import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.comparators.PassRequestCreationDateComparator;
-import ru.edu.online.entities.dto.PassRequestDTO;
-import ru.edu.online.entities.dto.PassRequestUserDTO;
+import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.PassRequestType;
 import ru.edu.online.entities.enums.RequestsStatusForAdmin;
@@ -18,9 +17,13 @@ import ru.edu.online.repositories.IDynamicQRUserRepository;
 import ru.edu.online.repositories.IPassRequestChangeLogRepository;
 import ru.edu.online.repositories.IPassRequestRepository;
 import ru.edu.online.repositories.IPassRequestUserRepository;
+import ru.edu.online.services.IPassRequestCommentsService;
 import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.utils.PassRequestUtils;
+import ru.edu.online.utils.ScosApiUtils;
+import ru.edu.online.utils.VamApiUtils;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,59 +40,91 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private final IPassRequestChangeLogRepository passRequestChangeLogRepository;
     private final IDynamicQRUserRepository dynamicQRUserRepository;
 
+    private final IPassRequestCommentsService passRequestCommentsService;
+
     private final WebClient devScosApiClient;
+    private final WebClient devVamApiClient;
 
     @Autowired
     public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
                                   IPassRequestUserRepository passRequestUserRepository,
                                   IPassRequestChangeLogRepository passRequestChangeLogRepository,
                                   IDynamicQRUserRepository dynamicQRUserRepository,
-                                  WebClient devScosApiClient) {
+                                  IPassRequestCommentsService passRequestCommentsService,
+                                  WebClient devScosApiClient,
+                                  WebClient devVamApiClient) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestUserRepository = passRequestUserRepository;
         this.passRequestChangeLogRepository = passRequestChangeLogRepository;
         this.dynamicQRUserRepository = dynamicQRUserRepository;
+        this.passRequestCommentsService = passRequestCommentsService;
         this.devScosApiClient = devScosApiClient;
+        this.devVamApiClient = devVamApiClient;
     }
 
     /**
-     * Добавление заявки в БД. Если заявка групповая, со
+     * Добавление одиночной заявки в БД.
      * @param dto DTO заявки
      * @return добавленная заявка
      */
     @Override
-    public PassRequest addPassRequest(PassRequestDTO dto) {
-        // Необходимо сделать так, чтобы одиночные заявки
-        // по умолчанию имели бы статус "Отправлена на
-        // рассмотрение в целевую ООВО"
-        PassRequest passRequest = new PassRequest(
-                dto.getUserId(), dto.getTargetUniversityId(),
-                dto.getUniversityId(), dto.getStartDate(),
-                dto.getEndDate(), dto.getStatus(),
-                dto.getType(), dto.getTargetUniversityAddress(),
-                dto.getTargetUniversityName(), dto.getUniversityName(),
-                getRequestNumber()
-        );
+    public Optional<PassRequest> addSinglePassRequest(PassRequestDTO dto, Principal principal) {
+        Optional<PassRequest> passRequest = createSinglePassRequest(dto, principal);
 
-//        ADD NEW USER FROM SINGLE REQUEST
-        if (dto.getType() == PassRequestType.SINGLE && !dynamicQRUserRepository.existsByUserId(dto.getUserId())){
-            dynamicQRUserRepository.save(new DynamicQRUser(dto.getUserId(), dto.getUniversityId()));
+        if (passRequest.isPresent()) {
+            //ADD NEW USER FROM SINGLE REQUEST
+            if (!dynamicQRUserRepository.existsByUserId(dto.getAuthorId())){
+                dynamicQRUserRepository.save(new DynamicQRUser(dto.getAuthorId(), dto.getUniversityId()));
+            }
+
+            UUID passRequestId = passRequestRepository.save(passRequest.get()).getId();
+            passRequestCommentsService.addCommentToPassRequest(
+                    new PassRequestCommentDTO(
+                            principal.getName(),
+                            passRequestId,
+                            dto.getComment()
+                    )
+            );
+            log.info("single pass request was added");
+            return getPassRequest(passRequestId);
         }
 
-        if (dto.getType() == PassRequestType.GROUP) {
-            UUID id = passRequestRepository.save(passRequest).getId();
+        return Optional.empty();
+    }
+
+    /**
+     * Добавление групповой заявки в БД.
+     * @param dto DTO заявки
+     * @return добавленная заявка
+     */
+    @Override
+    public Optional<PassRequest> addGroupPassRequest(PassRequestDTO dto, Principal principal) {
+        Optional<PassRequest> passRequest = createGroupPassRequest(dto, principal);
+
+        if (passRequest.isPresent()) {
+            UUID passRequestId = passRequestRepository.save(passRequest.get()).getId();
 
             for (PassRequestUserDTO user : dto.getUsers()) {
-                user.setPassRequestId(id);
+                user.setPassRequestId(passRequestId);
                 addUserToPassRequest(user);
                 if (!dynamicQRUserRepository.existsByUserId(user.getUserId()))
                     dynamicQRUserRepository.save(new DynamicQRUser(user.getUserId(), dto.getUniversityId()));
             }
-            if (getPassRequestById(id, dto.getUserId()).isPresent())
-                return getPassRequestById(id, dto.getUserId()).get();
+            if (getPassRequestById(passRequestId, dto.getAuthorId()).isPresent())
+                return getPassRequestById(passRequestId, principal.getName());
+            log.info("group pass request was added");
+
+            passRequestCommentsService.addCommentToPassRequest(
+                    new PassRequestCommentDTO(
+                            principal.getName(),
+                            passRequestId,
+                            dto.getComment()
+                    )
+            );
+            return getPassRequest(passRequestId);
         }
-        log.info("pass request was added");
-        return passRequestRepository.save(passRequest);
+
+        return Optional.empty();
     }
 
     /**
@@ -98,22 +133,25 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список всех пользователей, находящихся в заявке
      */
     @Override
-    public Optional<List<User>> addUserToPassRequest(PassRequestUserDTO dto) {
+    public Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO dto) {
         Optional<PassRequest> passRequest = getPassRequest(dto);
 
         // Если есть такая заявка и она является групповой
         if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
             // Если такой пользователь в заявке уже есть
-            if (passRequest.get().getUsers().stream().anyMatch(user -> user.getScosId().equals(dto.getUserId()))) {
+            if (passRequest.get().getPassRequestUsers().stream().anyMatch(user -> user.getScosId().equals(dto.getUserId()))) {
                 log.info("the user is already associated to the pass request");
                 return Optional.empty();
             }
 
-            User user = new User(
+            PassRequestUser passRequestUser = new PassRequestUser(
                     dto.getPassRequestId(),
-                    dto.getUserId()
+                    dto.getUserId(),
+                    dto.getFirstName(),
+                    dto.getLastName(),
+                    dto.getPatronymicName()
             );
-            passRequestUserRepository.save(user);
+            passRequestUserRepository.save(passRequestUser);
             log.info("the user was associated to the pass request successfully");
             return Optional.of(passRequestUserRepository.findAllByPassRequestId(passRequest.get().getId()));
         } else
@@ -130,7 +168,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     public Optional<PassRequest> getPassRequestById(UUID passRequestId, String authorId) {
         Optional<PassRequest> passRequest = getPassRequest(passRequestId);
         if (passRequest.isPresent()) {
-            if (passRequest.get().getUserId().equals(authorId)) {
+            if (passRequest.get().getAuthorId().equals(authorId)) {
                 log.info("getting pass request by id: {}", passRequestId);
                 return passRequest;
             }
@@ -147,7 +185,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<List<PassRequest>> getPassRequestsByUserId(String id) {
         log.info("getting pass request by user id: {}", id);
-        List<PassRequest> requestList = passRequestRepository.findAllByUserId(id);
+        List<PassRequest> requestList = passRequestRepository.findAllByAuthorUniversityId(id);
 
         return Optional.of(requestList);
     }
@@ -164,7 +202,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                            Long page,
                                                                            Long pageSize) {
         List<PassRequest> requests =
-                passRequestRepository.findAllByUniversityId(dto.getUniversityId());
+                passRequestRepository.findAllByAuthorUniversityId(dto.getUniversityId());
         log.info("Getting passRequests by status");
         return Optional.of(
                 requests.stream()
@@ -189,7 +227,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                      Long page,
                                                                      Long pageSize) {
         List<PassRequest> requests =
-                passRequestRepository.findAllByUserId(authorId);
+                passRequestRepository.findAllByAuthorUniversityId(authorId);
         log.info("Getting passRequests by status");
         switch (status) {
             case "accepted":
@@ -243,7 +281,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId) {
         List<PassRequest> requests =
-                passRequestRepository.findAllByUserId(authorId);
+                passRequestRepository.findAllByAuthorUniversityId(authorId);
         log.info("Getting passRequests count by status for user");
         Map<PassRequestStatus, Long> statusesCount = new HashMap<>();
         for (PassRequestStatus status : PassRequestStatus.values()) {
@@ -264,7 +302,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * если заявка одиночная или вообще не найдена.
      */
     @Override
-    public Optional<List<User>> getPassRequestUsers(PassRequestDTO dto) {
+    public Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto) {
         Optional<PassRequest> request = getPassRequest(dto);
 
         if (request.isPresent()) {
@@ -277,7 +315,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             log.info("Getting users from pass request with id {}",
                     request.get().getId());
 
-            return Optional.of(request.get().getUsers());
+            return Optional.of(request.get().getPassRequestUsers());
         }
 
         log.warn("Pass request with id {} not found", dto.getId());
@@ -314,7 +352,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<Map<String, Long>> getPassRequestCountByStatusForAdmin(String authorId) {
         List<PassRequest> requests =
-                passRequestRepository.findAllByUserId(authorId);
+                passRequestRepository.findAllByAuthorUniversityId(authorId);
         log.info("Getting passRequests count by status for user");
         Map<String, Long> statusesCount = new HashMap<>();
         statusesCount.put(
@@ -348,10 +386,13 @@ public class PassRequestServiceImpl implements IPassRequestService {
             Long page,
             Optional<String> search) {
         log.info("collect requests sent for consideration to the target OOVO");
-        return search.map(s -> filterRequest(getPassRequestByStatusForUniversity(
-                PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
-                universityId
-        ), s)
+        return search.map(s -> PassRequestUtils.filterRequest(
+                getPassRequestByStatusForUniversity(
+                        PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
+                        universityId
+                ),
+                        s,
+                        devScosApiClient)
                 .stream()
                 .skip(5L * (page - 1))
                 .limit(5)
@@ -378,10 +419,13 @@ public class PassRequestServiceImpl implements IPassRequestService {
             Long page,
             Optional<String> search) {
         log.info("collect requests sent in consideration to the target OOVO");
-        return search.map(s -> filterRequest(getPassRequestByStatusForUniversity(
-                PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
-                universityId
-        ), s)
+        return search.map(s -> PassRequestUtils.filterRequest(
+                getPassRequestByStatusForUniversity(
+                        PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
+                        universityId
+                ),
+                        s,
+                        devScosApiClient)
                 .stream()
                 .skip(5L * (page - 1))
                 .limit(5)
@@ -429,17 +473,15 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 ));
 
         log.info("collect considered requests sent for to the OOVO");
-        return search.map(s -> filterRequest(requestList, s)
+        return search.map(s -> PassRequestUtils.filterRequest(requestList, s, devScosApiClient)
                 .stream()
                 .skip(5L * (page - 1))
                 .limit(5)
-                .collect(Collectors.toList())).or(() -> Optional.of(
-                requestList
-                        .stream()
-                        .skip(5L * (page - 1))
-                        .limit(5)
-                        .collect(Collectors.toList())
-        ));
+                .collect(Collectors.toList())).or(() -> Optional.of(requestList
+                .stream()
+                .skip(5L * (page - 1))
+                .limit(5)
+                .collect(Collectors.toList())));
     }
 
     /**
@@ -454,14 +496,12 @@ public class PassRequestServiceImpl implements IPassRequestService {
         if (passRequest.isPresent()) {
             passRequest.get().setType(dto.getType());
             passRequest.get().setStatus(dto.getStatus());
-            passRequest.get().setUserId(dto.getUserId());
+            passRequest.get().setAuthorId(dto.getAuthorId());
             passRequest.get().setEndDate(dto.getEndDate());
             passRequest.get().setStartDate(dto.getStartDate());
-            passRequest.get().setUniversityId(dto.getUniversityId());
             passRequest.get().setTargetUniversityId(dto.getTargetUniversityId());
             passRequest.get().setTargetUniversityAddress(dto.getTargetUniversityAddress());
             passRequest.get().setTargetUniversityName(dto.getTargetUniversityName());
-            passRequest.get().setUniversityName(dto.getUniversityName());
             passRequestRepository.save(passRequest.get());
 
             log.info("pass request with id: {} was updated", dto.getId());
@@ -554,7 +594,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return удаленный из заявки пользователь если таковой найден
      */
     @Override
-    public Optional<List<User>> deleteUserFromPassRequest(PassRequestUserDTO[] dto) {
+    public Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto) {
         Optional<PassRequest> passRequest = getPassRequest(dto[0]);
 
         // Если заявка существует и является групповой
@@ -565,7 +605,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             // удаляется если существует.
             for (PassRequestUserDTO userDTO : dto) {
                 passRequest.get()
-                        .getUsers()
+                        .getPassRequestUsers()
                         .stream()
                         .filter(
                                 user -> (Objects.equals(
@@ -579,7 +619,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             }
             log.info("user list with has been deleted from pass request");
             // Удалённый пользователь (по сути PassRequestUserDTO)
-            return Optional.of(passRequest.get().getUsers());
+            return Optional.of(passRequest.get().getPassRequestUsers());
         } else {
             return Optional.empty();
         }
@@ -643,7 +683,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return true - является, false - не является
      */
     private boolean isAuthor(PassRequest request, PassRequestUserDTO dto) {
-        return (Objects.equals(request.getUserId(), dto.getUserId()));
+        return (Objects.equals(request.getAuthorId(), dto.getUserId()));
     }
 
     /**
@@ -674,6 +714,111 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
+     * Создать одиночную заявку
+     * @param dto заявки
+     * @param principal авторизация
+     * @return созданная заявка
+     */
+    private Optional<PassRequest> createSinglePassRequest(PassRequestDTO dto, Principal principal) {
+        UserDTO author = getUserInfo(principal);
+        Optional<StudentDTO> student =
+                VamApiUtils.getStudents("email", author.getEmail(), devVamApiClient)
+                        .getResults()
+                        .stream()
+                        .filter(s -> s.getStudy_year() != null)
+                        .findFirst();
+
+        if (student.isPresent()) {
+            Optional<OrganizationDTO> authorOrganization =
+                    ScosApiUtils.getOrganizationByGlobalId(
+                            devScosApiClient,
+                            student.get().getOrganization_id()
+                    );
+            if (authorOrganization.isPresent()) {
+                Optional<OrganizationDTO> targetOrganization =
+                        ScosApiUtils.getOrganization(
+                                devScosApiClient,
+                                dto.getTargetUniversityId()
+                        );
+
+                if (targetOrganization.isPresent()) {
+                    return Optional.of(new PassRequest(
+                            principal.getName(),
+                            author.getFirst_name(),
+                            author.getLast_name(),
+                            author.getPatronymic_name(),
+                            student.get().getOrganization_id(),
+                            authorOrganization.get().getShort_name(),
+                            dto.getStartDate(),
+                            dto.getEndDate(),
+                            dto.getStatus(),
+                            dto.getType(),
+                            dto.getTargetUniversityAddress(),
+                            targetOrganization.get().getShort_name(),
+                            dto.getTargetUniversityId(),
+                            getRequestNumber())
+                    );
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Создать групповую заявку
+     * @param dto заявки
+     * @param principal авторизация
+     * @return созданная заявка
+     */
+    private Optional<PassRequest> createGroupPassRequest(PassRequestDTO dto, Principal principal) {
+        UserDTO author = getUserInfo(principal);
+        String authorOrganizationOGRN = author.getEmployments()
+                .stream()
+                .filter(e -> e.getRoles().contains("UNIVERSITY"))
+                .findFirst()
+                .get()
+                .getOgrn();
+        Optional<OrganizationDTO> authorOrganization =
+                ScosApiUtils.getOrganization(
+                        devScosApiClient,
+                        authorOrganizationOGRN
+                );
+        if (authorOrganization.isPresent()) {
+            Optional<OrganizationDTO> targetOrganization =
+                    ScosApiUtils.getOrganization(
+                            devScosApiClient,
+                            dto.getTargetUniversityId()
+                    );
+
+            if (targetOrganization.isPresent()) {
+                return Optional.of(new PassRequest(
+                        principal.getName(),
+                        author.getFirst_name(),
+                        author.getLast_name(),
+                        author.getPatronymic_name(),
+                        authorOrganizationOGRN,
+                        authorOrganization.get().getShort_name(),
+                        dto.getStartDate(),
+                        dto.getEndDate(),
+                        dto.getStatus(),
+                        dto.getType(),
+                        dto.getTargetUniversityAddress(),
+                        targetOrganization.get().getShort_name(),
+                        dto.getTargetUniversityId(),
+                        getRequestNumber())
+                );
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private UserDTO getUserInfo(Principal principal) {
+        return ScosApiUtils.getUserDetails(devScosApiClient, principal);
+    }
+
+    /**
      * Получить список заявок для университета по статусу
      * @param status статус заявки
      * @param universityId идентификатор университета
@@ -686,31 +831,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         universityId,
                         status
                 );
-    }
-
-    private List<PassRequest> filterRequest(List<PassRequest> requests,
-                                            String search) {
-        switch (PassRequestUtils.getFilterType(search)) {
-            case ORGANIZATION:
-                return PassRequestUtils
-                        .filterRequestListByOrganizations(
-                                requests,
-                                search,
-                                devScosApiClient
-                        );
-            case NUMBER:
-                return requests
-                        .stream()
-                        .filter(
-                                request ->
-                                        request.getNumber() == Long.parseLong(search)
-                        )
-                        .collect(
-                                Collectors.toList()
-                        );
-            default:
-                return List.of();
-        }
     }
 
     private Long getRequestNumber() {
