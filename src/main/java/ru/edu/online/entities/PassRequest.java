@@ -58,7 +58,7 @@ public class PassRequest {
     )
     @LazyCollection(LazyCollectionOption.FALSE)
     @ToString.Exclude
-    private List<PassRequestUser> users;
+    private List<User> users;
 
     /** Список файлов, прикрепленных к заявке */
     @OneToMany(

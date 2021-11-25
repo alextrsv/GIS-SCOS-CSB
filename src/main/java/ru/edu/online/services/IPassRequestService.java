@@ -1,7 +1,7 @@
 package ru.edu.online.services;
 
 import ru.edu.online.entities.PassRequest;
-import ru.edu.online.entities.PassRequestUser;
+import ru.edu.online.entities.User;
 import ru.edu.online.entities.dto.PassRequestDTO;
 import ru.edu.online.entities.dto.PassRequestUserDTO;
 import ru.edu.online.entities.enums.PassRequestStatus;
@@ -16,7 +16,7 @@ public interface IPassRequestService {
 
     PassRequest addPassRequest(PassRequestDTO passRequestDTO);
 
-    Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
+    Optional<List<User>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
     Optional<List<PassRequest>> getPassRequestsForAdmin(
             RequestsStatusForAdmin status,
@@ -37,7 +37,7 @@ public interface IPassRequestService {
 
     Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId);
 
-    Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
+    Optional<List<User>> getPassRequestUsers(PassRequestDTO dto);
 
     Optional<List<PassRequest>> getExpiredPassRequests();
 
@@ -49,5 +49,5 @@ public interface IPassRequestService {
 
     Optional<PassRequest> deletePassRequestById(UUID id);
 
-    Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto);
+    Optional<List<User>> deleteUserFromPassRequest(PassRequestUserDTO[] dto);
 }

@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestChangeLogEntry;
-import ru.edu.online.entities.PassRequestUser;
+import ru.edu.online.entities.User;
 import ru.edu.online.entities.comparators.PassRequestCreationDateComparator;
 import ru.edu.online.entities.dto.PassRequestDTO;
 import ru.edu.online.entities.dto.PassRequestUserDTO;
@@ -98,22 +98,22 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список всех пользователей, находящихся в заявке
      */
     @Override
-    public Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO dto) {
+    public Optional<List<User>> addUserToPassRequest(PassRequestUserDTO dto) {
         Optional<PassRequest> passRequest = getPassRequest(dto);
 
         // Если есть такая заявка и она является групповой
         if (passRequest.isPresent() && passRequest.get().getType() == PassRequestType.GROUP) {
             // Если такой пользователь в заявке уже есть
-            if (passRequest.get().getUsers().stream().anyMatch(user -> user.getUserId().equals(dto.getUserId()))) {
+            if (passRequest.get().getUsers().stream().anyMatch(user -> user.getScosId().equals(dto.getUserId()))) {
                 log.info("the user is already associated to the pass request");
                 return Optional.empty();
             }
 
-            PassRequestUser passRequestUser = new PassRequestUser(
+            User user = new User(
                     dto.getPassRequestId(),
                     dto.getUserId()
             );
-            passRequestUserRepository.save(passRequestUser);
+            passRequestUserRepository.save(user);
             log.info("the user was associated to the pass request successfully");
             return Optional.of(passRequestUserRepository.findAllByPassRequestId(passRequest.get().getId()));
         } else
@@ -230,7 +230,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * если заявка одиночная или вообще не найдена.
      */
     @Override
-    public Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto) {
+    public Optional<List<User>> getPassRequestUsers(PassRequestDTO dto) {
         Optional<PassRequest> request = getPassRequest(dto);
 
         if (request.isPresent()) {
@@ -520,7 +520,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return удаленный из заявки пользователь если таковой найден
      */
     @Override
-    public Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto) {
+    public Optional<List<User>> deleteUserFromPassRequest(PassRequestUserDTO[] dto) {
         Optional<PassRequest> passRequest = getPassRequest(dto[0]);
 
         // Если заявка существует и является групповой
@@ -535,7 +535,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         .stream()
                         .filter(
                                 user -> (Objects.equals(
-                                        user.getUserId(), userDTO.getUserId())
+                                        user.getScosId(), userDTO.getUserId())
                                 )
                         )
                         .findAny()
