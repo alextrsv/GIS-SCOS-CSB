@@ -27,14 +27,14 @@ public class DynamicQRUser {
 
 
     public DynamicQRUser(StudentDTO studentDTO) {
-        this.userId = studentDTO.getId();
+        this.userId = studentDTO.getScos_id();  // поменял с getId() на getScos_id()
         this.organizationId = studentDTO.getOrganization_id();
     }
 
     public DynamicQRUser(UserDTO userDTO) {
         this.userId = userDTO.getUser_id();
         if (userDTO.getEmployments().size() != 0)
-            this.organizationId = userDTO.getUserOrganizationsId().get(0);
+            this.organizationId = userDTO.getOrganizationID();
         else this.organizationId = "";
     }
 

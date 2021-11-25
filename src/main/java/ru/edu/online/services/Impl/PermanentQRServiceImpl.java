@@ -27,36 +27,46 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final IUserService IUserService;
+    private final IUserService userServiceImpl;
 
-    private final IStudentService IStudentService;
+    private final IStudentService studentServiceImpl;
 
 
     @Autowired
-    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, IUserService IUserService, IStudentService IStudentService) {
+    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, IUserService userServiceImpl, IStudentService IStudentService) {
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
-        this.IUserService = IUserService;
-        this.IStudentService = IStudentService;
+        this.userServiceImpl = userServiceImpl;
+        this.studentServiceImpl = IStudentService;
     }
 
     @Override
     public Optional<Resource> downloadQRAsFile(String userId) {
         String content = null;
-          /*нужно понять, пользователь с id - студент или обычный пользователь?
-        1. делаем запрос на получение студента - если ответ не пустой, то это студент, работаем с ним
-        2. иначе, если ответ пустой - это не студент. Делаем запрос к гис сцосу.
-        2.1. Если ответ пустой, то это выдаем ошибку - пользователя нет
-        2.2. Иначе, если ответ не пустой - работаем с пользователем.
+
+        /*
+        * 1. Получаю ID из СЦОСа - userId
+        * 2. Запрос к СЦОСу на полуение объекта пользователя
+        * 3. Запрос к ВАМу на получение студента по почте (снилсу)
+        * 4. Если запрос к ВАМу вернул объект студента - работаю с этим объектом.
+        * 5. Если запрос к ВАМу ничего не возвращает - это не студент, работаю с пользователем из СЦОСА
         */
-        Optional<StudentDTO> studentDTOWrapper = getStudent(userId);
-        if (studentDTOWrapper.isPresent())
-            content = IStudentService.makeContent(studentDTOWrapper.get());
+        //2.Запрос к СЦОСу на полуение объекта пользователя
+        Optional<UserDTO> scosUser = gisScosApiRestClient.makeGetUserRequest(userId);
+        if (scosUser.isEmpty()) return Optional.empty();
+        String userEmail = scosUser.get().getEmail();
+//        3. Запрос к ВАМу на получение студента по почте (снилсу)
+        Optional<StudentDTO> vamStudent;
+        if(userEmail.equals("stud_bilet_01@dev.online.edu.ru"))
+            vamStudent = vamRestClient.makeGetStudentByEmailRequestFor01(userEmail);
+        else
+            vamStudent = vamRestClient.makeGetStudentByEmailRequest(userEmail);
+//        4. Если запрос к ВАМу вернул объект студента - работаю с этим объектом.
+        if (vamStudent.isPresent())
+            content = studentServiceImpl.makeContent(vamStudent.get());
+//        5. Если запрос к ВАМу ничего не возвращает - это не студент, работаю с пользователем из СЦОСА
         else{
-            Optional<UserDTO> userWrapper = gisScosApiRestClient.makeGetUserRequest(userId);
-            if (userWrapper.isPresent()){
-                content = IUserService.makeContent(userWrapper.get());
-            }else return Optional.empty();
+            content = userServiceImpl.makeContent(scosUser.get());
         }
 
         BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
@@ -80,7 +90,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private QRDataVerifyStatus verufyUserData(UserDTO userDTO, String hash) {
         try {
-            String newHash = HashingUtil.getHash(IUserService.makeUsefullContent(userDTO));
+            String newHash = HashingUtil.getHash(userServiceImpl.makeUsefullContent(userDTO));
             if (newHash.equals(hash)) return QRDataVerifyStatus.OK;
             else return QRDataVerifyStatus.INVALID;
         } catch (NoSuchAlgorithmException e) {
@@ -91,7 +101,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private QRDataVerifyStatus verifyStudentData(StudentDTO studentDTO, String hash) {
         try {
-            if (HashingUtil.getHash(IStudentService.makeUsefullContent(studentDTO)).equals(hash)) return QRDataVerifyStatus.OK;
+            if (HashingUtil.getHash(studentServiceImpl.makeUsefullContent(studentDTO)).equals(hash)) return QRDataVerifyStatus.OK;
             else return QRDataVerifyStatus.INVALID;
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

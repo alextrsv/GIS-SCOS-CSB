@@ -17,7 +17,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -26,6 +25,7 @@ public class UserServiceImpl implements IUserService {
 
     private final IDynamicQRUserService dynamicQRUserService;
 
+
     @Autowired
     public UserServiceImpl(GisScosApiRestClient gisScosApiRestClient,
                            IDynamicQRUserService dynamicQRUserService) {
@@ -33,19 +33,25 @@ public class UserServiceImpl implements IUserService {
         this.dynamicQRUserService = dynamicQRUserService;
     }
 
-    @Override
-    public String getOrganizationsNamesAsString(UserDTO user) {
-        return user.getUserOrganizationsId().stream()
-                .map(id -> {
-                    Optional<OrganizationDTO> organization =  gisScosApiRestClient.makeGetOrganizationRequest(id);
-                    if (organization.isPresent())
-                        return gisScosApiRestClient.makeGetOrganizationRequest(id).get().getShort_name();
-                    else return "";
-                }).collect(Collectors.joining(", "));
+    private Optional<OrganizationDTO> getOrganization(UserDTO userDTO){
+        if (userDTO.getUserOrganizationORGN().size() < 1) return Optional.empty();
+        return gisScosApiRestClient.makeGetOrganizationByOrgnRequest(userDTO.getUserOrganizationORGN().get(0));
     }
 
+//    @Override
+//    public String getOrganizationsNamesAsString(UserDTO user) {
+//        return user.getUserOrganizationORGN().stream()
+//                .map(orgn -> {
+//                    Optional<OrganizationDTO> organization =  gisScosApiRestClient.makeGetOrganizationByOrgnRequest(orgn); // поменял - организация получается по ОРГН
+//                    if (organization.isPresent()){
+//                        return organization.get().getShort_name();
+//                    }
+//                    else return "";
+//                }).collect(Collectors.joining(", "));
+//    }
+
     public String getOrganizationsName(UserDTO userDTO) {
-        return gisScosApiRestClient.makeGetOrganizationRequest(userDTO.getUserOrganizationsId().get(0)).get().getShort_name();
+        return gisScosApiRestClient.makeGetOrganizationRequest(userDTO.getUserOrganizationORGN().get(0)).get().getShort_name();
     }
 
     private List<OrganizationInQRDTO> getDPermittedOrgs(UserDTO userDTO){
@@ -78,16 +84,22 @@ public class UserServiceImpl implements IUserService {
         return finalContent;
     }
 
+
     @Override
     public String makeUsefullContent(UserDTO user) {
+
+        Optional<OrganizationDTO> organizationDTO = getOrganization(user);
+        organizationDTO.flatMap(OrganizationDTO::getOrganizationId).ifPresent(user::setOrganizationID);
+
 
         PermanentUserQRDTO permanentUserQRDTO = new PermanentUserQRDTO();
 
         permanentUserQRDTO.setUserId(String.valueOf(user.getUser_id()));
         permanentUserQRDTO.setSurname(user.getLast_name());
         permanentUserQRDTO.setName(user.getFirst_name());
-        permanentUserQRDTO.setMiddle_name(user.getPatronymic_name() );
-        permanentUserQRDTO.setOrganization(getOrganizationsNamesAsString(user));
+        permanentUserQRDTO.setMiddle_name(user.getPatronymic_name());
+        organizationDTO.ifPresentOrElse(organization -> permanentUserQRDTO.setOrganization(organization.getShort_name()),
+                () -> permanentUserQRDTO.setOrganization(""));
         permanentUserQRDTO.setStatus("status");
         permanentUserQRDTO.setRole(getUserRolesAsString(user));
         permanentUserQRDTO.setAccessed_organizations(getDPermittedOrgs(user));

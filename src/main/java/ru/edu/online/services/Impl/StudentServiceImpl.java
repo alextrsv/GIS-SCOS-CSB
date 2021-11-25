@@ -81,15 +81,15 @@ public class StudentServiceImpl implements IStudentService {
     public String makeUsefullContent(StudentDTO studentDTO) {
         PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
 
-        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getId()));
+        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getId())); // id из ВАМ
         permanentStudentQRDTO.setSurname(studentDTO.getSurname());
         permanentStudentQRDTO.setName(studentDTO.getName());
         permanentStudentQRDTO.setMiddle_name( studentDTO.getMiddle_name());
-        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));
+        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));  //by organizationId
         permanentStudentQRDTO.setStatus("status");
         permanentStudentQRDTO.setRole("student");
-        permanentStudentQRDTO.setStud_bilet("scos" + studentDTO.getId().toString().substring(0, 6));
-        permanentStudentQRDTO.setEducation_form( getEducationForm(studentDTO.getStudy_plans()));
+        permanentStudentQRDTO.setStud_bilet(studentDTO.getId().toString().substring(0, 10));
+        permanentStudentQRDTO.setEducation_form(getEducationForm(studentDTO.getStudy_plans()));
         permanentStudentQRDTO.setStart_year(getStartYear(studentDTO));
         permanentStudentQRDTO.setStud_bilet_duration(getEndYear(studentDTO));
         permanentStudentQRDTO.setAccessed_organizations(getDPermittedOrgs(studentDTO));
