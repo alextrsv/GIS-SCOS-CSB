@@ -13,4 +13,10 @@ public class PassRequestCommentDTO {
     private String authorId;
     private UUID passRequestId;
     private String comment;
+
+    public PassRequestCommentDTO(String authorId, UUID passRequestId, String comment) {
+        this.authorId = authorId;
+        this.passRequestId = passRequestId;
+        this.comment = comment;
+    }
 }

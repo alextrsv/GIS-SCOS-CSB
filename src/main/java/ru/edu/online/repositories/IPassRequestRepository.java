@@ -11,9 +11,9 @@ import java.util.UUID;
 @Repository
 public interface IPassRequestRepository extends JpaRepository<PassRequest, UUID> {
 
-    List<PassRequest> findAllByUserId(String userId);
+    List<PassRequest> findAllByAuthorId(String authorId);
 
-    List<PassRequest> findAllByUniversityId(String universityId);
+    List<PassRequest> findAllByAuthorUniversityId(String universityId);
 
     List<PassRequest> findAllByTargetUniversityIdAndStatus(String targetUniversityId, PassRequestStatus status);
 
