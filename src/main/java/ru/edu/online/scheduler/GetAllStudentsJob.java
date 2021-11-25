@@ -65,7 +65,7 @@ public class GetAllStudentsJob extends QuartzJobBean {
             StudentsDTO getStudentsByOrganizationResponse = vamRestClient.makeGetStudentsRequest(pageSize, pageNumber, orgId.get());
             pagesAmount = getStudentsByOrganizationResponse.getLast_page();
 
-            List<StudentDTO> studentsOnPage = new ArrayList<>();
+            List<StudentDTO> studentsOnPage;
             if (getStudentsByOrganizationResponse.getResults().size() != 0)
                 studentsOnPage = getStudentsByOrganizationResponse.getResults();
             else return;
@@ -74,7 +74,9 @@ public class GetAllStudentsJob extends QuartzJobBean {
             //для каждого студента организации создается подтвержденная заявка на проход в свой университет
             studentsOnPage.forEach(studentDTO -> {
                 autoRequestsList.add(new PassRequest(
-                        studentDTO.getId(),
+                        studentDTO.getId(), "Нужно починить",
+                        "Класс GetAllStudentJob",
+                        "Генерация не работает нормально",
                         organizationDTO.getOrganizationId().get(),
                         organizationDTO.getOrganizationId().get(),
                         LocalDate.of(LocalDate.now().getYear(), 8, 1),
