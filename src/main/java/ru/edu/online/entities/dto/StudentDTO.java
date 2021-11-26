@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class StudentDTO extends UserDTO {
+public class StudentDTO {
 
     String id;
     String surname;

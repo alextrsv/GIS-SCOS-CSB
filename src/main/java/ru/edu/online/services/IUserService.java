@@ -4,7 +4,7 @@ import ru.edu.online.entities.dto.UserDTO;
 
 public interface IUserService {
 
-    String getOrganizationsNamesAsString(UserDTO user);
+//    String getOrganizationsNamesAsString(UserDTO user);
 
     String getUserRolesAsString(UserDTO user);
 
