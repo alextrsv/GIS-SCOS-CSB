@@ -10,7 +10,7 @@
     </parent>
     <groupId>ru.dev.online.edu.ru</groupId>
     <artifactId>student-card</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.3-SNAPSHOT</version>
     <name>student-card</name>
     <description>Digital student card for online.edu.ru</description>
     <properties>

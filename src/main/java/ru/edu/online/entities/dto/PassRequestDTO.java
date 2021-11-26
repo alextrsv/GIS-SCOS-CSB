@@ -1,6 +1,7 @@
 package ru.edu.online.entities.dto;
 
 import lombok.Data;
+import ru.edu.online.entities.PassFile;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.PassRequestType;
 
@@ -14,16 +15,18 @@ import java.util.UUID;
 @Data
 public class PassRequestDTO {
     private UUID id;
-    private String userId;
+    private String authorId;
     private String universityId;
     private String targetUniversityId;
     private String universityName;
     private String targetUniversityName;
     private String targetUniversityAddress;
+    private String comment;
     private LocalDate creationDate;
     private LocalDate startDate;
     private LocalDate endDate;
     private PassRequestType type;
     private PassRequestStatus status;
     private List<PassRequestUserDTO> users;
+    private List<PassFile> files;
 }

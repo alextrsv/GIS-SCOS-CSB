@@ -44,7 +44,6 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
      * Метод получения информации о динамическом QR-коде
      * @param userId - токен пользователя
      * @return DynamicQR
-     * todo: в качестве контента сейчас применяется строка "someContent". Нужно заменить на реальные данные (от ГИС СЦОС)
      * */
     @Override
     public Optional<List<DynamicQR>> getQRByUserAndOrganization(String userId, String organizationId) {
@@ -110,7 +109,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
             sendToStudent(studentDTO.get());
         }
         else sendToUser(scosUser.get());
-//
+
         return Optional.of(1);
     }
 

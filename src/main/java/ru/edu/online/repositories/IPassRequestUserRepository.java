@@ -10,9 +10,9 @@ import java.util.UUID;
 @Repository
 public interface IPassRequestUserRepository extends JpaRepository<PassRequestUser, UUID> {
 
-    Boolean existsByPassRequestIdAndUserId(UUID passRequestId, String userId);
+    Boolean existsByPassRequestIdAndScosId(UUID passRequestId, String scosId);
 
     List<PassRequestUser> findAllByPassRequestId(UUID PassRequestId);
 
-    List<PassRequestUser> getByUserId(String userId);
+    List<PassRequestUser> getByScosId(String scosId);
 }
