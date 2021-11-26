@@ -14,7 +14,7 @@ public interface IDynamicQRService {
 
     Optional<List<DynamicQR>> getAllPermittedQRsAsFile(String userId);
 
-    Optional<Integer> sendQRViaEmail(String userId, String organizationId);
+    Optional<Integer> sendQRViaEmail(String userId);
 
     Optional<List<String>> getQRsContentByOrganization(String organizationId);
 }
