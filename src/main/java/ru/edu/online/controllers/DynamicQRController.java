@@ -52,9 +52,10 @@ public class DynamicQRController {
     }
 
     @GetMapping("email/{userId}")
-    public ResponseEntity<Resource> sendViaEmail(@PathVariable String userId,
+    public ResponseEntity<Integer> sendViaEmail(@PathVariable String userId,
                                                      @RequestParam(name = "organizationId") String organizationId){
-        return dynamicQRService.sendQRViaEmail(userId, organizationId);
+        return dynamicQRService.sendQRViaEmail(userId, organizationId).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
 
