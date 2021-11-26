@@ -839,6 +839,20 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 );
     }
 
+    /**
+     * Поулчить список заявок по id создателя и статусу
+     * @param status стутус заявки
+     * @param userId id создателя
+     * @return список отобранных заявок по критериям выше
+     */
+    private List<PassRequest> getPassRequestByStatusForUser(PassRequestStatus status, String userId) {
+        return passRequestRepository
+                .findAllByAuthorIdAndStatus(
+                        userId,
+                        status
+                );
+    }
+
     private Long getRequestNumber() {
         return passRequestRepository.countAllByNumberGreaterThan(0L) + 1;
     }
