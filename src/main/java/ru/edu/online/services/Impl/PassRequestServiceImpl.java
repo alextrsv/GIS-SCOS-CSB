@@ -332,172 +332,126 @@ public class PassRequestServiceImpl implements IPassRequestService {
     /**
      * Получить заявки для администратора
      * @param status стутус заявок
-     * @param targetUniversityId идентификатор университета администратора
      * @param page номер страницы (по умолчанию по 5 заявок для админа)
      * @param search поиск по заявкам. Возможен по названию ООВО и номеру заявки
      * @return отобранные по критериям заявки
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestsForAdmin(
-            RequestsStatusForAdmin status,
-            String targetUniversityId,
-            Long page,
-            Optional<String> search
+    public Optional<PassRequestsResponseDTO> getPassRequestsForAdmin(RequestsStatusForAdmin status,
+                                                               Long page,
+                                                               Long pageSize,
+                                                               Optional<String> search,
+                                                               Principal principal
     ) {
+        UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, principal);
+        String adminUniversityId = admin
+                .getEmployments()
+                .stream()
+                .filter(e -> e.getRoles().contains("UNIVERSITY"))
+                .findFirst()
+                .get()
+                .getOgrn();
+
         switch (status) {
             case PROCESSED:
-                return getProcessedPassRequests(targetUniversityId, page, search);
+                return Optional.of(getProcessedPassRequests(adminUniversityId, page, pageSize, search));
             case IN_PROCESSING:
-                return getPassRequestsInProcessing(targetUniversityId, page, search);
+                return Optional.of(getPassRequestsInProcessing(adminUniversityId, page, pageSize, search));
             case FOR_PROCESSING:
-                return getPassRequestsForProcessing(targetUniversityId, page, search);
+                return Optional.of(getPassRequestsForProcessing(adminUniversityId, page, pageSize, search));
+            case EXPIRED:
+                return Optional.of(getExpiredPassRequests(adminUniversityId, page, pageSize, search));
             default:
                 return Optional.empty();
         }
     }
 
     /**
-     * Поулчить количество заявок по категориям для админа
-     * @param authorId id админа
-     * @return мапа: категория - количество заявок.
-     */
-    @Override
-    public Optional<Map<String, Long>> getPassRequestCountByStatusForAdmin(String authorId) {
-        List<PassRequest> requests =
-                passRequestRepository.findAllByAuthorId(authorId);
-        log.info("Getting passRequests count by status for user");
-        Map<String, Long> statusesCount = new HashMap<>();
-        List<PassRequest> requestsByStatus =
-                aggregatePassRequestsByStatus(
-                        requests,
-                        PassRequestStatus.TARGET_ORGANIZATION_REVIEW
-                );
-        statusesCount.put(
-                "forProcessing",
-                (long) requestsByStatus.size());
-        requestsByStatus =
-                aggregatePassRequestsByStatus(
-                        requests,
-                        PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION
-                );
-        statusesCount.put(
-                "inProcessing",
-                (long) requestsByStatus.size());
-        requestsByStatus =
-                aggregatePassRequestsByStatus(
-                        requests,
-                        PassRequestStatus.ACCEPTED
-                );
-        requestsByStatus.addAll(
-                aggregatePassRequestsByStatus(
-                        requests,
-                        PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION
-                )
-        );
-        requestsByStatus.addAll(
-                aggregatePassRequestsByStatus(
-                        requests,
-                        PassRequestStatus.CANCELED_BY_CREATOR
-                )
-        );
-        requestsByStatus.addAll(
-                aggregatePassRequestsByStatus(
-                        requests,
-                        PassRequestStatus.EXPIRED
-                )
-        );
-        statusesCount.put(
-                "processed",
-                (long) requestsByStatus.size());
-        return Optional.of(statusesCount);
-    }
-
-    /**
      * Получение заявок для обработки.
      * @param universityId идентификатор ООВО
      * @param page номер страницы
-     * @return список заявок для обработки
+     * @param pageSize размер страницы
+     * @param search поиск
+     * @return список заявок в обработке
      */
-    public Optional<List<PassRequest>> getPassRequestsForProcessing(
+    public PassRequestsResponseDTO getPassRequestsForProcessing(
             String universityId,
             Long page,
+            Long pageSize,
             Optional<String> search) {
         log.info("collect requests sent for consideration to the target OOVO");
-        return search.map(s -> PassRequestUtils.filterRequest(
-                getPassRequestByStatusForUniversity(
-                        PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
-                        universityId
-                ),
-                        s,
-                        devScosApiClient)
-                .stream()
-                .skip(5L * (page - 1))
-                .limit(5)
-                .collect(Collectors.toList())).or(() -> Optional.of(
-                getPassRequestByStatusForUniversity(
-                        PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
-                        universityId
-                )
-                        .stream()
-                        .skip(5L * (page - 1))
-                        .limit(5)
-                        .collect(Collectors.toList())
-        ));
+        return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+                PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
+                universityId,
+                page,
+                pageSize,
+                search
+        );
     }
 
     /**
      * Получение заявок в обработке.
      * @param universityId идентификатор ООВО
      * @param page номер страницы
+     * @param pageSize размер страницы
+     * @param search поиск
      * @return список заявок в обработке
      */
-    public Optional<List<PassRequest>> getPassRequestsInProcessing(
+    public PassRequestsResponseDTO getPassRequestsInProcessing(
             String universityId,
             Long page,
+            Long pageSize,
             Optional<String> search) {
         log.info("collect requests sent in consideration to the target OOVO");
-        return search.map(s -> PassRequestUtils.filterRequest(
-                getPassRequestByStatusForUniversity(
-                        PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
-                        universityId
-                ),
-                        s,
-                        devScosApiClient)
-                .stream()
-                .skip(5L * (page - 1))
-                .limit(5)
-                .collect(Collectors.toList())).or(() -> Optional.of(
-                getPassRequestByStatusForUniversity(
-                        PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
-                        universityId
-                )
-                        .stream()
-                        .skip(5L * (page - 1))
-                        .limit(5)
-                        .collect(Collectors.toList())
-        ));
+
+        return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+                PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
+                universityId,
+                page,
+                pageSize,
+                search
+        );
+    }
+
+    /**
+     * Получение просроченных заявок.
+     * @param universityId идентификатор ООВО
+     * @param page номер страницы
+     * @param pageSize размер страницы
+     * @param search поиск
+     * @return список обработанных заявок
+     */
+    public PassRequestsResponseDTO getExpiredPassRequests(String universityId,
+                                                          Long page,
+                                                          Long pageSize,
+                                                          Optional<String> search) {
+        log.info("collect expired requests sent for to the OOVO");
+        return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+                PassRequestStatus.EXPIRED,
+                universityId,
+                page,
+                pageSize,
+                search
+        );
     }
 
     /**
      * Получение обработанных заявок.
      * @param universityId идентификатор ООВО
      * @param page номер страницы
+     * @param pageSize размер страницы
+     * @param search поиск
      * @return список обработанных заявок
      */
-    public Optional<List<PassRequest>> getProcessedPassRequests(
-            String universityId,
-            Long page,
-            Optional<String> search) {
+    public PassRequestsResponseDTO getProcessedPassRequests(String universityId,
+                                                            Long page,
+                                                            Long pageSize,
+                                                            Optional<String> search) {
 
         List<PassRequest> requestList = getPassRequestByStatusForUniversity(
                         PassRequestStatus.ACCEPTED,
                         universityId
         );
-
-        requestList.addAll(getPassRequestByStatusForUniversity(
-                        PassRequestStatus.EXPIRED,
-                        universityId
-                ));
 
         requestList.addAll(getPassRequestByStatusForUniversity(
                         PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
@@ -510,15 +464,22 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 ));
 
         log.info("collect considered requests sent for to the OOVO");
-        return search.map(s -> PassRequestUtils.filterRequest(requestList, s, devScosApiClient)
-                .stream()
-                .skip(5L * (page - 1))
-                .limit(5)
-                .collect(Collectors.toList())).or(() -> Optional.of(requestList
-                .stream()
-                .skip(5L * (page - 1))
-                .limit(5)
-                .collect(Collectors.toList())));
+
+
+        if (search.isPresent()) {
+            requestList = PassRequestUtils.filterRequest(requestList, search.get(), devScosApiClient);
+        }
+        long requestsCount = requestList.size();
+        requestList = paginateRequests(requestList, page, pageSize);
+
+
+        return new PassRequestsResponseDTO(
+                page,
+                pageSize,
+                requestsCount / pageSize,
+                requestsCount,
+                requestList
+        );
     }
 
     /**
