@@ -884,6 +884,42 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     * Получить запросы для университета с поиском и пагинацией по категории
+     * @param status статус заявки
+     * @param universityId идентификатор университета
+     * @param page номер страницы
+     * @param pageSize размер страницы
+     * @param search поиск (опционально)
+     * @return список заявок по входным параметрам
+     */
+    private PassRequestsResponseDTO aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+            PassRequestStatus status,
+            String universityId,
+            Long page,
+            Long pageSize,
+            Optional<String> search) {
+        List<PassRequest> requestList = getPassRequestByStatusForUniversity(
+                status,
+                universityId
+        );
+
+        if (search.isPresent()) {
+            requestList = PassRequestUtils.filterRequest(requestList, search.get(), devScosApiClient);
+        }
+        long requestsCount = requestList.size();
+        requestList = paginateRequests(requestList, page, pageSize);
+
+        return new PassRequestsResponseDTO(
+                page,
+                pageSize,
+                requestsCount / pageSize,
+                requestsCount,
+                requestList
+        );
+    }
+
     private List<PassRequest> paginateRequests(List<PassRequest> requests, long page, long pageSize) {
         return requests
                 .stream()
