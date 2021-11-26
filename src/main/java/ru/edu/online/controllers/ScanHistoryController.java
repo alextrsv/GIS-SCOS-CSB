@@ -2,6 +2,7 @@ package ru.edu.online.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,13 +49,17 @@ public class ScanHistoryController {
     private ResponseEntity<ScanHistoriesWithPayloadDTO> getScanHistoryBySecurityId(
             @PathVariable("page") int page,
             @PathVariable("size") int size,
-            @RequestParam("search") String searchByFullName,
+            @RequestParam(name = "search", required = false, defaultValue = "") String searchByFullName,
             Principal principal){
 
         return scanHistoryService
                 .getScanHistoriesBySecurityId(
                         UUID.fromString(principal.getName()),
-                        PageRequest.of(page - 1, size),
+                        PageRequest.of(
+                                page - 1,
+                                size,
+                                Sort.by("creationDate").descending()
+                        ),
                         searchByFullName
                 )
                 .map(ResponseEntity::ok)
