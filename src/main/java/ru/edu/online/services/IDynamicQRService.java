@@ -1,7 +1,6 @@
 package ru.edu.online.services;
 
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import ru.edu.online.entities.DynamicQR;
 
 import java.util.List;
@@ -15,7 +14,7 @@ public interface IDynamicQRService {
 
     Optional<List<DynamicQR>> getAllPermittedQRsAsFile(String userId);
 
-    ResponseEntity<Resource> sendQRViaEmail(String userId, String organizationId);
+    Optional<Integer> sendQRViaEmail(String userId, String organizationId);
 
     Optional<List<String>> getQRsContentByOrganization(String organizationId);
 }

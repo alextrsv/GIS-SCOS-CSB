@@ -1,13 +1,13 @@
 package ru.edu.online.services.Impl;
 
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.DynamicQR;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.StudentDTO;
+import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.enums.QRStatus;
 import ru.edu.online.repositories.IDynamicQRRepository;
 import ru.edu.online.services.IDynamicQRService;
@@ -98,20 +98,44 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
 
     @Override
-    public ResponseEntity<Resource> sendQRViaEmail(String userId, String organizationId) {
+    public Optional<Integer> sendQRViaEmail(String userId, String organizationId) {
 
-        StudentDTO studentDTO = vamRestClient.makeGetStudentRequest(userId).get();
-        studentDTO.setEmail("sasha2.tara2000@yandex.ru");
+        Optional<UserDTO> scosUser = gisScosApiRestClient.makeGetUserRequest(userId);
+        if (scosUser.isEmpty() || scosUser.get().getEmail() == null) return Optional.of(-1);
 
-        OrganizationDTO organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId).get();
+        Optional<StudentDTO> studentDTO = vamRestClient.makeGetStudentByEmailRequest(scosUser.get().getEmail());
 
-        QRMessage qrMessage = new QRMessage(studentDTO, getActiveQRByOrganization(userId, organizationId).get(), organizationDTO );
+        if (studentDTO.isPresent()) {
+            studentDTO.get().setScos_id(scosUser.get().getUser_id());
+            sendToStudent(studentDTO.get());
+        }
+        else sendToUser(scosUser.get());
+//
+        return Optional.of(1);
+    }
+
+
+    private Integer sendToStudent(StudentDTO studentDTO){
+        studentDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
+
+        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id());
+        if (organizationDTO.isEmpty()) return -1;
+
+        Optional<DynamicQR> qr = getActiveQRByOrganization(studentDTO.getScos_id(), studentDTO.getOrganization_id());
+        if (qr.isEmpty()) return -1;
+
+        QRMessage qrMessage = new QRMessage(studentDTO, getActiveQRByOrganization(studentDTO.getScos_id(), studentDTO.getOrganization_id()).get(), organizationDTO.get());
 
         qrMessage.prepareMessage();
 
         mailUtil.sendQRImage(qrMessage);
 
-        return null;
+        return 1;
+    }
+
+    private void sendToUser(UserDTO userDTO){
+        userDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
+
     }
 
     @Override
