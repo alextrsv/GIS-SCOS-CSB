@@ -106,21 +106,21 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
         if (studentDTO.isPresent()) {
             studentDTO.get().setScos_id(scosUser.get().getUser_id());
-            sendToStudent(studentDTO.get());
+            sendToStudent(studentDTO.get(), organizationId);
         }
-        else sendToUser(scosUser.get());
+        else sendToUser(scosUser.get(), organizationId);
 
         return Optional.of(1);
     }
 
 
-    private Integer sendToStudent(StudentDTO studentDTO){
+    private Integer sendToStudent(StudentDTO studentDTO, String organizationId){
         studentDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
 
-        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id());
+        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
         if (organizationDTO.isEmpty()) return -1;
 
-        Optional<DynamicQR> qr = getActiveQRByOrganization(studentDTO.getScos_id(), studentDTO.getOrganization_id());
+        Optional<DynamicQR> qr = getActiveQRByOrganization(studentDTO.getScos_id(), organizationId);
         if (qr.isEmpty()) return -1;
 
         QRMessage qrMessage = new QRMessage(studentDTO, qr.get(), organizationDTO.get());
@@ -130,13 +130,13 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
         return 1;
     }
 
-    private Integer sendToUser(UserDTO userDTO){
+    private Integer sendToUser(UserDTO userDTO, String organizationId){
         userDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
 
-        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationByOrgnRequest(userDTO.getUserOrganizationORGN().get(0));
+        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
         if (organizationDTO.isEmpty()) return -1;
 
-        Optional<DynamicQR> qr = getActiveQRByOrganization(userDTO.getUser_id(), organizationDTO.get().getOrganizationId().get());
+        Optional<DynamicQR> qr = getActiveQRByOrganization(userDTO.getUser_id(), organizationId);
         if (qr.isEmpty()) return -1;
 
         QRMessage qrMessage = new QRMessage(userDTO, qr.get(), organizationDTO.get());
