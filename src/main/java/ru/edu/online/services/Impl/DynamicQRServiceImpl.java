@@ -123,17 +123,27 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
         Optional<DynamicQR> qr = getActiveQRByOrganization(studentDTO.getScos_id(), studentDTO.getOrganization_id());
         if (qr.isEmpty()) return -1;
 
-        QRMessage qrMessage = new QRMessage(studentDTO, getActiveQRByOrganization(studentDTO.getScos_id(), studentDTO.getOrganization_id()).get(), organizationDTO.get());
-
-        qrMessage.prepareMessage();
+        QRMessage qrMessage = new QRMessage(studentDTO, qr.get(), organizationDTO.get());
 
         mailUtil.sendQRImage(qrMessage);
 
         return 1;
     }
 
-    private void sendToUser(UserDTO userDTO){
+    private Integer sendToUser(UserDTO userDTO){
         userDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
+
+        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationByOrgnRequest(userDTO.getUserOrganizationORGN().get(0));
+        if (organizationDTO.isEmpty()) return -1;
+
+        Optional<DynamicQR> qr = getActiveQRByOrganization(userDTO.getUser_id(), organizationDTO.get().getOrganizationId().get());
+        if (qr.isEmpty()) return -1;
+
+        QRMessage qrMessage = new QRMessage(userDTO, qr.get(), organizationDTO.get());
+
+        mailUtil.sendQRImage(qrMessage);
+
+        return 1;
 
     }
 
