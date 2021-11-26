@@ -41,8 +41,6 @@ public class StudentServiceImpl implements IStudentService {
     }
 
 
-
-
     @Override
     public Set<String> getPermittedOrganizations(StudentDTO studentDTO) {
         return dynamicQRUserService.getPermittedOrganizations(new DynamicQRUser(studentDTO));
@@ -58,11 +56,14 @@ public class StudentServiceImpl implements IStudentService {
     public String makeContent(StudentDTO studentDTO){
         String finalContent = makeUsefullContent(studentDTO);
         try {
+            String hash = HashingUtil.getHash(finalContent);
             finalContent = finalContent.substring(0, finalContent.length()-1);
-            finalContent += ", \"hash\": \"" + HashingUtil.getHash(finalContent) + "\"}";
+            finalContent += ", \"hash\": \"" + hash + "\"}";
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+        System.out.println("fianl content:");
+        System.out.println(finalContent + "\n\n");
         return finalContent;
     }
 
@@ -81,15 +82,15 @@ public class StudentServiceImpl implements IStudentService {
     public String makeUsefullContent(StudentDTO studentDTO) {
         PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
 
-        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getId()));
+        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getId())); // id из ВАМ
         permanentStudentQRDTO.setSurname(studentDTO.getSurname());
         permanentStudentQRDTO.setName(studentDTO.getName());
         permanentStudentQRDTO.setMiddle_name( studentDTO.getMiddle_name());
-        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));
+        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));  //by organizationId
         permanentStudentQRDTO.setStatus("status");
         permanentStudentQRDTO.setRole("student");
-        permanentStudentQRDTO.setStud_bilet("scos" + studentDTO.getId().toString().substring(0, 6));
-        permanentStudentQRDTO.setEducation_form( getEducationForm(studentDTO.getStudy_plans()));
+        permanentStudentQRDTO.setStud_bilet(studentDTO.getId().toString().substring(0, 10));
+        permanentStudentQRDTO.setEducation_form(getEducationForm(studentDTO.getStudy_plans()));
         permanentStudentQRDTO.setStart_year(getStartYear(studentDTO));
         permanentStudentQRDTO.setStud_bilet_duration(getEndYear(studentDTO));
         permanentStudentQRDTO.setAccessed_organizations(getDPermittedOrgs(studentDTO));
@@ -97,8 +98,8 @@ public class StudentServiceImpl implements IStudentService {
         Gson p = new Gson();
 
         String content = p.toJson(permanentStudentQRDTO);
-
-        System.out.println(content);
+        System.out.println("CONTENT:");
+        System.out.println(content+ "\n\n");
         return content;
     }
 

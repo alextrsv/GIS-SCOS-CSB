@@ -11,9 +11,7 @@ import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.StudentsDTO;
 import ru.edu.online.entities.dto.StudyPlanDTO;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 
 @Slf4j
@@ -134,5 +132,58 @@ public class VamRestClient {
         headers.set("X-CN-UUID", vamSecret);
 
         return new HttpEntity(headers);
+    }
+
+    public Optional<StudentDTO> makeGetStudentByEmailRequest(String userEmail) {
+
+        String urlTemplate = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(host)
+                .path(vamPrefix)
+                .pathSegment(STUDENTS_ENDPOINT)
+                .queryParam("email", userEmail)
+                .encode()
+                .toUriString();
+
+        ResponseEntity<StudentsDTO> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildVamRequest(),
+                    StudentsDTO.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        if (Objects.requireNonNull(response.getBody()).getResults().size() > 0)
+            return Optional.ofNullable(response.getBody().getResults().get(0));
+        else return Optional.empty();
+    }
+
+
+    public Optional<StudentDTO> makeGetStudentByEmailRequestFor01(String userEmail) {  //тк для 01 возвращаются 2е записи
+
+        String urlTemplate = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(host)
+                .path(vamPrefix)
+                .pathSegment(STUDENTS_ENDPOINT)
+                .queryParam("email", userEmail)
+                .encode()
+                .toUriString();
+
+        ResponseEntity<StudentsDTO> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildVamRequest(),
+                    StudentsDTO.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(Objects.requireNonNull(response.getBody()).getResults().get(1));
     }
 }

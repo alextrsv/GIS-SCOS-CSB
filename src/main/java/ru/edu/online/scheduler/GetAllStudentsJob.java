@@ -11,6 +11,7 @@ import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.StudentsDTO;
+import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.PassRequestType;
 import ru.edu.online.repositories.IPassRequestRepository;
@@ -54,7 +55,6 @@ public class GetAllStudentsJob extends QuartzJobBean {
     }
 
     private void downloadStudentsByOrganization(OrganizationDTO organizationDTO) {
-
         int pageSize = 10;
         int pageNumber = 1;
         int pagesAmount;
@@ -62,6 +62,7 @@ public class GetAllStudentsJob extends QuartzJobBean {
         do {
             Optional<String> orgId = organizationDTO.getOrganizationId();
             if (orgId.isEmpty()) return;
+            //качаю студентов из текущей организации
             StudentsDTO getStudentsByOrganizationResponse = vamRestClient.makeGetStudentsRequest(pageSize, pageNumber, orgId.get());
             pagesAmount = getStudentsByOrganizationResponse.getLast_page();
 
@@ -73,8 +74,14 @@ public class GetAllStudentsJob extends QuartzJobBean {
 
             //для каждого студента организации создается подтвержденная заявка на проход в свой университет
             studentsOnPage.forEach(studentDTO -> {
+                if (studentDTO.getEmail() == null) return;
+                Optional<UserDTO> userDTO = gisScosApiRestClient.makeGetUserByEmailRequest(studentDTO.getEmail()); // поменял на получение по email
+                if (userDTO.isEmpty()) return;
+                studentDTO.setScos_id(userDTO.get().getUser_id());
+
                 autoRequestsList.add(new PassRequest(
-                        studentDTO.getId(), "Нужно починить",
+                        studentDTO.getScos_id(), // поменял на Scos_Id
+                        "Нужно починить",
                         "Класс GetAllStudentJob",
                         "Генерация не работает нормально",
                         organizationDTO.getOrganizationId().get(),

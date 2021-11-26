@@ -50,6 +50,10 @@ public class Checker extends Thread {
 
             Set<String> permittedOrgsID = dynamicQRUserService.getPermittedOrganizations(user);
 
+            if (user.getUserId() != null)
+                permittedOrgsID.forEach(System.out::println);
+
+
             List<DynamicQR> usersQRs = dynamicQRRepository.getByUserId(user.getUserId());
 
             //для разрешенных организаций
@@ -155,6 +159,6 @@ public class Checker extends Thread {
 
     public void setItemsPerThread(int itemsPerThread) {
         this.itemsPerThread = itemsPerThread;
-        codesArray = CodesGenerator.getWiegand34CodesFromInteger(itemsPerThread);
+        codesArray = CodesGenerator.getWiegand34CodesFromInteger(itemsPerThread* 10);
     }
 }

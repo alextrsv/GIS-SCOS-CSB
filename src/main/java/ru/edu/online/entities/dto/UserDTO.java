@@ -14,16 +14,17 @@ public class UserDTO {
 
     private String user_id;
     private String email;
+    private String snils;
     private String last_name;
     private String first_name;
     private String patronymic_name;
     private List<EmploymentDTO> employments;
     private List<String> roles;
+    private String organizationID; //не принимается из СЦОС, устанавливается в UserServiceImpl
 
 
-    public List<String> getUserOrganizationsId(){
-        List<String> res = employments.stream().map(employment -> employment.getOgrn().split("_")[0])
-                .collect(Collectors.toList());
+    public List<String> getUserOrganizationORGN(){
+        List<String> res = employments.stream().map(EmploymentDTO::getOgrn).collect(Collectors.toList());
         for (String str: res) {
             System.out.println(str);
         }

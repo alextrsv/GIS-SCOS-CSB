@@ -82,6 +82,31 @@ public class GisScosApiRestClient {
         return Optional.ofNullable(response.getBody());
     }
 
+    public Optional<OrganizationDTO> makeGetOrganizationByOrgnRequest(String orgn){
+
+        String urlTemplate = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(host)
+                .path(gisScosPrefix)
+                .pathSegment(GET_ORGANIZATION_ENDPOINT)
+                .pathSegment(orgn)
+                .encode()
+                .toUriString();
+
+        ResponseEntity<OrganizationDTO> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildGisScosRequest(),
+                    OrganizationDTO.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(response.getBody());
+    }
+
 
     /** НОВЫЙ Получение Получение сотрудника Организации */
     public synchronized Optional<UserDTO> makeGetUserRequest(String userId){
@@ -116,5 +141,30 @@ public class GisScosApiRestClient {
         headers.set("X-CN-UUID", vamSecret);
 
         return new HttpEntity(headers);
+    }
+
+    public synchronized Optional<UserDTO> makeGetUserByEmailRequest(String userEmail){
+
+        String urlTemplate = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(host)
+                .path(gisScosPrefix)
+                .pathSegment(GET_USER_ENDPOINT)
+                .queryParam("email", userEmail)
+                .encode()
+                .toUriString();
+
+        ResponseEntity<UserDTO> response;
+        try {
+            response = restTemplate.exchange(
+                    urlTemplate,
+                    HttpMethod.GET,
+                    buildGisScosRequest(),
+                    UserDTO.class
+            );
+        }catch (HttpClientErrorException.NotFound notFoundEx){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(response.getBody());
     }
 }
