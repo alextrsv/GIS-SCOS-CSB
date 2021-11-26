@@ -102,6 +102,22 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     }
 
     /**
+     * Получить ОГРН организации админа
+     * @param principal авторизация админа
+     * @return ОГРН организации админа
+     */
+    @Override
+    public Optional<String> getAdminOrganizationOGRN(Principal principal) {
+        UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, principal);
+        Optional<EmploymentDTO> employmentDTO = admin
+                .getEmployments()
+                .stream()
+                .filter(e -> e.getRoles().contains("UNIVERSITY"))
+                .findFirst();
+        return employmentDTO.map(EmploymentDTO::getOgrn);
+    }
+
+    /**
      * Является ли пользователь студентом?
      * @param principal информация о пользователе
      * @return true/false в зависимости от роли пользователя
