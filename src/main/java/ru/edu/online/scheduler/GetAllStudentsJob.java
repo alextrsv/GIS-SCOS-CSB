@@ -79,22 +79,6 @@ public class GetAllStudentsJob extends QuartzJobBean {
                 if (userDTO.isEmpty()) return;
                 studentDTO.setScos_id(userDTO.get().getUser_id());
 
-
-                /*
-                * String authorId, String authorFirstName, String authorLastName,
-                       String authorPatronymicName, String authorUniversityId, String authorUniversityName,
-                       LocalDate startDate, LocalDate endDate, PassRequestStatus status,
-                       PassRequestType type, String targetUniversityAddress,
-                       String targetUniversityName, String targetUniversityId,
-                       Long number
-
-                * String userId, String targetUniversityId, String universityId,
-                       LocalDate startDate, LocalDate endDate, PassRequestStatus status,
-                       PassRequestType type, String targetUniversityAddress,
-                       String targetUniversityName, String universityName,
-                       Long number
-                * */
-
                 autoRequestsList.add(new PassRequest(
                         userDTO.get().getUser_id(),
                         userDTO.get().getFirst_name(),
@@ -108,29 +92,10 @@ public class GetAllStudentsJob extends QuartzJobBean {
                         PassRequestType.SINGLE,
                         "organizationAddress",
                         organizationDTO.getShort_name(),
-                        organizationDTO.getShort_name(),
+                        orgId.get(),
                         passRequestRepository.countAllByNumberGreaterThan(0L) + 1
                         )
                 );
-                /*
-                autoRequestsList.add(new PassRequest(
-                        studentDTO.getScos_id(), // поменял на Scos_Id
-                        "Нужно починить",
-                        "Класс GetAllStudentJob",
-                        "Генерация не работает нормально",
-                        organizationDTO.getOrganizationId().get(),
-                        organizationDTO.getOrganizationId().get(),
-                        LocalDate.of(LocalDate.now().getYear(), 8, 1),
-                        LocalDate.of(LocalDate.now().getYear() + 1, 7, 1),
-                        PassRequestStatus.ACCEPTED,
-                        PassRequestType.SINGLE,
-                        "organizationAddress",
-                        organizationDTO.getShort_name(),
-                        organizationDTO.getShort_name(),
-                        passRequestRepository.countAllByNumberGreaterThan(0L) + 1
-                        ));
-
-                 */
             });
 
             dynamicQRUserService.addAll(studentsOnPage);
