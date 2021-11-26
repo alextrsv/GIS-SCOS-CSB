@@ -3,6 +3,7 @@ package ru.edu.online.utils.mail;
 import ru.edu.online.entities.DynamicQR;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.StudentDTO;
+import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.services.Impl.Converter;
 import ru.edu.online.services.Impl.QrGenerator;
 
@@ -20,7 +21,8 @@ import java.io.IOException;
 
 public class QRMessage extends MimeMessage {
 
-    private final StudentDTO studentDTO;
+    private  StudentDTO studentDTO;
+    private  UserDTO userDTO;
     private final DynamicQR dynamicQR;
     private final OrganizationDTO organizationDTO;
 
@@ -30,13 +32,22 @@ public class QRMessage extends MimeMessage {
         this.studentDTO = studentDTO;
         this.dynamicQR = dynamicQR;
         this.organizationDTO = organizationDTO;
+        prepareMessage(studentDTO.getEmail());
+    }
+    public QRMessage(UserDTO userDTO, DynamicQR dynamicQR, OrganizationDTO organizationDTO){
+        super(SessionFactory.getSession());
+        this.userDTO = userDTO;
+        this.dynamicQR = dynamicQR;
+        this.organizationDTO = organizationDTO;
+        prepareMessage(userDTO.getEmail());
     }
 
-    public void prepareMessage(){
+
+    public void prepareMessage(String email){
         try {
             Multipart multiContent = new MimeMultipart();
 
-            this.setRecipient(Message.RecipientType.TO, new InternetAddress(studentDTO.getEmail()));
+            this.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
             multiContent.addBodyPart(getTextBodyPart());
             multiContent.addBodyPart(getImageBodyPart());
 
