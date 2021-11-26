@@ -28,4 +28,6 @@ public interface IUserDetailsService {
                                                           Long page,
                                                           Long pageSize,
                                                           Optional<String> search);
+
+    Optional<String> getAdminOrganizationOGRN(Principal principal);
 }
