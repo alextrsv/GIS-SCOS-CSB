@@ -185,7 +185,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<List<PassRequest>> getPassRequestsByUserId(String id) {
         log.info("getting pass request by user id: {}", id);
-        List<PassRequest> requestList = passRequestRepository.findAllByAuthorUniversityId(id);
+        List<PassRequest> requestList = passRequestRepository.findAllByAuthorId(id);
 
         return Optional.of(requestList);
     }
