@@ -131,7 +131,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
     }
 
     /**
-     * Получить азявку по id
+     * Получить заявку по id
      * @param passRequestId id заявки
      * @return заявка
      */

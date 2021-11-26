@@ -66,7 +66,7 @@ public class GetAllStudentsJob extends QuartzJobBean {
             StudentsDTO getStudentsByOrganizationResponse = vamRestClient.makeGetStudentsRequest(pageSize, pageNumber, orgId.get());
             pagesAmount = getStudentsByOrganizationResponse.getLast_page();
 
-            List<StudentDTO> studentsOnPage = new ArrayList<>();
+            List<StudentDTO> studentsOnPage;
             if (getStudentsByOrganizationResponse.getResults().size() != 0)
                 studentsOnPage = getStudentsByOrganizationResponse.getResults();
             else return;
@@ -80,18 +80,22 @@ public class GetAllStudentsJob extends QuartzJobBean {
                 studentDTO.setScos_id(userDTO.get().getUser_id());
 
                 autoRequestsList.add(new PassRequest(
-                        studentDTO.getScos_id(), // поменял на Scos_Id
-                        organizationDTO.getOrganizationId().get(),
-                        organizationDTO.getOrganizationId().get(),
+                        userDTO.get().getUser_id(),
+                        userDTO.get().getFirst_name(),
+                        userDTO.get().getLast_name(),
+                        userDTO.get().getPatronymic_name(),
+                        orgId.get(),
+                        organizationDTO.getShort_name(),
                         LocalDate.of(LocalDate.now().getYear(), 8, 1),
                         LocalDate.of(LocalDate.now().getYear() + 1, 7, 1),
                         PassRequestStatus.ACCEPTED,
                         PassRequestType.SINGLE,
                         "organizationAddress",
                         organizationDTO.getShort_name(),
-                        organizationDTO.getShort_name(),
+                        orgId.get(),
                         passRequestRepository.countAllByNumberGreaterThan(0L) + 1
-                        ));
+                        )
+                );
             });
 
             dynamicQRUserService.addAll(studentsOnPage);

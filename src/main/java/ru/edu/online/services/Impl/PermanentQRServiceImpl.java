@@ -62,8 +62,10 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         else
             vamStudent = vamRestClient.makeGetStudentByEmailRequest(userEmail);
 //        4. Если запрос к ВАМу вернул объект студента - работаю с этим объектом.
-        if (vamStudent.isPresent())
+        if (vamStudent.isPresent()) {
+            vamStudent.get().setScos_id(scosUser.get().getUser_id());
             content = studentServiceImpl.makeContent(vamStudent.get());
+        }
 //        5. Если запрос к ВАМу ничего не возвращает - это не студент, работаю с пользователем из СЦОСА
         else{
             content = userServiceImpl.makeContent(scosUser.get());
@@ -87,8 +89,10 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         else
             vamStudent = vamRestClient.makeGetStudentByEmailRequest(userEmail);
 //        4. Если запрос к ВАМу вернул объект студента - работаю с этим объектом.
-        if (vamStudent.isPresent())
+        if (vamStudent.isPresent()) {
+            vamStudent.get().setScos_id(scosUser.get().getUser_id());
             verifyStatus = verifyStudentData(vamStudent.get(), dataHash);
+        }
 //        5. Если запрос к ВАМу ничего не возвращает - это не студент, работаю с пользователем из СЦОСА
         else{
             verifyStatus = verufyUserData(scosUser.get(), dataHash);

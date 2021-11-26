@@ -13,11 +13,15 @@ import ru.edu.online.repositories.IValidateStudentCacheRepository;
 import ru.edu.online.services.IUserDetailsService;
 import ru.edu.online.utils.ScosApiUtils;
 import ru.edu.online.utils.UserUtils;
+import ru.edu.online.utils.VamApiUtils;
 
 import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -104,25 +108,18 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public boolean isStudent(Principal principal) {
-        Optional<CacheStudent> student =
-                getStudentFromCacheByScosId(UUID.fromString(principal.getName()));
+        Optional<CacheStudent> student;
 
-        if (student.isPresent()) {
-            return true;
-        } else {
-            Optional<StudentDTO> studentDTO = getStudentByEmail(principal);
-            if (studentDTO.isPresent()) {
-                student = getStudentFromCacheByEmail(studentDTO.get());
-                if (student.isPresent()) {
-                    return true;
-                }
-                if (saveStudentInCashByScosId(studentDTO.get())) {
-                    return true;
-                } else if (saveStudentInCashByEmail(studentDTO.get())) {
-                    return true;
-                }
+        Optional<StudentDTO> studentDTO = getStudentByEmail(principal);
+        if (studentDTO.isPresent()) {
+            student = getStudentFromCacheByEmail(studentDTO.get());
+            if (student.isPresent()) {
                 return true;
             }
+            if (saveStudentInCashByEmail(studentDTO.get())) {
+                return true;
+            }
+            return true;
         }
         return false;
     }
@@ -161,7 +158,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     private Optional<StudentDTO> getStudentByEmail(final Principal principal) {
         UserDetailsDTO userDetails = loadUserInfoByIdSync(principal);
-        StudentsDTO students = getStudents("email", userDetails.getEmail());
+        StudentsDTO students = VamApiUtils.getStudents("email", userDetails.getEmail(), devVamApiClient);
         return students
                 .getResults()
                 .stream()
@@ -170,31 +167,6 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                                 student.getEmail().equals(userDetails.getEmail())
                 )
                 .findFirst();
-    }
-
-    /**
-     * Получить список студентов по одному параметру
-     * @param parameter один из допустимых параметров для поиска:
-     * inn - ИНН,
-     * snils - СНИЛС,
-     * email - почта,
-     * scos_id - идентификатор в СЦОСе,
-     * study_year - курс обучения студента,
-     * filter - фильтр для поиска по ФИО (прим. - ван)
-     * organization_id - идентификатор организации в СЦОС или её ОГРН,
-     * from_date - дата, начиная с которой, будут отображаться изменения
-     * @param value знаение параметра поиска
-     * @return результат поиска по заданному параметру
-     */
-    private StudentsDTO getStudents(String parameter, String value) {
-        return devVamApiClient
-                .get()
-                .uri(String.join("", "/students?", parameter, "=", value))
-                .retrieve()
-                .bodyToMono(StudentsDTO.class)
-                .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
-                .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
-                .block();
     }
 
     /**
@@ -225,13 +197,15 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                                                                  Long pageSize,
                                                                  Optional<String> search) {
         UserDTO userDTO = ScosApiUtils.getUserDetails(devScosApiClient, principal);
-        StudentsDTO students = getStudents(
+        StudentsDTO students = VamApiUtils.getStudents(
                 "organization_id",
                 userDTO.getEmployments()
                         .stream()
                         .findFirst()
                         .get()
-                        .getOgrn());
+                        .getOgrn(),
+                devVamApiClient
+        );
 
         List<UserDetailsDTO> users = new ArrayList<>();
 
@@ -259,7 +233,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     private UserProfileDTO getStudentProfile(Principal principal) {
         UserDTO user = ScosApiUtils.getUserDetails(devScosApiClient, principal);
-        StudentsDTO students = getStudents("email", user.getEmail());
+        StudentsDTO students = VamApiUtils.getStudents("email", user.getEmail(), devVamApiClient);
         Optional<StudentDTO> student = students.getResults()
                 .stream()
                 .filter(
@@ -307,35 +281,12 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     }
 
     /**
-     * Получить студента из кэша по идентификатору СЦОСа
-     * @param id идентификатор СЦОСа
-     * @return студент, если не найден - Optional.empty()
-     */
-    private Optional<CacheStudent> getStudentFromCacheByScosId(UUID id) {
-        return studentCashRepository.findByScosId(id);
-    }
-
-    /**
      * Получить студента из кэша по почте
      * @param student dto студента
      * @return студент, если не найден - Optional.empty()
      */
     private Optional<CacheStudent> getStudentFromCacheByEmail(StudentDTO student) {
         return studentCashRepository.findByEmail(student.getEmail());
-    }
-
-    /**
-     * Сохранить студента в кэш по идентификатору СЦОСа
-     * @param studentDTO студента из ВАМа
-     */
-    private boolean saveStudentInCashByScosId(StudentDTO studentDTO) {
-        if (studentDTO.getScos_id() != null) {
-            studentCashRepository.save(
-                    new CacheStudent(UUID.fromString(studentDTO.getScos_id()))
-            );
-            return true;
-        }
-        return false;
     }
 
     /**

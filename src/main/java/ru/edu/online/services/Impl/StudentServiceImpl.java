@@ -73,7 +73,7 @@ public class StudentServiceImpl implements IStudentService {
 
         dynamicQRUserService.getAcceptedPassRequests(new DynamicQRUser(studentDTO))
                 .forEach(passRequest -> {
-                    orgs.add(new OrganizationInQRDTO(getOrganizationsName(studentDTO), "",
+                    orgs.add(new OrganizationInQRDTO(passRequest.getTargetUniversityName(), "",
                             passRequest.getStartDate().toString() + " - " + passRequest.getEndDate().toString()));
                 });
         return orgs;
@@ -82,7 +82,7 @@ public class StudentServiceImpl implements IStudentService {
     public String makeUsefullContent(StudentDTO studentDTO) {
         PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
 
-        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getId())); // id из ВАМ
+        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getScos_id())); // id из SCOS
         permanentStudentQRDTO.setSurname(studentDTO.getSurname());
         permanentStudentQRDTO.setName(studentDTO.getName());
         permanentStudentQRDTO.setMiddle_name( studentDTO.getMiddle_name());

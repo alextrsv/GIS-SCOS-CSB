@@ -7,6 +7,7 @@ import ru.edu.online.entities.dto.PassRequestUserDTO;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.RequestsStatusForAdmin;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +15,9 @@ import java.util.UUID;
 
 public interface IPassRequestService {
 
-    PassRequest addPassRequest(PassRequestDTO passRequestDTO);
+    Optional<PassRequest> addSinglePassRequest(PassRequestDTO passRequestDTO, Principal principal);
+
+    Optional<PassRequest> addGroupPassRequest(PassRequestDTO passRequestDTO, Principal principal);
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 

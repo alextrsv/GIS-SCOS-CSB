@@ -60,7 +60,7 @@ public class UserServiceImpl implements IUserService {
 
         dynamicQRUserService.getAcceptedPassRequests(new DynamicQRUser(userDTO))
                 .forEach(passRequest -> {
-                    orgs.add(new OrganizationInQRDTO(getOrganizationsName(userDTO), "",
+                    orgs.add(new OrganizationInQRDTO(passRequest.getTargetUniversityName(), "",
                             passRequest.getStartDate().toString() + " - " + passRequest.getEndDate().toString()));
                 });
         return orgs;
