@@ -97,7 +97,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
 
     @Override
-    public Optional<Integer> sendQRViaEmail(String userId, String organizationId) {
+    public Optional<Integer> sendQRViaEmail(String userId) {
 
         Optional<UserDTO> scosUser = gisScosApiRestClient.makeGetUserRequest(userId);
         if (scosUser.isEmpty() || scosUser.get().getEmail() == null) return Optional.of(-1);

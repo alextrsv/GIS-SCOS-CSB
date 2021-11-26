@@ -11,6 +11,6 @@ public class PassRequestCreationDateComparator implements Comparator<PassRequest
 
     @Override
     public int compare(PassRequest pr1, PassRequest pr2) {
-        return pr1.getCreationDate().compareTo(pr2.getCreationDate());
+        return - pr1.getCreationDate().compareTo(pr2.getCreationDate());
     }
 }

@@ -7,11 +7,13 @@ import java.util.stream.Stream;
  * FOR_PROCESSING - для обработки
  * IN_PROCESSING - в обработке
  * PROCESSED - обработаны
+ * EXPIRED - Просрочены
  */
 public enum RequestsStatusForAdmin {
     FOR_PROCESSING("forProcessing"),
     IN_PROCESSING("inProcessing"),
-    PROCESSED("processed")
+    PROCESSED("processed"),
+    EXPIRED("expired")
     ;
 
     private final String status;

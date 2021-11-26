@@ -63,4 +63,17 @@ public class UserInfoController {
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
+
+    /**
+     * Получить ОГРН организации админа
+     * @param principal атворизхация админа
+     * @return ОГРН организации админа
+     */
+    @GetMapping("/")
+    public ResponseEntity<String> getAdminOrganizationOGRN(Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return ResponseEntity.of(userDetailsService.getAdminOrganizationOGRN(principal));
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
 }
