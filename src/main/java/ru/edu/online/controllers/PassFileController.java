@@ -62,7 +62,7 @@ public class PassFileController {
      * @param dto для нахождения файла
      * @return файл, прикреплённый к заявке
      */
-    @PostMapping("/download")
+    @GetMapping("/download")
     public ResponseEntity<Resource> download(@RequestBody PassRequestFileIdentifierDTO dto) {
         return passFileService.downloadFile(dto);
     }
@@ -72,7 +72,7 @@ public class PassFileController {
      * @param dto для нахождения файла
      * @return информация о файле
      */
-    @PostMapping("/view")
+    @GetMapping("/view")
     public ResponseEntity<PassFile> getFileInfo(@RequestBody PassRequestFileIdentifierDTO dto) {
         return passFileService.getFile(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
