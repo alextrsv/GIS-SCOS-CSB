@@ -52,14 +52,16 @@ public class PassRequestController {
     @PostMapping("/add")
     public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto,
                                                       Principal principal) {
-        dto.setUserId(principal.getName());
         switch (userDetailsService.getUserRole(principal)) {
             case ADMIN:
-                return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
-            case TEACHER:
+                if (dto.getType() == PassRequestType.GROUP) {
+                    return passRequestService.addGroupPassRequest(dto, principal).map(ResponseEntity::ok)
+                            .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
+                }
             case STUDENT:
                 if (dto.getType() == PassRequestType.SINGLE) {
-                    return new ResponseEntity<>(passRequestService.addPassRequest(dto), HttpStatus.CREATED);
+                    return passRequestService.addSinglePassRequest(dto, principal).map(ResponseEntity::ok)
+                            .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
                 }
             default:
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

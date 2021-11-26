@@ -25,11 +25,21 @@ public class PassRequestUser {
     private UUID id;
     /** Заявка, к которой прикреплен пользователь (в таблице хранится только её id) */
     private UUID passRequestId;
-    /** Id пользователя, прикрепленного к заявке */
-    private String userId;
+    /** СЦОС Id пользователя, прикрепленного к заявке */
+    private String scosId;
+    /** Имя */
+    private String firstName;
+    /** Фамилия */
+    private String lastName;
+    /** Отчество */
+    private String patronymicName;
 
-    public PassRequestUser(UUID passRequestId, String userId) {
+    public PassRequestUser(UUID passRequestId, String scosId, String firstName,
+                           String lastName, String patronymicName) {
         this.passRequestId = passRequestId;
-        this.userId = userId;
+        this.scosId = scosId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.patronymicName = patronymicName;
     }
 }

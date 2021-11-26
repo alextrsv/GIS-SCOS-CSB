@@ -11,8 +11,6 @@ import java.util.UUID;
 @Repository
 public interface IValidateStudentCacheRepository extends JpaRepository<CacheStudent, UUID> {
 
-    Optional<CacheStudent> findByScosId(UUID uuid);
-
     Optional<CacheStudent> findByEmail(String email);
 
     boolean deleteByValidationDateBefore(LocalDate date);
