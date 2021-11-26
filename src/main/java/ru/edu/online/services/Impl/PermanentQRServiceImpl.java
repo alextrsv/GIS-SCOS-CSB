@@ -76,14 +76,22 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     @Override
     public Optional<QRDataVerifyStatus> verifyData(String userId, String dataHash) {
         QRDataVerifyStatus verifyStatus = null;
-        Optional<StudentDTO> studentDTOWrapper = getStudent(userId);
-        if (studentDTOWrapper.isPresent())
-            verifyStatus = verifyStudentData(studentDTOWrapper.get(), dataHash);
+
+        Optional<UserDTO> scosUser = gisScosApiRestClient.makeGetUserRequest(userId);
+        if (scosUser.isEmpty()) return Optional.empty();
+        String userEmail = scosUser.get().getEmail();
+//        3. Запрос к ВАМу на получение студента по почте (снилсу)
+        Optional<StudentDTO> vamStudent;
+        if(userEmail.equals("stud_bilet_01@dev.online.edu.ru"))
+            vamStudent = vamRestClient.makeGetStudentByEmailRequestFor01(userEmail);
+        else
+            vamStudent = vamRestClient.makeGetStudentByEmailRequest(userEmail);
+//        4. Если запрос к ВАМу вернул объект студента - работаю с этим объектом.
+        if (vamStudent.isPresent())
+            verifyStatus = verifyStudentData(vamStudent.get(), dataHash);
+//        5. Если запрос к ВАМу ничего не возвращает - это не студент, работаю с пользователем из СЦОСА
         else{
-            Optional<UserDTO> userWrapper = gisScosApiRestClient.makeGetUserRequest(userId);
-            if (userWrapper.isPresent()){
-                verifyStatus = verufyUserData(userWrapper.get(), dataHash);
-            }else return Optional.empty();
+            verifyStatus = verufyUserData(scosUser.get(), dataHash);
         }
         return Optional.ofNullable(verifyStatus);
     }
@@ -101,7 +109,8 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private QRDataVerifyStatus verifyStudentData(StudentDTO studentDTO, String hash) {
         try {
-            if (HashingUtil.getHash(studentServiceImpl.makeUsefullContent(studentDTO)).equals(hash)) return QRDataVerifyStatus.OK;
+            String lastHash = HashingUtil.getHash(studentServiceImpl.makeUsefullContent(studentDTO));
+            if (lastHash.equals(hash)) return QRDataVerifyStatus.OK;
             else return QRDataVerifyStatus.INVALID;
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

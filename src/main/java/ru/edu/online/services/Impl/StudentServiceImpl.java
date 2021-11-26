@@ -41,8 +41,6 @@ public class StudentServiceImpl implements IStudentService {
     }
 
 
-
-
     @Override
     public Set<String> getPermittedOrganizations(StudentDTO studentDTO) {
         return dynamicQRUserService.getPermittedOrganizations(new DynamicQRUser(studentDTO));
@@ -58,11 +56,14 @@ public class StudentServiceImpl implements IStudentService {
     public String makeContent(StudentDTO studentDTO){
         String finalContent = makeUsefullContent(studentDTO);
         try {
+            String hash = HashingUtil.getHash(finalContent);
             finalContent = finalContent.substring(0, finalContent.length()-1);
-            finalContent += ", \"hash\": \"" + HashingUtil.getHash(finalContent) + "\"}";
+            finalContent += ", \"hash\": \"" + hash + "\"}";
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+        System.out.println("fianl content:");
+        System.out.println(finalContent + "\n\n");
         return finalContent;
     }
 
@@ -97,8 +98,8 @@ public class StudentServiceImpl implements IStudentService {
         Gson p = new Gson();
 
         String content = p.toJson(permanentStudentQRDTO);
-
-        System.out.println(content);
+        System.out.println("CONTENT:");
+        System.out.println(content+ "\n\n");
         return content;
     }
 

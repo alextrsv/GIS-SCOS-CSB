@@ -76,8 +76,9 @@ public class UserServiceImpl implements IUserService {
     public String makeContent(UserDTO userDTO){
         String finalContent = makeUsefullContent(userDTO);
         try {
+            String hash = HashingUtil.getHash(finalContent);
             finalContent = finalContent.substring(0, finalContent.length()-1);
-            finalContent += ", \"hash\": \"" + HashingUtil.getHash(finalContent) + "\"}";
+            finalContent += ", \"hash\": \"" + hash + "\"}";
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
