@@ -185,7 +185,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<List<PassRequest>> getPassRequestsByUserId(String id) {
         log.info("getting pass request by user id: {}", id);
-        List<PassRequest> requestList = passRequestRepository.findAllByAuthorUniversityId(id);
+        List<PassRequest> requestList = passRequestRepository.findAllByAuthorId(id);
 
         return Optional.of(requestList);
     }
@@ -227,52 +227,53 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                      Long page,
                                                                      Long pageSize) {
         List<PassRequest> requests =
-                passRequestRepository.findAllByAuthorUniversityId(authorId);
+                passRequestRepository.findAllByAuthorId(authorId);
         log.info("Getting passRequests by status");
+        List<PassRequest> requestsByStatus;
         switch (status) {
             case "accepted":
+                requestsByStatus = aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.ACCEPTED
+                );
                 return Optional.of(
-                        requests.stream()
-                                .filter(r -> r.getStatus() == PassRequestStatus.ACCEPTED)
-                                .sorted(new PassRequestCreationDateComparator())
-                                .skip(pageSize * (page - 1))
-                                .limit(pageSize)
-                                .collect(Collectors.toList())
+                        paginateRequests(requestsByStatus, page, pageSize)
                 );
             case "rejected":
+                requestsByStatus = aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION
+                );
+                requestsByStatus.addAll(
+                        aggregatePassRequestsByStatus(
+                                requests,
+                                PassRequestStatus.CANCELED_BY_CREATOR
+                        )
+                );
                 return Optional.of(
-                        requests.stream()
-                                .filter(r -> r.getStatus() != PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION)
-                                .filter(r -> r.getStatus() != PassRequestStatus.TARGET_ORGANIZATION_REVIEW)
-                                .filter(r -> r.getStatus() != PassRequestStatus.ACCEPTED)
-                                .filter(r -> r.getStatus() != PassRequestStatus.EXPIRED)
-                                .filter(r -> r.getStatus() != PassRequestStatus.WAITING_FOR_APPROVEMENT_BY_USER)
-                                .sorted(new PassRequestCreationDateComparator())
-                                .skip(pageSize * (page - 1))
-                                .limit(pageSize)
-                                .collect(Collectors.toList())
+                        paginateRequests(requestsByStatus, page, pageSize)
                 );
             case "processing":
+                requestsByStatus = aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.TARGET_ORGANIZATION_REVIEW
+                );
+                requestsByStatus.addAll(
+                        aggregatePassRequestsByStatus(
+                                requests,
+                                PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION
+                        )
+                );
                 return Optional.of(
-                        requests.stream()
-                                .filter(r -> r.getStatus() != PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION)
-                                .filter(r -> r.getStatus() != PassRequestStatus.CANCELED_BY_CREATOR)
-                                .filter(r -> r.getStatus() != PassRequestStatus.ACCEPTED)
-                                .filter(r -> r.getStatus() != PassRequestStatus.EXPIRED)
-                                .filter(r -> r.getStatus() != PassRequestStatus.WAITING_FOR_APPROVEMENT_BY_USER)
-                                .sorted(new PassRequestCreationDateComparator())
-                                .skip(pageSize * (page - 1))
-                                .limit(pageSize)
-                                .collect(Collectors.toList())
+                        paginateRequests(requestsByStatus, page, pageSize)
                 );
             case "expired":
+                requestsByStatus = aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.EXPIRED
+                );
                 return Optional.of(
-                        requests.stream()
-                                .filter(r -> r.getStatus() == PassRequestStatus.EXPIRED)
-                                .sorted(new PassRequestCreationDateComparator())
-                                .skip(pageSize * (page - 1))
-                                .limit(pageSize)
-                                .collect(Collectors.toList())
+                        paginateRequests(requestsByStatus, page, pageSize)
                 );
             default:
                 return Optional.empty();
@@ -287,7 +288,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId) {
         List<PassRequest> requests =
-                passRequestRepository.findAllByAuthorUniversityId(authorId);
+                passRequestRepository.findAllByAuthorId(authorId);
         log.info("Getting passRequests count by status for user");
         Map<PassRequestStatus, Long> statusesCount = new HashMap<>();
         for (PassRequestStatus status : PassRequestStatus.values()) {
@@ -355,29 +356,59 @@ public class PassRequestServiceImpl implements IPassRequestService {
         }
     }
 
+    /**
+     * Поулчить количество заявок по категориям для админа
+     * @param authorId id админа
+     * @return мапа: категория - количество заявок.
+     */
     @Override
     public Optional<Map<String, Long>> getPassRequestCountByStatusForAdmin(String authorId) {
         List<PassRequest> requests =
-                passRequestRepository.findAllByAuthorUniversityId(authorId);
+                passRequestRepository.findAllByAuthorId(authorId);
         log.info("Getting passRequests count by status for user");
         Map<String, Long> statusesCount = new HashMap<>();
+        List<PassRequest> requestsByStatus =
+                aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.TARGET_ORGANIZATION_REVIEW
+                );
         statusesCount.put(
                 "forProcessing",
-                requests.stream()
-                        .filter(r -> r.getStatus().equals(PassRequestStatus.TARGET_ORGANIZATION_REVIEW))
-                        .count());
+                (long) requestsByStatus.size());
+        requestsByStatus =
+                aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION
+                );
         statusesCount.put(
                 "inProcessing",
-                requests.stream()
-                        .filter(r -> r.getStatus().equals(PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION))
-                        .count());
+                (long) requestsByStatus.size());
+        requestsByStatus =
+                aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.ACCEPTED
+                );
+        requestsByStatus.addAll(
+                aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION
+                )
+        );
+        requestsByStatus.addAll(
+                aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.CANCELED_BY_CREATOR
+                )
+        );
+        requestsByStatus.addAll(
+                aggregatePassRequestsByStatus(
+                        requests,
+                        PassRequestStatus.EXPIRED
+                )
+        );
         statusesCount.put(
                 "processed",
-                requests.stream()
-                        .filter(r -> !r.getStatus().equals(PassRequestStatus.TARGET_ORGANIZATION_REVIEW))
-                        .filter(r -> !r.getStatus().equals(PassRequestStatus.WAITING_FOR_APPROVEMENT_BY_USER))
-                        .filter(r -> !r.getStatus().equals(PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION))
-                        .count());
+                (long) requestsByStatus.size());
         return Optional.of(statusesCount);
     }
 
@@ -841,16 +872,25 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Поулчить список заявок по id создателя и статусу
+     * @param requests список заявок
      * @param status стутус заявки
-     * @param userId id создателя
      * @return список отобранных заявок по критериям выше
      */
-    private List<PassRequest> getPassRequestByStatusForUser(PassRequestStatus status, String userId) {
-        return passRequestRepository
-                .findAllByAuthorIdAndStatus(
-                        userId,
-                        status
-                );
+    private List<PassRequest> aggregatePassRequestsByStatus(List<PassRequest> requests,
+                                                            PassRequestStatus status) {
+        return requests
+                .stream()
+                .filter(request -> request.getStatus() == status)
+                .collect(Collectors.toList());
+    }
+
+    private List<PassRequest> paginateRequests(List<PassRequest> requests, long page, long pageSize) {
+        return requests
+                .stream()
+                .sorted(new PassRequestCreationDateComparator())
+                .skip(pageSize * (page - 1))
+                .limit(pageSize)
+                .collect(Collectors.toList());
     }
 
     private Long getRequestNumber() {
