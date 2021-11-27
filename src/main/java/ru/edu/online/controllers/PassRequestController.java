@@ -1,6 +1,7 @@
 package ru.edu.online.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -178,11 +180,12 @@ public class PassRequestController {
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests")
-    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestsForAdmin(@RequestParam(value = "page") Long page,
-                                                               @RequestParam(value = "itemsPerPage") Long pageSize,
-                                                               @RequestParam(value = "status") String status,
-                                                               @RequestParam(value = "search", required = false) String search,
-                                                               Principal principal) {
+    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestsForAdmin(
+            @RequestParam(value = "page") Long page,
+            @RequestParam(value = "itemsPerPage") Long pageSize,
+            @RequestParam(value = "status") String status,
+            @RequestParam(value = "search", required = false) String search,
+            Principal principal) {
         if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return passRequestService.getPassRequestsForAdmin(
                             RequestsStatusForAdmin.of(status),
@@ -267,6 +270,23 @@ public class PassRequestController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Редактирование дат действия заявки
+     * @param dto заявки
+     * @param principal атворизация пользователя
+     * @return обновлённая заявка
+     */
+    @PutMapping("/edit/date")
+    public ResponseEntity<PassRequest> editPassRequestDates(@RequestBody PassRequestDTO dto,
+                                                            Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return passRequestService.updatePassRequestDates(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

@@ -1,5 +1,6 @@
 package ru.edu.online.services;
 
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.dto.PassRequestDTO;
@@ -9,6 +10,7 @@ import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.RequestsStatusForAdmin;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,6 +47,8 @@ public interface IPassRequestService {
     Optional<PassRequest> updatePassRequest(PassRequestDTO dto);
 
     Optional<PassRequest> updatePassRequestStatus(PassRequestDTO dto);
+
+    Optional<PassRequest> updatePassRequestDates(PassRequestDTO dto);
 
     Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
 

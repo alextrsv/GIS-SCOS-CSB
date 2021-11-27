@@ -509,6 +509,28 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
+     * Обновить даты действия заявки
+     * @param passRequestDTO DTO обновленной заявки
+     * @return обновлённая заявка
+     */
+    @Override
+    public Optional<PassRequest> updatePassRequestDates(PassRequestDTO passRequestDTO) {
+        Optional<PassRequest> passRequest = getPassRequest(passRequestDTO.getId());
+         if (passRequest.isPresent()) {
+             if (Optional.ofNullable(passRequestDTO.getStartDate()).isPresent()) {
+                 passRequest.get().setStartDate(passRequestDTO.getStartDate());
+             }
+             if (Optional.ofNullable(passRequestDTO.getEndDate()).isPresent()) {
+                 passRequest.get().setEndDate(passRequestDTO.getEndDate());
+             }
+
+             passRequestRepository.save(passRequest.get());
+             return passRequest;
+         }
+        return Optional.empty();
+    }
+
+    /**
      * Отменить заявку
      * @param dto создателя заявки
      * @return отменённая заявка или Optional.empty
