@@ -2,7 +2,6 @@ package ru.edu.online.entities.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.edu.online.entities.PassRequest;
 
 import java.util.List;
 

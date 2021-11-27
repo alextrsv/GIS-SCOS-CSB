@@ -1,12 +1,10 @@
 package ru.edu.online.services;
 
 import ru.edu.online.entities.dto.ResponseDTO;
-import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.Optional;
 
 public interface IUserDetailsService {

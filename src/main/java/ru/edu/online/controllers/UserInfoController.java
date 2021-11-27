@@ -8,13 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.edu.online.entities.dto.ResponseDTO;
-import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.Optional;
 
 /**
