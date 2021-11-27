@@ -42,7 +42,7 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
 
-    Optional<List<PassRequest>> getExpiredPassRequests();
+    void getExpiredPassRequests();
 
     Optional<PassRequest> updatePassRequest(PassRequestDTO dto);
 

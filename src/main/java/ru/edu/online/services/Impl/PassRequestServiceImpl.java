@@ -492,15 +492,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         Optional<PassRequest> passRequest = getPassRequest(dto);
 
         if (passRequest.isPresent()) {
-            PassRequestChangeLogEntry entry = new PassRequestChangeLogEntry(
-                    "PassRequestStatus", passRequest.get().getStatus().toString(),
-                    dto.getStatus().toString(), dto.getId()
-            );
-            passRequestChangeLogRepository.save(entry);
-
-            passRequest.get().setStatus(dto.getStatus());
-            passRequestRepository.save(passRequest.get());
-
+            addChangeLogEntryToPassRequest(passRequest.get(), dto.getStatus());
             log.info("pass request with id: {} was updated", dto.getId());
             return getPassRequest(passRequest.get().getId());
         } else
@@ -619,30 +611,35 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Удаление просроченных заявок
-     * @return список удаленных заявок
+     * Поиск и удаление просроченных заявок
+     * Удалению через 7 дней подлежат заявки со статусами:
+     * EXPIRED
+     * CANCELED_BY_CREATOR
+     * REJECTED_BY_TARGET_ORGANIZATION
      */
     @Override
-    public Optional<List<PassRequest>> getExpiredPassRequests() {
-        // Поиск просроченных заявок, изменение их статуса на EXPIRED
+    public void getExpiredPassRequests() {
         checkExpiredPassRequests();
-
-        // Поиск заявок со статусом EXPIRED и CANCELED_BY_CREATOR
         List<PassRequest> expiredList =
                 passRequestRepository.findAllByStatus(PassRequestStatus.EXPIRED);
-        /* Функциональность временно ограничена
+
         expiredList
                 .addAll(
                         passRequestRepository.findAllByStatus(PassRequestStatus.CANCELED_BY_CREATOR)
                 );
+        expiredList
+                .addAll(
+                        passRequestRepository.findAllByStatus(PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION)
+                );
 
         for (PassRequest request : expiredList) {
-            passRequestRepository.deleteById(request.getId());
+            Optional<PassRequestChangeLogEntry> entry = findInvalidRequests(request);
+            if (entry.isPresent() && entry.get().getDate().isBefore(LocalDate.now().minusDays(7))) {
+                log.info("old pass request with id {} was removed", request.getId());
+                passRequestRepository.deleteById(request.getId());
+            }
         }
-        log.info("expired pass requests has been deleted");
-        */
-        log.info("expired pass requests has been get");
-        return Optional.of(expiredList);
+        deleteOldAcceptedRequests();
     }
 
     /**
@@ -667,6 +664,64 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 status != PassRequestStatus.EXPIRED &&
                 status != PassRequestStatus.CANCELED_BY_CREATOR &&
                 startDate.isBefore(LocalDate.now()));
+    }
+
+    /**
+     * Добавить новую запись в список изменений заявки.
+     * @param passRequest заявка
+     * @param status новый статус
+     */
+    private void addChangeLogEntryToPassRequest(PassRequest passRequest,
+                                                PassRequestStatus status) {
+        PassRequestChangeLogEntry entry = new PassRequestChangeLogEntry(
+                "PassRequestStatus", passRequest.getStatus().toString(),
+                status.toString(), passRequest.getId()
+        );
+        passRequestChangeLogRepository.save(entry);
+
+        passRequest.setStatus(status);
+        passRequestRepository.save(passRequest);
+    }
+
+    /**
+     * Удаление одобренных заявок, срок действия которых истёк более чем на 7 дней
+     */
+    private void deleteOldAcceptedRequests() {
+        List<PassRequest> acceptedRequests =
+                passRequestRepository.findAllByStatus(PassRequestStatus.ACCEPTED);
+
+        for (PassRequest request : acceptedRequests) {
+            if (request.getEndDate().isBefore(LocalDate.now().minusDays(7))) {
+                log.info("delete old accepted pass request with id {}", request.getId());
+                passRequestRepository.deleteById(request.getId());
+            }
+        }
+    }
+
+    /**
+     * Проверка по истории изменений заявки на бесполезность
+     * @param passRequest заявка
+     * @return либо запись из списка изменений о негодности, либо empty()
+     */
+    private Optional<PassRequestChangeLogEntry> findInvalidRequests(PassRequest passRequest) {
+        Optional<PassRequestChangeLogEntry> entry;
+        PassRequestStatus[] statuses = new PassRequestStatus[]{
+                PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
+                PassRequestStatus.CANCELED_BY_CREATOR,
+                PassRequestStatus.EXPIRED
+        };
+
+        for (PassRequestStatus status : statuses) {
+            entry = passRequest.getChangeLog()
+                            .stream()
+                            .filter(log -> log.getNewValue().equals(status.toString()))
+                            .findFirst();
+            if (entry.isPresent()) {
+                return entry;
+            }
+        }
+
+        return Optional.empty();
     }
 
     /**

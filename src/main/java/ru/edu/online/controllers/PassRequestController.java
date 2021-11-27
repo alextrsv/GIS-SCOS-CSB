@@ -1,7 +1,6 @@
 package ru.edu.online.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +20,8 @@ import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -231,15 +228,6 @@ public class PassRequestController {
         }
         return passRequestCommentsService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    /**
-     * Получение просроченных заявок
-     * @return список просроченных заявок, которые были удалены
-     */
-    @GetMapping("/get/expired_requests")
-    public ResponseEntity<List<PassRequest>> getExpiredPassRequests() {
-        return ResponseEntity.of(passRequestService.getExpiredPassRequests());
     }
 
     /**
