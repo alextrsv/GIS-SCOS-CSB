@@ -149,7 +149,7 @@ public class PassRequestController {
      * @return заявки
      */
     @GetMapping("/get/user/status")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatusForUser(@RequestParam Long page,
+    public ResponseEntity<PassRequestsResponseDTO> getPassRequestByStatusForUser(@RequestParam Long page,
                                                                            @RequestParam Long itemsPerPage,
                                                                            @RequestParam String status,
                                                                            Principal principal) {

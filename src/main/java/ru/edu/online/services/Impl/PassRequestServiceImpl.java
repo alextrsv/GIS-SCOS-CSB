@@ -222,59 +222,48 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<List<PassRequest>> getPassRequestByStatusForUser(String authorId,
+    public Optional<PassRequestsResponseDTO> getPassRequestByStatusForUser(String authorId,
                                                                      String status,
                                                                      Long page,
                                                                      Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByAuthorId(authorId);
         log.info("Getting passRequests by status");
-        List<PassRequest> requestsByStatus;
         switch (status) {
             case "accepted":
-                requestsByStatus = aggregatePassRequestsByStatus(
+                return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
                         requests,
-                        PassRequestStatus.ACCEPTED
-                );
-                return Optional.of(
-                        paginateRequests(requestsByStatus, page, pageSize)
-                );
+                        new PassRequestStatus[]{PassRequestStatus.ACCEPTED},
+                        page,
+                        pageSize
+                ));
             case "rejected":
-                requestsByStatus = aggregatePassRequestsByStatus(
+                return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
                         requests,
-                        PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION
-                );
-                requestsByStatus.addAll(
-                        aggregatePassRequestsByStatus(
-                                requests,
+                        new PassRequestStatus[]{
+                                PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
                                 PassRequestStatus.CANCELED_BY_CREATOR
-                        )
-                );
-                return Optional.of(
-                        paginateRequests(requestsByStatus, page, pageSize)
-                );
+                        },
+                        page,
+                        pageSize
+                ));
             case "processing":
-                requestsByStatus = aggregatePassRequestsByStatus(
+                return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
                         requests,
-                        PassRequestStatus.TARGET_ORGANIZATION_REVIEW
-                );
-                requestsByStatus.addAll(
-                        aggregatePassRequestsByStatus(
-                                requests,
+                        new PassRequestStatus[]{
+                                PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
                                 PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION
-                        )
-                );
-                return Optional.of(
-                        paginateRequests(requestsByStatus, page, pageSize)
-                );
+                        },
+                        page,
+                        pageSize
+                ));
             case "expired":
-                requestsByStatus = aggregatePassRequestsByStatus(
+                return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
                         requests,
-                        PassRequestStatus.EXPIRED
-                );
-                return Optional.of(
-                        paginateRequests(requestsByStatus, page, pageSize)
-                );
+                        new PassRequestStatus[]{PassRequestStatus.EXPIRED},
+                        page,
+                        pageSize
+                ));
             default:
                 return Optional.empty();
         }
@@ -812,17 +801,32 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Поулчить список заявок по id создателя и статусу
+     * Получить список заявок по id создателя и статусу
      * @param requests список заявок
-     * @param status стутус заявки
+     * @param statuses стутус заявки
+     * @param page номер страницы
+     * @param pageSize размер страницы     *
      * @return список отобранных заявок по критериям выше
      */
-    private List<PassRequest> aggregatePassRequestsByStatus(List<PassRequest> requests,
-                                                            PassRequestStatus status) {
-        return requests
-                .stream()
-                .filter(request -> request.getStatus() == status)
-                .collect(Collectors.toList());
+    private PassRequestsResponseDTO aggregatePassRequestsByStatusWithPaginationForUser(List<PassRequest> requests,
+                                                                                       PassRequestStatus[] statuses,
+                                                                                       Long page,
+                                                                                       Long pageSize) {
+        List<PassRequest> filteredRequest = new LinkedList<>();
+        for (PassRequestStatus status : statuses) {
+            filteredRequest.addAll(
+                    requests.stream()
+                            .filter(request -> request.getStatus() == status)
+                            .collect(Collectors.toList())
+            );
+        }
+        return new PassRequestsResponseDTO(
+                page,
+                pageSize,
+                filteredRequest.size() / pageSize,
+                (long) filteredRequest.size(),
+                paginateRequests(filteredRequest, page, pageSize)
+        );
     }
 
 
