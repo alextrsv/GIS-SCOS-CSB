@@ -8,10 +8,10 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class PassRequestsResponseDTO {
+public class ResponseDTO {
     private Long currentPage;
     private Long pageSize;
     private Long pagesCount;
-    private Long requestsTotal;
-    private List<PassRequest> requests;
+    private Long resultsTotal;
+    private List<PassRequest> results;
 }

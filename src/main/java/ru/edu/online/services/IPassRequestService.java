@@ -4,7 +4,7 @@ import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.dto.PassRequestDTO;
 import ru.edu.online.entities.dto.PassRequestUserDTO;
-import ru.edu.online.entities.dto.PassRequestsResponseDTO;
+import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.RequestsStatusForAdmin;
 
@@ -22,11 +22,11 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
-    Optional<PassRequestsResponseDTO> getPassRequestsForAdmin(RequestsStatusForAdmin status,
-                                                              Long page,
-                                                              Long pageSize,
-                                                              Optional<String> search,
-                                                              Principal principal);
+    Optional<ResponseDTO> getPassRequestsForAdmin(RequestsStatusForAdmin status,
+                                                  Long page,
+                                                  Long pageSize,
+                                                  Optional<String> search,
+                                                  Principal principal);
 
     Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 
@@ -34,7 +34,7 @@ public interface IPassRequestService {
 
     Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto, Long page, Long pageSize);
 
-    Optional<PassRequestsResponseDTO> getPassRequestByStatusForUser(String authorId, String status, Long page, Long pageSize);
+    Optional<ResponseDTO> getPassRequestByStatusForUser(String authorId, String status, Long page, Long pageSize);
 
     Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId);
 
