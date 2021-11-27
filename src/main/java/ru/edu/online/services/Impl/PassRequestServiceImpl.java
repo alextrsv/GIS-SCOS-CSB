@@ -19,6 +19,7 @@ import ru.edu.online.repositories.IPassRequestRepository;
 import ru.edu.online.repositories.IPassRequestUserRepository;
 import ru.edu.online.services.IPassRequestCommentsService;
 import ru.edu.online.services.IPassRequestService;
+import ru.edu.online.services.IUserDetailsService;
 import ru.edu.online.utils.PassRequestUtils;
 import ru.edu.online.utils.ScosApiUtils;
 import ru.edu.online.utils.VamApiUtils;
@@ -41,6 +42,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private final IDynamicQRUserRepository dynamicQRUserRepository;
 
     private final IPassRequestCommentsService passRequestCommentsService;
+    private final IUserDetailsService userDetailsService;
 
     private final WebClient devScosApiClient;
     private final WebClient devVamApiClient;
@@ -51,6 +53,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                   IPassRequestChangeLogRepository passRequestChangeLogRepository,
                                   IDynamicQRUserRepository dynamicQRUserRepository,
                                   IPassRequestCommentsService passRequestCommentsService,
+                                  IUserDetailsService userDetailsService,
                                   WebClient devScosApiClient,
                                   WebClient devVamApiClient) {
         this.passRequestRepository = passRequestRepository;
@@ -58,6 +61,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         this.passRequestChangeLogRepository = passRequestChangeLogRepository;
         this.dynamicQRUserRepository = dynamicQRUserRepository;
         this.passRequestCommentsService = passRequestCommentsService;
+        this.userDetailsService = userDetailsService;
         this.devScosApiClient = devScosApiClient;
         this.devVamApiClient = devVamApiClient;
     }
@@ -323,6 +327,27 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
+     * Получить количество заявок для админа по статусам
+     * @param principal авторизация админа
+     * @return мапа: статус - количество
+     */
+    @Override
+    public Optional<Map<PassRequestStatus, Integer>> getPassRequestsCountByStatusForAdmin(Principal principal) {
+        Map<PassRequestStatus, Integer> requestsCountByStatus = new HashMap<>();
+        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationOGRN(principal);
+        if (adminUniversityId.isPresent()) {
+            for (PassRequestStatus status : PassRequestStatus.values()) {
+                requestsCountByStatus.put(
+                        status,
+                        getPassRequestByStatusForUniversity(status, adminUniversityId.get()).size()
+                );
+            }
+        }
+
+        return Optional.of(requestsCountByStatus);
+    }
+
+    /**
      * Получить заявки для администратора
      * @param status стутус заявок
      * @param page номер страницы (по умолчанию по 5 заявок для админа)
@@ -336,27 +361,20 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                          String search,
                                                          Principal principal
     ) {
-        UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, principal);
-        String adminUniversityId = admin
-                .getEmployments()
-                .stream()
-                .filter(e -> e.getRoles().contains("UNIVERSITY"))
-                .findFirst()
-                .get()
-                .getOgrn();
-
-        switch (status) {
-            case PROCESSED:
-                return Optional.of(getProcessedPassRequests(adminUniversityId, page, pageSize, search));
-            case IN_PROCESSING:
-                return Optional.of(getPassRequestsInProcessing(adminUniversityId, page, pageSize, search));
-            case FOR_PROCESSING:
-                return Optional.of(getPassRequestsForProcessing(adminUniversityId, page, pageSize, search));
-            case EXPIRED:
-                return Optional.of(getExpiredPassRequests(adminUniversityId, page, pageSize, search));
-            default:
-                return Optional.empty();
+        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationOGRN(principal);
+        if (adminUniversityId.isPresent()) {
+            switch (status) {
+                case PROCESSED:
+                    return Optional.of(getProcessedPassRequests(adminUniversityId.get(), page, pageSize, search));
+                case IN_PROCESSING:
+                    return Optional.of(getPassRequestsInProcessing(adminUniversityId.get(), page, pageSize, search));
+                case FOR_PROCESSING:
+                    return Optional.of(getPassRequestsForProcessing(adminUniversityId.get(), page, pageSize, search));
+                case EXPIRED:
+                    return Optional.of(getExpiredPassRequests(adminUniversityId.get(), page, pageSize, search));
+            }
         }
+        return Optional.empty();
     }
 
     /**

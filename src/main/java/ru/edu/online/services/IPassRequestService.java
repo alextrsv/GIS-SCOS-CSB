@@ -24,6 +24,8 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
+    Optional<Map<PassRequestStatus, Integer>> getPassRequestsCountByStatusForAdmin(Principal principal);
+
     Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(RequestsStatusForAdmin status,
                                                                Long page,
                                                                Long pageSize,

@@ -168,6 +168,21 @@ public class PassRequestController {
     }
 
     /**
+     * Получение количества заявок по статусу для админа ООВО
+     * @param principal авторизация админа ООВО
+     * @return мапа: статус - количество
+     */
+    @GetMapping("/count/get/admin/status")
+    public ResponseEntity<Map<PassRequestStatus, Integer>> getPassRequestCountByStatusForAdmin(Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+            return passRequestService.getPassRequestsCountByStatusForAdmin(principal).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    /**
      * Получение заявок для обработки администратором ООВО
      * @param page номер страницы
      * @param pageSize размер страницы
