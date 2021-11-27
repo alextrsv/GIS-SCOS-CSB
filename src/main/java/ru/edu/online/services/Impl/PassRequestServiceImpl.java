@@ -333,7 +333,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     public Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(RequestsStatusForAdmin status,
                                                          Long page,
                                                          Long pageSize,
-                                                         Optional<String> search,
+                                                         String search,
                                                          Principal principal
     ) {
         UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, principal);
@@ -371,7 +371,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             String universityId,
             Long page,
             Long pageSize,
-            Optional<String> search) {
+            String search) {
         log.info("collect requests sent for consideration to the target OOVO");
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
                 new PassRequestStatus[]{PassRequestStatus.TARGET_ORGANIZATION_REVIEW},
@@ -394,7 +394,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             String universityId,
             Long page,
             Long pageSize,
-            Optional<String> search) {
+            String search) {
         log.info("collect requests sent in consideration to the target OOVO");
 
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
@@ -417,7 +417,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     public ResponseDTO<PassRequest> getExpiredPassRequests(String universityId,
                                               Long page,
                                               Long pageSize,
-                                              Optional<String> search) {
+                                              String search) {
         log.info("collect expired requests sent for to the OOVO");
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
                 new PassRequestStatus[]{PassRequestStatus.EXPIRED},
@@ -439,7 +439,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     public ResponseDTO<PassRequest> getProcessedPassRequests(String universityId,
                                                 Long page,
                                                 Long pageSize,
-                                                Optional<String> search) {
+                                                String search) {
 
         log.info("collect considered requests sent for to the OOVO");
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
@@ -849,7 +849,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             String universityId,
             Long page,
             Long pageSize,
-            Optional<String> search) {
+            String search) {
         List<PassRequest> requestList = new LinkedList<>();
         for (PassRequestStatus status : statuses) {
             requestList.addAll(
@@ -860,8 +860,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
             );
         }
 
-        if (search.isPresent()) {
-            requestList = PassRequestUtils.filterRequest(requestList, search.get(), devScosApiClient);
+        if (Optional.ofNullable(search).isPresent()) {
+            requestList = PassRequestUtils.filterRequest(requestList, search, devScosApiClient);
         }
         long requestsCount = requestList.size();
         requestList = paginateRequests(requestList, page, pageSize);

@@ -23,10 +23,10 @@ public interface IPassRequestService {
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
     Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(RequestsStatusForAdmin status,
-                                                  Long page,
-                                                  Long pageSize,
-                                                  Optional<String> search,
-                                                  Principal principal);
+                                                               Long page,
+                                                               Long pageSize,
+                                                               String search,
+                                                               Principal principal);
 
     Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 

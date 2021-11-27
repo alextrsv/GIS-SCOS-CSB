@@ -181,7 +181,7 @@ public class PassRequestController {
     public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestsForAdmin(@RequestParam(value = "page") Long page,
                                                                @RequestParam(value = "itemsPerPage") Long pageSize,
                                                                @RequestParam(value = "status") String status,
-                                                               @RequestParam(value = "search", required = false) Optional<String> search,
+                                                               @RequestParam(value = "search", required = false) String search,
                                                                Principal principal) {
         if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return passRequestService.getPassRequestsForAdmin(

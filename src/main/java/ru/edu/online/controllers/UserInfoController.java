@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.edu.online.entities.dto.ResponseDTO;
+import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.services.IUserDetailsService;
@@ -58,10 +59,10 @@ public class UserInfoController {
      * @return список пользователей по параметрам
      */
     @GetMapping("/organization")
-    public ResponseEntity<ResponseDTO> getUserByOrganisation(Principal principal,
-                                                             @RequestParam Long page,
-                                                             @RequestParam Long itemsPerPage,
-                                                             @RequestParam(required = false) Optional<String> search) {
+    public ResponseEntity<ResponseDTO<UserDetailsDTO>> getUserByOrganisation(Principal principal,
+                                                                             @RequestParam Long page,
+                                                                             @RequestParam Long itemsPerPage,
+                                                                             @RequestParam(required = false) String search) {
         if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return ResponseEntity.of(
                     userDetailsService.getUsersByOrganization(

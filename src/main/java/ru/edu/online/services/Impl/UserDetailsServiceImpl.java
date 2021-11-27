@@ -208,10 +208,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      * @return список пользователей из ООВО админа
      */
     @Override
-    public Optional<ResponseDTO> getUsersByOrganization(Principal principal,
+    public Optional<ResponseDTO<UserDetailsDTO>> getUsersByOrganization(Principal principal,
                                                         Long page,
                                                         Long pageSize,
-                                                        Optional<String> search) {
+                                                        String search) {
         UserDTO userDTO = ScosApiUtils.getUserDetails(devScosApiClient, principal);
         StudentsDTO students = VamApiUtils.getStudents(
                 "organization_id",
@@ -236,8 +236,8 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
             users.add(user);
         }
 
-        if (search.isPresent()) {
-            users = UserUtils.searchByEmail(users, search.get());
+        if (Optional.ofNullable(search).isPresent()) {
+            users = UserUtils.searchByEmail(users, search);
         }
         long usersCount = users.size();
         users = users.stream()
