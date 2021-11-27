@@ -1,14 +1,16 @@
 package ru.edu.online.services;
 
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.dto.PassRequestDTO;
 import ru.edu.online.entities.dto.PassRequestUserDTO;
-import ru.edu.online.entities.dto.PassRequestsResponseDTO;
+import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.RequestsStatusForAdmin;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,11 +24,11 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
-    Optional<PassRequestsResponseDTO> getPassRequestsForAdmin(RequestsStatusForAdmin status,
-                                                              Long page,
-                                                              Long pageSize,
-                                                              Optional<String> search,
-                                                              Principal principal);
+    Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(RequestsStatusForAdmin status,
+                                                               Long page,
+                                                               Long pageSize,
+                                                               String search,
+                                                               Principal principal);
 
     Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 
@@ -34,17 +36,19 @@ public interface IPassRequestService {
 
     Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto, Long page, Long pageSize);
 
-    Optional<PassRequestsResponseDTO> getPassRequestByStatusForUser(String authorId, String status, Long page, Long pageSize);
+    Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId, String status, Long page, Long pageSize);
 
     Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId);
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
 
-    Optional<List<PassRequest>> getExpiredPassRequests();
+    void getExpiredPassRequests();
 
     Optional<PassRequest> updatePassRequest(PassRequestDTO dto);
 
     Optional<PassRequest> updatePassRequestStatus(PassRequestDTO dto);
+
+    Optional<PassRequest> updatePassRequestDates(PassRequestDTO dto);
 
     Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
 

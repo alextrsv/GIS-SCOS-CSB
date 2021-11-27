@@ -10,7 +10,7 @@ import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.dto.PassRequestCommentDTO;
 import ru.edu.online.entities.dto.PassRequestDTO;
 import ru.edu.online.entities.dto.PassRequestUserDTO;
-import ru.edu.online.entities.dto.PassRequestsResponseDTO;
+import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.PassRequestType;
 import ru.edu.online.entities.enums.RequestsStatusForAdmin;
@@ -22,7 +22,6 @@ import ru.edu.online.services.IUserDetailsService;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -149,10 +148,10 @@ public class PassRequestController {
      * @return заявки
      */
     @GetMapping("/get/user/status")
-    public ResponseEntity<PassRequestsResponseDTO> getPassRequestByStatusForUser(@RequestParam Long page,
-                                                                           @RequestParam Long itemsPerPage,
-                                                                           @RequestParam String status,
-                                                                           Principal principal) {
+    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(@RequestParam Long page,
+                                                                     @RequestParam Long itemsPerPage,
+                                                                     @RequestParam String status,
+                                                                     Principal principal) {
         return passRequestService.getPassRequestByStatusForUser(principal.getName(), status, page, itemsPerPage).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -178,11 +177,12 @@ public class PassRequestController {
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests")
-    public ResponseEntity<PassRequestsResponseDTO> getPassRequestsForAdmin(@RequestParam(value = "page") Long page,
-                                                                           @RequestParam(value = "itemsPerPage") Long pageSize,
-                                                                           @RequestParam(value = "status") String status,
-                                                                           @RequestParam(value = "search", required = false) Optional<String> search,
-                                                                           Principal principal) {
+    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestsForAdmin(
+            @RequestParam(value = "page") Long page,
+            @RequestParam(value = "itemsPerPage") Long pageSize,
+            @RequestParam(value = "status") String status,
+            @RequestParam(value = "search", required = false) String search,
+            Principal principal) {
         if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
             return passRequestService.getPassRequestsForAdmin(
                             RequestsStatusForAdmin.of(status),
@@ -231,15 +231,6 @@ public class PassRequestController {
     }
 
     /**
-     * Получение просроченных заявок
-     * @return список просроченных заявок, которые были удалены
-     */
-    @GetMapping("/get/expired_requests")
-    public ResponseEntity<List<PassRequest>> getExpiredPassRequests() {
-        return ResponseEntity.of(passRequestService.getExpiredPassRequests());
-    }
-
-    /**
      * Редактирование заявки
      * @param dto DTO заявки
      * @return отредактированная заявка
@@ -267,6 +258,23 @@ public class PassRequestController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Редактирование дат действия заявки
+     * @param dto заявки
+     * @param principal атворизация пользователя
+     * @return обновлённая заявка
+     */
+    @PutMapping("/edit/date")
+    public ResponseEntity<PassRequest> editPassRequestDates(@RequestBody PassRequestDTO dto,
+                                                            Principal principal) {
+        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return passRequestService.updatePassRequestDates(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
