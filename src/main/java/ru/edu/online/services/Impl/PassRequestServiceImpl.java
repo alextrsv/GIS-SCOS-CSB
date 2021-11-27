@@ -381,7 +381,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             Optional<String> search) {
         log.info("collect requests sent for consideration to the target OOVO");
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
-                PassRequestStatus.TARGET_ORGANIZATION_REVIEW,
+                new PassRequestStatus[]{PassRequestStatus.TARGET_ORGANIZATION_REVIEW},
                 universityId,
                 page,
                 pageSize,
@@ -405,7 +405,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         log.info("collect requests sent in consideration to the target OOVO");
 
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
-                PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION,
+                new PassRequestStatus[]{PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION},
                 universityId,
                 page,
                 pageSize,
@@ -427,7 +427,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                           Optional<String> search) {
         log.info("collect expired requests sent for to the OOVO");
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
-                PassRequestStatus.EXPIRED,
+                new PassRequestStatus[]{PassRequestStatus.EXPIRED},
                 universityId,
                 page,
                 pageSize,
@@ -448,37 +448,17 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                             Long pageSize,
                                                             Optional<String> search) {
 
-        List<PassRequest> requestList = getPassRequestByStatusForUniversity(
-                        PassRequestStatus.ACCEPTED,
-                        universityId
-        );
-
-        requestList.addAll(getPassRequestByStatusForUniversity(
-                        PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                        universityId
-                ));
-
-        requestList.addAll(getPassRequestByStatusForUniversity(
-                        PassRequestStatus.CANCELED_BY_CREATOR,
-                        universityId
-                ));
-
         log.info("collect considered requests sent for to the OOVO");
-
-
-        if (search.isPresent()) {
-            requestList = PassRequestUtils.filterRequest(requestList, search.get(), devScosApiClient);
-        }
-        long requestsCount = requestList.size();
-        requestList = paginateRequests(requestList, page, pageSize);
-
-
-        return new PassRequestsResponseDTO(
+        return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+                new PassRequestStatus[]{
+                        PassRequestStatus.ACCEPTED,
+                        PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
+                        PassRequestStatus.CANCELED_BY_CREATOR
+                },
+                universityId,
                 page,
                 pageSize,
-                requestsCount / pageSize,
-                requestsCount,
-                requestList
+                search
         );
     }
 
@@ -848,7 +828,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Получить запросы для университета с поиском и пагинацией по категории
-     * @param status статус заявки
+     * @param statuses массив статусов заявок
      * @param universityId идентификатор университета
      * @param page номер страницы
      * @param pageSize размер страницы
@@ -856,15 +836,20 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок по входным параметрам
      */
     private PassRequestsResponseDTO aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
-            PassRequestStatus status,
+            PassRequestStatus[] statuses,
             String universityId,
             Long page,
             Long pageSize,
             Optional<String> search) {
-        List<PassRequest> requestList = getPassRequestByStatusForUniversity(
-                status,
-                universityId
-        );
+        List<PassRequest> requestList = new LinkedList<>();
+        for (PassRequestStatus status : statuses) {
+            requestList.addAll(
+                    getPassRequestByStatusForUniversity(
+                            status,
+                            universityId
+                    )
+            );
+        }
 
         if (search.isPresent()) {
             requestList = PassRequestUtils.filterRequest(requestList, search.get(), devScosApiClient);
