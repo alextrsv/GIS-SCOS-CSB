@@ -226,7 +226,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<ResponseDTO> getPassRequestByStatusForUser(String authorId,
+    public Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId,
                                                                String status,
                                                                Long page,
                                                                Long pageSize) {
@@ -330,7 +330,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return отобранные по критериям заявки
      */
     @Override
-    public Optional<ResponseDTO> getPassRequestsForAdmin(RequestsStatusForAdmin status,
+    public Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(RequestsStatusForAdmin status,
                                                          Long page,
                                                          Long pageSize,
                                                          Optional<String> search,
@@ -367,7 +367,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param search поиск
      * @return список заявок в обработке
      */
-    public ResponseDTO getPassRequestsForProcessing(
+    public ResponseDTO<PassRequest> getPassRequestsForProcessing(
             String universityId,
             Long page,
             Long pageSize,
@@ -390,7 +390,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param search поиск
      * @return список заявок в обработке
      */
-    public ResponseDTO getPassRequestsInProcessing(
+    public ResponseDTO<PassRequest> getPassRequestsInProcessing(
             String universityId,
             Long page,
             Long pageSize,
@@ -414,7 +414,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param search поиск
      * @return список обработанных заявок
      */
-    public ResponseDTO getExpiredPassRequests(String universityId,
+    public ResponseDTO<PassRequest> getExpiredPassRequests(String universityId,
                                               Long page,
                                               Long pageSize,
                                               Optional<String> search) {
@@ -436,7 +436,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param search поиск
      * @return список обработанных заявок
      */
-    public ResponseDTO getProcessedPassRequests(String universityId,
+    public ResponseDTO<PassRequest> getProcessedPassRequests(String universityId,
                                                 Long page,
                                                 Long pageSize,
                                                 Optional<String> search) {
@@ -812,7 +812,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param pageSize размер страницы     *
      * @return список отобранных заявок по критериям выше
      */
-    private ResponseDTO aggregatePassRequestsByStatusWithPaginationForUser(List<PassRequest> requests,
+    private ResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationForUser(List<PassRequest> requests,
                                                                            PassRequestStatus[] statuses,
                                                                            Long page,
                                                                            Long pageSize) {
@@ -824,7 +824,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             .collect(Collectors.toList())
             );
         }
-        return new ResponseDTO(
+        return new ResponseDTO<>(
                 page,
                 pageSize,
                 filteredRequest.size() % pageSize == 0 ?
@@ -844,7 +844,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param search поиск (опционально)
      * @return список заявок по входным параметрам
      */
-    private ResponseDTO aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+    private ResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
             PassRequestStatus[] statuses,
             String universityId,
             Long page,
@@ -866,7 +866,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         long requestsCount = requestList.size();
         requestList = paginateRequests(requestList, page, pageSize);
 
-        return new ResponseDTO(
+        return new ResponseDTO<>(
                 page,
                 pageSize,
                 requestsCount % pageSize == 0 ? requestsCount / pageSize : requestsCount / pageSize + 1,

@@ -149,7 +149,7 @@ public class PassRequestController {
      * @return заявки
      */
     @GetMapping("/get/user/status")
-    public ResponseEntity<ResponseDTO> getPassRequestByStatusForUser(@RequestParam Long page,
+    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(@RequestParam Long page,
                                                                      @RequestParam Long itemsPerPage,
                                                                      @RequestParam String status,
                                                                      Principal principal) {
@@ -178,7 +178,7 @@ public class PassRequestController {
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests")
-    public ResponseEntity<ResponseDTO> getPassRequestsForAdmin(@RequestParam(value = "page") Long page,
+    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestsForAdmin(@RequestParam(value = "page") Long page,
                                                                @RequestParam(value = "itemsPerPage") Long pageSize,
                                                                @RequestParam(value = "status") String status,
                                                                @RequestParam(value = "search", required = false) Optional<String> search,

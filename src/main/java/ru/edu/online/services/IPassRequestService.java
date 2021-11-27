@@ -22,7 +22,7 @@ public interface IPassRequestService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
-    Optional<ResponseDTO> getPassRequestsForAdmin(RequestsStatusForAdmin status,
+    Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(RequestsStatusForAdmin status,
                                                   Long page,
                                                   Long pageSize,
                                                   Optional<String> search,
@@ -34,7 +34,7 @@ public interface IPassRequestService {
 
     Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto, Long page, Long pageSize);
 
-    Optional<ResponseDTO> getPassRequestByStatusForUser(String authorId, String status, Long page, Long pageSize);
+    Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId, String status, Long page, Long pageSize);
 
     Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId);
 
