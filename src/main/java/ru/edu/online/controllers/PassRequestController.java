@@ -263,11 +263,11 @@ public class PassRequestController {
     @PutMapping("/edit/status")
     public ResponseEntity<PassRequest> editPassRequestStatus(@RequestBody PassRequestDTO dto,
                                                              Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
-            return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**

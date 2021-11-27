@@ -86,6 +86,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                     )
             );
             log.info("single pass request was added");
+            dto.setId(passRequestId);
+            updatePassRequestStatus(dto);
             return getPassRequest(passRequestId);
         }
 
@@ -121,6 +123,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getComment()
                     )
             );
+            dto.setId(passRequestId);
+            updatePassRequestStatus(dto);
             return getPassRequest(passRequestId);
         }
 
@@ -223,9 +227,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
      */
     @Override
     public Optional<PassRequestsResponseDTO> getPassRequestByStatusForUser(String authorId,
-                                                                     String status,
-                                                                     Long page,
-                                                                     Long pageSize) {
+                                                                           String status,
+                                                                           Long page,
+                                                                           Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByAuthorId(authorId);
         log.info("Getting passRequests by status");
@@ -498,7 +502,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             passRequestRepository.save(passRequest.get());
 
             log.info("pass request with id: {} was updated", dto.getId());
-            return passRequest;
+            return getPassRequest(passRequest.get().getId());
         } else
             log.warn("pass request with id: {} not found", dto.getId());
             return Optional.empty();
@@ -823,7 +827,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return new PassRequestsResponseDTO(
                 page,
                 pageSize,
-                filteredRequest.size() / pageSize,
+                filteredRequest.size() % pageSize == 0 ?
+                        filteredRequest.size() / pageSize : filteredRequest.size() / pageSize + 1,
                 (long) filteredRequest.size(),
                 paginateRequests(filteredRequest, page, pageSize)
         );
@@ -864,7 +869,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return new PassRequestsResponseDTO(
                 page,
                 pageSize,
-                requestsCount / pageSize,
+                requestsCount % pageSize == 0 ? requestsCount / pageSize : requestsCount / pageSize + 1,
                 requestsCount,
                 requestList
         );
