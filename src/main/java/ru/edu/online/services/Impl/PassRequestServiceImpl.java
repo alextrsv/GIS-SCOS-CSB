@@ -78,7 +78,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         if (passRequest.isPresent()) {
             //ADD NEW USER FROM SINGLE REQUEST
             if (!dynamicQRUserRepository.existsByUserId(dto.getAuthorId())){
-                dynamicQRUserRepository.save(new DynamicQRUser(dto.getAuthorId(), dto.getUniversityId()));
+                dynamicQRUserRepository.save(new DynamicQRUser(passRequest.get().getAuthorId(), passRequest.get().getAuthorUniversityId()));
             }
 
             UUID passRequestId = passRequestRepository.save(passRequest.get()).getId();
