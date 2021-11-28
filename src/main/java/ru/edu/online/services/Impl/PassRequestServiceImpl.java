@@ -176,12 +176,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
     public Optional<PassRequest> getPassRequestById(UUID passRequestId, String authorId) {
         Optional<PassRequest> passRequest = getPassRequest(passRequestId);
         if (passRequest.isPresent()) {
-            if (passRequest.get().getAuthorId().equals(authorId)) {
-                log.info("getting pass request by id: {}", passRequestId);
-                return passRequest;
-            }
+            log.info("getting pass request with id: {}", passRequestId);
+            return passRequest;
         }
-        log.warn("User with {} is not author of request", authorId);
+        log.warn("pass request with id: {}\nnot found!", passRequestId);
         return Optional.empty();
     }
 
@@ -594,7 +592,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     /**
      * Удаление пользователя из заявки
      * @param dto пользователя в заявке
-     * @return удаленный из заявки пользователь если таковой найден
+     * @return обновлённый список пользоватлей заявки
      */
     @Override
     public Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto) {
@@ -620,9 +618,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                 user -> passRequestUserRepository.deleteById(user.getId())
                         );
             }
-            log.info("user list with has been deleted from pass request");
-            // Удалённый пользователь (по сути PassRequestUserDTO)
-            return Optional.of(passRequest.get().getPassRequestUsers());
+            log.info("user was deleted from pass request");
+            return Optional.of(passRequestUserRepository.findAllByPassRequestId(passRequest.get().getId()));
         } else {
             return Optional.empty();
         }

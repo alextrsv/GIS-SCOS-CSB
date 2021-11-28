@@ -22,6 +22,7 @@ import ru.edu.online.services.IUserDetailsService;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -145,13 +146,20 @@ public class PassRequestController {
      * @param status заявки
      * @param page номер страницы
      * @param itemsPerPage размер страницы
+     * @param userId идентификатор пользователя (опционально, добавлено для админа)
+     * @param principal авторизация пользователя
      * @return заявки
      */
     @GetMapping("/get/user/status")
     public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(@RequestParam Long page,
-                                                                     @RequestParam Long itemsPerPage,
-                                                                     @RequestParam String status,
-                                                                     Principal principal) {
+                                                                                  @RequestParam Long itemsPerPage,
+                                                                                  @RequestParam String status,
+                                                                                  @RequestParam(required = false) String userId,
+                                                                                  Principal principal) {
+        if (Optional.ofNullable(userId).isPresent()) {
+            return passRequestService.getPassRequestByStatusForUser(userId, status, page, itemsPerPage).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
         return passRequestService.getPassRequestByStatusForUser(principal.getName(), status, page, itemsPerPage).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -338,7 +346,7 @@ public class PassRequestController {
     /**
      * Удаление пользователя из заявки
      * @param dto пользователя в заявке
-     * @return удаленный пользователь, если таковой найден
+     * @return обновлённый список пользоватлей заявки
      */
     @DeleteMapping("/delete_user")
     public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto,
