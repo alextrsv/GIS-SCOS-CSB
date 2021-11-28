@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class GetAllStudentsJob extends QuartzJobBean {
@@ -68,16 +69,21 @@ public class GetAllStudentsJob extends QuartzJobBean {
 
             List<StudentDTO> studentsOnPage;
             if (getStudentsByOrganizationResponse.getResults().size() != 0)
-                studentsOnPage = getStudentsByOrganizationResponse.getResults();
+                studentsOnPage = getStudentsByOrganizationResponse.getResults().stream()
+                        .filter(student -> student.getEmail() != null)
+                        .collect(Collectors.toList());
             else return;
             List<PassRequest> autoRequestsList = new ArrayList<>();
-
+            List<StudentDTO> studentsToSave = new ArrayList<>();
             //для каждого студента организации создается подтвержденная заявка на проход в свой университет
             studentsOnPage.forEach(studentDTO -> {
                 if (studentDTO.getEmail() == null) return;
                 Optional<UserDTO> userDTO = gisScosApiRestClient.makeGetUserByEmailRequest(studentDTO.getEmail()); // поменял на получение по email
                 if (userDTO.isEmpty()) return;
                 studentDTO.setScos_id(userDTO.get().getUser_id());
+
+                if (dynamicQRUserService.isExistsByUserIdAndOrgId(studentDTO.getScos_id(), studentDTO.getOrganization_id())) return;
+                studentsToSave.add(studentDTO);
 
                 autoRequestsList.add(new PassRequest(
                         userDTO.get().getUser_id(),
@@ -98,7 +104,7 @@ public class GetAllStudentsJob extends QuartzJobBean {
                 );
             });
 
-            dynamicQRUserService.addAll(studentsOnPage);
+            dynamicQRUserService.addAll(studentsToSave);
             passRequestRepository.saveAll(autoRequestsList);
         }while (pageNumber < pagesAmount);
     }
