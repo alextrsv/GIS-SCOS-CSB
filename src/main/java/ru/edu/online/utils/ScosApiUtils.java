@@ -80,4 +80,17 @@ public class ScosApiUtils {
                 .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
                 .block();
     }
+
+    public static UserDTO getUserByEmail(WebClient scosApiClient, String email) {
+        return scosApiClient
+                .get()
+                .uri(String.join("", "/users?email=", email))
+                .retrieve()
+                .bodyToMono(UserDTO.class)
+                .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
+                .block();
+    }
 }

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 public class UserUtils {
 
     /**
-     * Посик пользователя по email
+     * Поиск пользователя по email
      * @param users список пользователей для поиска
      * @param email почта
      * @return результат поиска

@@ -227,7 +227,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
         for (StudentDTO student : students.getResults()) {
             UserDetailsDTO user = new UserDetailsDTO();
-            user.setUserId(student.getId());
+            user.setUserId(ScosApiUtils.getUserByEmail(devScosApiClient, student.getEmail()).getUser_id());
             user.setFirstName(student.getName());
             user.setLastName(student.getSurname());
             user.setPatronymicName(student.getMiddle_name());
