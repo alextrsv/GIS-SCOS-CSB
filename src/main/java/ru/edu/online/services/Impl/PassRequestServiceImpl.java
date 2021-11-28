@@ -4,10 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import ru.edu.online.entities.DynamicQRUser;
-import ru.edu.online.entities.PassRequest;
-import ru.edu.online.entities.PassRequestChangeLogEntry;
-import ru.edu.online.entities.PassRequestUser;
+import ru.edu.online.entities.*;
 import ru.edu.online.entities.comparators.PassRequestCreationDateComparator;
 import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.PassRequestStatus;
@@ -115,8 +112,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 if (!dynamicQRUserRepository.existsByUserId(user.getUserId()))
                     dynamicQRUserRepository.save(new DynamicQRUser(user.getUserId(), dto.getUniversityId()));
             }
-            if (getPassRequestById(passRequestId, dto.getAuthorId()).isPresent())
-                return getPassRequestById(passRequestId, userId);
             log.info("group pass request was added");
 
             passRequestCommentsService.addCommentToPassRequest(

@@ -1,6 +1,7 @@
 package ru.edu.online.entities.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
@@ -8,6 +9,7 @@ import java.util.UUID;
  * Pass request comment data transfer object
  */
 @Data
+@NoArgsConstructor
 public class PassRequestCommentDTO {
     private UUID id;
     private String authorId;
