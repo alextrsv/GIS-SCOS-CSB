@@ -15,7 +15,6 @@ import ru.edu.online.utils.ScosApiUtils;
 import ru.edu.online.utils.UserUtils;
 import ru.edu.online.utils.VamApiUtils;
 
-import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;

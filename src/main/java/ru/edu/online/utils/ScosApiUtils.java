@@ -8,7 +8,6 @@ import reactor.util.retry.Retry;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.UserDTO;
 
-import java.security.Principal;
 import java.time.Duration;
 import java.util.Optional;
 
