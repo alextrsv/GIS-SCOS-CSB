@@ -37,7 +37,7 @@ public class UserInfoController {
      */
     @GetMapping("/role")
     public ResponseEntity<UserRole> getRole(Principal principal) {
-        return ResponseEntity.ok(userDetailsService.getUserRole(principal));
+        return ResponseEntity.ok(userDetailsService.getUserRole(principal.getName()));
     }
 
     /**
@@ -46,8 +46,12 @@ public class UserInfoController {
      * @return информация для личного кабинета
      */
     @GetMapping("/info")
-    public ResponseEntity<UserProfileDTO> getUser(Principal principal) {
-        return ResponseEntity.of(userDetailsService.getUserProfile(principal));
+    public ResponseEntity<UserProfileDTO> getUser(Principal principal,
+                                                  @RequestParam(required = false) String userId) {
+        if (Optional.ofNullable(userId).isPresent()) {
+            return ResponseEntity.of(userDetailsService.getUserProfile(userId));
+        }
+        return ResponseEntity.of(userDetailsService.getUserProfile(principal.getName()));
     }
 
     /**
@@ -63,10 +67,10 @@ public class UserInfoController {
                                                                              @RequestParam Long page,
                                                                              @RequestParam Long itemsPerPage,
                                                                              @RequestParam(required = false) String search) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
             return ResponseEntity.of(
                     userDetailsService.getUsersByOrganization(
-                            principal,
+                            principal.getName(),
                             page,
                             itemsPerPage,
                             search
@@ -84,8 +88,8 @@ public class UserInfoController {
      */
     @GetMapping("/")
     public ResponseEntity<String> getAdminOrganizationOGRN(Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
-            return ResponseEntity.of(userDetailsService.getAdminOrganizationOGRN(principal));
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
+            return ResponseEntity.of(userDetailsService.getAdminOrganizationOGRN(principal.getName()));
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }

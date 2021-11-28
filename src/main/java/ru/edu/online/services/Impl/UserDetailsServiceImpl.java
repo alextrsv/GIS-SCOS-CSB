@@ -50,21 +50,21 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     /**
      * Получить роль пользователя.
-     * @param principal атворизация пользователя
+     * @param userId идентификатор пользователя
      * @return роль.
      */
     @Override
-    public UserRole getUserRole(Principal principal) {
-        if (isSecurityOfficer(principal)) {
+    public UserRole getUserRole(String userId) {
+        if (isSecurityOfficer(userId)) {
             return UserRole.SECURITY;
         }
-        if (isUniversity(principal)) {
+        if (isUniversity(userId)) {
             return UserRole.ADMIN;
         }
-        if (principal.getName().equals("ba878477-1c00-4e3e-9a19-f61a147a2f83")) {
+        if (userId.equals("ba878477-1c00-4e3e-9a19-f61a147a2f83")) {
             return UserRole.TEACHER;
         }
-        if (isStudent(principal)) {
+        if (isStudent(userId)) {
             return UserRole.STUDENT;
         }
 
@@ -73,42 +73,42 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     /**
      * Является ли пользователь охранником?
-     * @param principal информация о пользователе
+     * @param userId идентифиактор пользователя
      * @return true/false в зависимости от роли пользователя
      */
     @Override
-    public boolean isSecurityOfficer(Principal principal) {
-        return hasRole(principal, ScosUserRole.SECURITY_OFFICER);
+    public boolean isSecurityOfficer(String userId) {
+        return hasRole(userId, ScosUserRole.SECURITY_OFFICER);
     }
 
     /**
      * Является ли пользователь администратором ООВО?
-     * @param principal информация о пользователе
+     * @param userId идентификатор пользователя
      * @return true/false в зависимости от роли пользователя
      */
     @Override
-    public boolean isUniversity(Principal principal) {
-        return hasRole(principal, ScosUserRole.UNIVERSITY);
+    public boolean isUniversity(String userId) {
+        return hasRole(userId, ScosUserRole.UNIVERSITY);
     }
 
     /**
      * Является ли пользователь администратором ГИС СЦОС?
-     * @param principal информация о пользователе
+     * @param userId идентификатор пользователя
      * @return true/false в зависимости от роли пользователя
      */
     @Override
-    public boolean isSuperUser(Principal principal) {
-        return hasRole(principal, ScosUserRole.SUPER_USER);
+    public boolean isSuperUser(String userId) {
+        return hasRole(userId, ScosUserRole.SUPER_USER);
     }
 
     /**
      * Получить ОГРН организации админа
-     * @param principal авторизация админа
+     * @param userId идентификатор пользователя
      * @return ОГРН организации админа
      */
     @Override
-    public Optional<String> getAdminOrganizationOGRN(Principal principal) {
-        UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, principal);
+    public Optional<String> getAdminOrganizationOGRN(String userId) {
+        UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, userId);
         Optional<EmploymentDTO> employmentDTO = admin
                 .getEmployments()
                 .stream()
@@ -119,14 +119,14 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     /**
      * Является ли пользователь студентом?
-     * @param principal информация о пользователе
+     * @param userId идентификатор пользователя
      * @return true/false в зависимости от роли пользователя
      */
     @Override
-    public boolean isStudent(Principal principal) {
+    public boolean isStudent(String userId) {
         Optional<CacheStudent> student;
 
-        Optional<StudentDTO> studentDTO = getStudentByEmail(principal);
+        Optional<StudentDTO> studentDTO = getStudentByEmail(userId);
         if (studentDTO.isPresent()) {
             student = getStudentFromCacheByEmail(studentDTO.get());
             if (student.isPresent()) {
@@ -142,14 +142,14 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     /**
      * Имеет ли роль?
-     * @param principal информация о пользователе
+     * @param userId идентификатор пользователя
      * @param role искомая роль
      * @return true - имеет, false - не имеет
      */
-    private boolean hasRole(Principal principal, ScosUserRole role) {
+    private boolean hasRole(String userId, ScosUserRole role) {
         return Arrays
                 .asList(
-                        loadUserInfoByIdSync(principal)
+                        loadUserInfoByIdSync(userId)
                                 .getRoles()
                 )
                 .contains(role.toString());
@@ -158,13 +158,13 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     /**
      * Синхронный запрос к АПИ ГИС СЦОС на загрузку
      * информации о пользователе по id из principal
-     * @param principal информация о пользователе
+     * @param userId идентификатор пользователя
      * @return dto пользователя из ответа на запрос
      */
-    private UserDetailsDTO loadUserInfoByIdSync(final Principal principal) {
+    private UserDetailsDTO loadUserInfoByIdSync(String userId) {
         return devScosApiClient
                 .get()
-                .uri(String.join("", "/users/", principal.getName()))
+                .uri(String.join("", "/users/", userId))
                 .retrieve()
                 .bodyToMono(UserDetailsDTO.class)
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
@@ -172,8 +172,8 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 .block();
     }
 
-    private Optional<StudentDTO> getStudentByEmail(final Principal principal) {
-        UserDetailsDTO userDetails = loadUserInfoByIdSync(principal);
+    private Optional<StudentDTO> getStudentByEmail(String userId) {
+        UserDetailsDTO userDetails = loadUserInfoByIdSync(userId);
         StudentsDTO students = VamApiUtils.getStudents("email", userDetails.getEmail(), devVamApiClient);
         return students
                 .getResults()
@@ -187,14 +187,14 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     /**
      * Получить данные для профиля пользователя
-     * @param principal авторизация польователя (доступно только для студента и препода)
+     * @param userId идентификатор польователя (доступно только для студента и препода)
      * @return профиль пользователя
      */
     @Override
-    public Optional<UserProfileDTO> getUserProfile(Principal principal) {
-        switch (getUserRole(principal)) {
+    public Optional<UserProfileDTO> getUserProfile(String userId) {
+        switch (getUserRole(userId)) {
             case STUDENT:
-                return Optional.ofNullable(getStudentProfile(principal));
+                return Optional.ofNullable(getStudentProfile(userId));
             case TEACHER:
                 return Optional.of(getTeacherProfile());
             default:
@@ -204,15 +204,15 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     /**
      * Получить пользователей организации
-     * @param principal авторизация админа
+     * @param userId идентификатор польователя
      * @return список пользователей из ООВО админа
      */
     @Override
-    public Optional<ResponseDTO<UserDetailsDTO>> getUsersByOrganization(Principal principal,
-                                                        Long page,
-                                                        Long pageSize,
-                                                        String search) {
-        UserDTO userDTO = ScosApiUtils.getUserDetails(devScosApiClient, principal);
+    public Optional<ResponseDTO<UserDetailsDTO>> getUsersByOrganization(String userId,
+                                                                        Long page,
+                                                                        Long pageSize,
+                                                                        String search) {
+        UserDTO userDTO = ScosApiUtils.getUserDetails(devScosApiClient, userId);
         StudentsDTO students = VamApiUtils.getStudents(
                 "organization_id",
                 userDTO.getEmployments()
@@ -227,7 +227,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
         for (StudentDTO student : students.getResults()) {
             UserDetailsDTO user = new UserDetailsDTO();
-            user.setUserId(student.getId());
+            user.setUserId(ScosApiUtils.getUserByEmail(devScosApiClient, student.getEmail()).getUser_id());
             user.setFirstName(student.getName());
             user.setLastName(student.getSurname());
             user.setPatronymicName(student.getMiddle_name());
@@ -254,8 +254,8 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         ));
     }
 
-    private UserProfileDTO getStudentProfile(Principal principal) {
-        UserDTO user = ScosApiUtils.getUserDetails(devScosApiClient, principal);
+    private UserProfileDTO getStudentProfile(String userId) {
+        UserDTO user = ScosApiUtils.getUserDetails(devScosApiClient, userId);
         StudentsDTO students = VamApiUtils.getStudents("email", user.getEmail(), devVamApiClient);
         Optional<StudentDTO> student = students.getResults()
                 .stream()

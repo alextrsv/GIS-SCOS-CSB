@@ -26,7 +26,7 @@ public class CustomEndpointWebExtension extends HealthEndpointWebExtension {
 
     @ReadOperation
     public WebEndpointResponse<HealthComponent> health(ApiVersion apiVersion, SecurityContext securityContext) {
-        if (userService.getUserRole(securityContext.getPrincipal()) != UserRole.ADMIN) {
+        if (userService.getUserRole(securityContext.getPrincipal().getName()) != UserRole.ADMIN) {
             return new WebEndpointResponse<>(null, HttpStatus.FORBIDDEN.value());
         }
 

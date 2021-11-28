@@ -1,6 +1,5 @@
 package ru.edu.online.services;
 
-import org.springframework.web.bind.annotation.RequestParam;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.dto.PassRequestDTO;
@@ -10,7 +9,6 @@ import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.RequestsStatusForAdmin;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,19 +16,19 @@ import java.util.UUID;
 
 public interface IPassRequestService {
 
-    Optional<PassRequest> addSinglePassRequest(PassRequestDTO passRequestDTO, Principal principal);
+    Optional<PassRequest> addSinglePassRequest(PassRequestDTO passRequestDTO, String userId);
 
-    Optional<PassRequest> addGroupPassRequest(PassRequestDTO passRequestDTO, Principal principal);
+    Optional<PassRequest> addGroupPassRequest(PassRequestDTO passRequestDTO, String userId);
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PassRequestUserDTO passRequestUserDTO);
 
-    Optional<Map<PassRequestStatus, Integer>> getPassRequestsCountByStatusForAdmin(Principal principal);
+    Optional<Map<PassRequestStatus, Integer>> getPassRequestsCountByStatusForAdmin(String userId);
 
     Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(RequestsStatusForAdmin status,
                                                                Long page,
                                                                Long pageSize,
                                                                String search,
-                                                               Principal principal);
+                                                               String userId);
 
     Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 

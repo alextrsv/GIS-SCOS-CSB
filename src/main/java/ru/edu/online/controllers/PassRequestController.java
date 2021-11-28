@@ -53,15 +53,15 @@ public class PassRequestController {
     @PostMapping("/add")
     public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto,
                                                       Principal principal) {
-        switch (userDetailsService.getUserRole(principal)) {
+        switch (userDetailsService.getUserRole(principal.getName())) {
             case ADMIN:
                 if (dto.getType() == PassRequestType.GROUP) {
-                    return passRequestService.addGroupPassRequest(dto, principal).map(ResponseEntity::ok)
+                    return passRequestService.addGroupPassRequest(dto, principal.getName()).map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
                 }
             case STUDENT:
                 if (dto.getType() == PassRequestType.SINGLE) {
-                    return passRequestService.addSinglePassRequest(dto, principal).map(ResponseEntity::ok)
+                    return passRequestService.addSinglePassRequest(dto, principal.getName()).map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
                 }
             default:
@@ -77,7 +77,7 @@ public class PassRequestController {
     @PostMapping("/add_user")
     public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto,
                                                                       Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
             return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
@@ -92,7 +92,7 @@ public class PassRequestController {
     @PostMapping("/comments/add")
     public ResponseEntity<PassRequestComment> addCommentToPassRequest(@RequestBody PassRequestCommentDTO dto,
                                                                       Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestCommentsService.addCommentToPassRequest(dto).map(ResponseEntity::ok)
@@ -107,8 +107,8 @@ public class PassRequestController {
     @GetMapping("/get/{passRequestId}")
     public ResponseEntity<PassRequest> getPassRequestById(@PathVariable UUID passRequestId,
                                                           Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY ||
-            userDetailsService.getUserRole(principal) == UserRole.UNDEFINED) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
+            userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestService.getPassRequestById(passRequestId, principal.getName()).map(ResponseEntity::ok)
@@ -182,8 +182,8 @@ public class PassRequestController {
      */
     @GetMapping("/count/get/admin/status")
     public ResponseEntity<Map<PassRequestStatus, Integer>> getPassRequestCountByStatusForAdmin(Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
-            return passRequestService.getPassRequestsCountByStatusForAdmin(principal).map(ResponseEntity::ok)
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
+            return passRequestService.getPassRequestsCountByStatusForAdmin(principal.getName()).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
 
@@ -206,13 +206,13 @@ public class PassRequestController {
             @RequestParam(value = "status") String status,
             @RequestParam(value = "search", required = false) String search,
             Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
             return passRequestService.getPassRequestsForAdmin(
                             RequestsStatusForAdmin.of(status),
                             page,
                             pageSize,
                             search,
-                            principal
+                            principal.getName()
                     )
                     .map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
@@ -229,7 +229,7 @@ public class PassRequestController {
     @GetMapping("/get/users")
     public ResponseEntity<List<PassRequestUser>> getPassRequestUsers(@RequestBody PassRequestDTO dto,
                                                                      Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
             return passRequestService.getPassRequestUsers(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
@@ -245,8 +245,8 @@ public class PassRequestController {
     @GetMapping("/comments/{passRequestId}")
     public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable UUID passRequestId,
                                                                              Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY ||
-            userDetailsService.getUserRole(principal) == UserRole.UNDEFINED) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
+            userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestCommentsService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
@@ -261,8 +261,8 @@ public class PassRequestController {
     @PutMapping("/edit")
     public ResponseEntity<PassRequest> editPassRequest(@RequestBody PassRequestDTO dto,
                                                        Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY ||
-            userDetailsService.getUserRole(principal) == UserRole.UNDEFINED) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
+            userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestService.updatePassRequest(dto).map(ResponseEntity::ok)
@@ -277,7 +277,7 @@ public class PassRequestController {
     @PutMapping("/edit/status")
     public ResponseEntity<PassRequest> editPassRequestStatus(@RequestBody PassRequestDTO dto,
                                                              Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
@@ -293,7 +293,7 @@ public class PassRequestController {
     @PutMapping("/edit/date")
     public ResponseEntity<PassRequest> editPassRequestDates(@RequestBody PassRequestDTO dto,
                                                             Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -309,8 +309,8 @@ public class PassRequestController {
     @PutMapping("/edit/comments")
     public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PassRequestCommentDTO dto,
                                                                      Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.SECURITY ||
-            userDetailsService.getUserRole(principal) == UserRole.UNDEFINED) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
+            userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestCommentsService.updateComment(dto).map(ResponseEntity::ok)
@@ -336,7 +336,7 @@ public class PassRequestController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable UUID id,
                                                              Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
             return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
@@ -351,7 +351,7 @@ public class PassRequestController {
     @DeleteMapping("/delete_user")
     public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto,
                                                                            Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
             return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
@@ -366,7 +366,7 @@ public class PassRequestController {
     @DeleteMapping("/comments/delete")
     public ResponseEntity<PassRequestComment> deletePassRequestComment(@RequestBody PassRequestCommentDTO dto,
                                                                        Principal principal) {
-        if (userDetailsService.getUserRole(principal) == UserRole.ADMIN) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
             return passRequestCommentsService.deletePassRequestComment(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
