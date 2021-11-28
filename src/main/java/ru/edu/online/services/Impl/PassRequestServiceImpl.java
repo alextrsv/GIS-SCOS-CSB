@@ -176,12 +176,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
     public Optional<PassRequest> getPassRequestById(UUID passRequestId, String authorId) {
         Optional<PassRequest> passRequest = getPassRequest(passRequestId);
         if (passRequest.isPresent()) {
-            if (passRequest.get().getAuthorId().equals(authorId)) {
-                log.info("getting pass request by id: {}", passRequestId);
-                return passRequest;
-            }
+            log.info("getting pass request with id: {}", passRequestId);
+            return passRequest;
         }
-        log.warn("User with {} is not author of request", authorId);
+        log.warn("pass request with id: {}\nnot found!", passRequestId);
         return Optional.empty();
     }
 
