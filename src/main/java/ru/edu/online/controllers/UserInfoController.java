@@ -46,7 +46,11 @@ public class UserInfoController {
      * @return информация для личного кабинета
      */
     @GetMapping("/info")
-    public ResponseEntity<UserProfileDTO> getUser(Principal principal) {
+    public ResponseEntity<UserProfileDTO> getUser(Principal principal,
+                                                  @RequestParam(required = false) String userId) {
+        if (Optional.ofNullable(userId).isPresent()) {
+            return ResponseEntity.of(userDetailsService.getUserProfile(userId));
+        }
         return ResponseEntity.of(userDetailsService.getUserProfile(principal.getName()));
     }
 
