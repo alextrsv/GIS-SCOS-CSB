@@ -592,7 +592,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     /**
      * Удаление пользователя из заявки
      * @param dto пользователя в заявке
-     * @return удаленный из заявки пользователь если таковой найден
+     * @return обновлённый список пользоватлей заявки
      */
     @Override
     public Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto) {
@@ -618,9 +618,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                 user -> passRequestUserRepository.deleteById(user.getId())
                         );
             }
-            log.info("user list with has been deleted from pass request");
-            // Удалённый пользователь (по сути PassRequestUserDTO)
-            return Optional.of(passRequest.get().getPassRequestUsers());
+            log.info("user was deleted from pass request");
+            return Optional.of(passRequestUserRepository.findAllByPassRequestId(passRequest.get().getId()));
         } else {
             return Optional.empty();
         }

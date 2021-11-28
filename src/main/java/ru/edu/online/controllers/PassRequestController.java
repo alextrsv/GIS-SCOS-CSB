@@ -346,7 +346,7 @@ public class PassRequestController {
     /**
      * Удаление пользователя из заявки
      * @param dto пользователя в заявке
-     * @return удаленный пользователь, если таковой найден
+     * @return обновлённый список пользоватлей заявки
      */
     @DeleteMapping("/delete_user")
     public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto,
