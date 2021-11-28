@@ -65,13 +65,13 @@ public class ScosApiUtils {
     /**
      * Получить информацию о пользователе со списком ролей
      * @param scosApiClient клиент для запроса
-     * @param principal авторизация
+     * @param userId идентификатор польователя
      * @return информация о пользователе
      */
-    public static UserDTO getUserDetails(WebClient scosApiClient, Principal principal) {
+    public static UserDTO getUserDetails(WebClient scosApiClient, String userId) {
         return scosApiClient
                 .get()
-                .uri(String.join("", "/users/", principal.getName()))
+                .uri(String.join("", "/users/", userId))
                 .retrieve()
                 .bodyToMono(UserDTO.class)
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))

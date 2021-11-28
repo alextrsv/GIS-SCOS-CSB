@@ -5,29 +5,28 @@ import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
 
-import java.security.Principal;
 import java.util.Optional;
 
 public interface IUserDetailsService {
 
-    UserRole getUserRole(Principal principal);
+    UserRole getUserRole(String userId);
 
-    boolean isSecurityOfficer(Principal principal);
+    boolean isSecurityOfficer(String userId);
 
-    boolean isUniversity(Principal principal);
+    boolean isUniversity(String userId);
 
-    boolean isSuperUser(Principal principal);
+    boolean isSuperUser(String userId);
 
-    boolean isStudent(Principal principal);
+    boolean isStudent(String userId);
 
     boolean removeOldValidations();
 
-    Optional<UserProfileDTO> getUserProfile(Principal principal);
+    Optional<UserProfileDTO> getUserProfile(String userId);
 
-    Optional<ResponseDTO<UserDetailsDTO>> getUsersByOrganization(Principal principal,
+    Optional<ResponseDTO<UserDetailsDTO>> getUsersByOrganization(String userId,
                                                                  Long page,
                                                                  Long pageSize,
                                                                  String search);
 
-    Optional<String> getAdminOrganizationOGRN(Principal principal);
+    Optional<String> getAdminOrganizationOGRN(String userId);
 }
