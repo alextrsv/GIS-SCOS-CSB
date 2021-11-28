@@ -38,7 +38,9 @@ public class DynamicQRUserServiceImpl implements IDynamicQRUserService {
     public List<DynamicQRUser> addAll(List<StudentDTO> studentDTOList){
 
         List<DynamicQRUser> dynamicQRUsersList = new ArrayList<>();
+
         studentDTOList.forEach(studentDTO -> {
+            if (dynamicQRUserRepository.existsByUserIdAndOrganizationId(studentDTO.getScos_id(), studentDTO.getOrganization_id())) return;
             System.out.println(studentDTO.getId());
             dynamicQRUsersList.add(new DynamicQRUser(studentDTO));
         });
@@ -81,6 +83,11 @@ public class DynamicQRUserServiceImpl implements IDynamicQRUserService {
                 .collect(Collectors.toList()));
 
         return new LinkedHashSet<>(acceptedRequestsForUser);
+    }
+
+    @Override
+    public Boolean isExistsByUserIdAndOrgId(String userId, String organizationId){
+        return dynamicQRUserRepository.existsByUserIdAndOrganizationId(userId, organizationId);
     }
 
 

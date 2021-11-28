@@ -26,7 +26,7 @@ public class QrGenerator {
 
         BitMatrix bitMatrix = null;
         try {
-            bitMatrix = encode(barcodeText, BarcodeFormat.QR_CODE, 300, 300, hints);
+            bitMatrix = encode(barcodeText, BarcodeFormat.QR_CODE, 400, 400, hints);
         } catch (WriterException e) {
             e.printStackTrace();
         }

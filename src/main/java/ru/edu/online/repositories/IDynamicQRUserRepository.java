@@ -13,4 +13,6 @@ public interface IDynamicQRUserRepository extends JpaRepository<DynamicQRUser, U
     List<DynamicQRUser> getByOrganizationId(String organizationId);
 
     Boolean existsByUserId(String userId);
+
+    Boolean existsByUserIdAndOrganizationId(String userId, String organizationId);
 }

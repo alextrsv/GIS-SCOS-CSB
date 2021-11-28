@@ -14,4 +14,6 @@ public interface IDynamicQRUserService {
     Set<String> getPermittedOrganizations(DynamicQRUser user);
 
     Set<PassRequest> getAcceptedPassRequests(DynamicQRUser user);
+
+    public Boolean isExistsByUserIdAndOrgId(String userId, String organizationId);
 }

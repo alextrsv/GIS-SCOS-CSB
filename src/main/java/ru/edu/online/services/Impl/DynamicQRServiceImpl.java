@@ -115,7 +115,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
 
     private Integer sendToStudent(StudentDTO studentDTO, String organizationId){
-        studentDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
+//        studentDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
 
         Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
         if (organizationDTO.isEmpty()) return -1;
@@ -131,7 +131,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
     }
 
     private Integer sendToUser(UserDTO userDTO, String organizationId){
-        userDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
+//        userDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
 
         Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
         if (organizationDTO.isEmpty()) return -1;
