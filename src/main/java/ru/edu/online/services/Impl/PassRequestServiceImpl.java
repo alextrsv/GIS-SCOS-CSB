@@ -226,11 +226,18 @@ public class PassRequestServiceImpl implements IPassRequestService {
      */
     @Override
     public Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId,
-                                                               String status,
-                                                               Long page,
-                                                               Long pageSize) {
+                                                                            String status,
+                                                                            Long page,
+                                                                            Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByAuthorId(authorId);
+        // Добавление всех групповых заявок, в которых фигурирует пользователь
+        requests.addAll(passRequestUserRepository.getByScosId(authorId)
+                .stream()
+                .map(PassRequestUser::getPassRequestId)
+                .map(this::getPassRequestById)
+                .map(Optional::get)
+                .collect(Collectors.toList()));
         log.info("Getting passRequests by status");
         switch (status) {
             case "accepted":
