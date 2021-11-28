@@ -21,7 +21,7 @@ public class RunAfterStartup {
     @EventListener(ApplicationReadyEvent.class)
     public void runAfterStartup() {
         getAllStudentsJob.doJob();
-//        schedulerService.startGeneratingQRJob();
+        schedulerService.startGeneratingQRJob();
 //        schedulerService.startGettingStudentsQRJob();
 //        getAllStudentsJob.doJob();
     }

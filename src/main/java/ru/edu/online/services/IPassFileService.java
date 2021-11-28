@@ -15,7 +15,7 @@ public interface IPassFileService {
 
     List<PassFile> uploadPassFiles(MultipartFile[] passFiles, UUID passRequestId);
 
-    ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto);
+    ResponseEntity<Resource> downloadFile(UUID fileId, UUID passRequestId);
 
     Optional<PassFile> getFile(PassRequestFileIdentifierDTO dto);
 

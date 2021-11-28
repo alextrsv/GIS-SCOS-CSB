@@ -59,12 +59,13 @@ public class PassFileController {
 
     /**
      * Загрузка файла с сервера.
-     * @param dto для нахождения файла
+//     * @param dto для нахождения файла
      * @return файл, прикреплённый к заявке
      */
     @GetMapping("/download")
-    public ResponseEntity<Resource> download(@RequestBody PassRequestFileIdentifierDTO dto) {
-        return passFileService.downloadFile(dto);
+    public ResponseEntity<Resource> download(@RequestParam("fileId") UUID fileId,
+                                             @RequestParam("passRequestId") UUID passRequestId) {
+        return passFileService.downloadFile(fileId, passRequestId);
     }
 
     /**

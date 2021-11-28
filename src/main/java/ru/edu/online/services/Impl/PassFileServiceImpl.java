@@ -118,19 +118,19 @@ public class PassFileServiceImpl implements IPassFileService {
 
     /**
      * Получить файл с сервера
-     * @param dto для поиска файла в репозитории
+//     * @param dto для поиска файла в репозитории
      * @return ResponseEntity, состоящее из описания файла, самого файла
      */
     @Override
-    public ResponseEntity<Resource> downloadFile(PassRequestFileIdentifierDTO dto) {
+    public ResponseEntity<Resource> downloadFile(UUID fileId, UUID passRequestId) {
         Optional<PassFile> file = Optional.empty();
 
         Optional<PassRequest> passRequest =
-                passRequestRepository.findById(dto.getPassRequestId());
+                passRequestRepository.findById(passRequestId);
         if (passRequest.isPresent()) {
             file = passRequest.get().getFiles()
                     .stream()
-                    .filter(f -> Objects.equals(f.getId(), dto.getFileId()))
+                    .filter(f -> Objects.equals(f.getId(), fileId))
                     .findFirst();
         }
 
