@@ -832,41 +832,44 @@ public class PassRequestServiceImpl implements IPassRequestService {
      */
     private Optional<PassRequest> createGroupPassRequest(PassRequestDTO dto, String userId) {
         UserDTO author = getUserInfo(userId);
-        String authorOrganizationOGRN = author.getEmployments()
+        Optional<EmploymentDTO> employment = author.getEmployments()
                 .stream()
                 .filter(e -> e.getRoles().contains("UNIVERSITY"))
-                .findFirst()
-                .get()
-                .getOgrn();
-        Optional<OrganizationDTO> authorOrganization =
-                ScosApiUtils.getOrganization(
-                        devScosApiClient,
-                        authorOrganizationOGRN
-                );
-        if (authorOrganization.isPresent()) {
-            Optional<OrganizationDTO> targetOrganization =
+                .findFirst();
+        if (employment.isPresent()) {
+            Optional<OrganizationDTO> authorOrganization =
                     ScosApiUtils.getOrganization(
                             devScosApiClient,
-                            dto.getTargetUniversityId()
+                            employment.get().getOgrn()
                     );
 
-            if (targetOrganization.isPresent()) {
-                return Optional.of(new PassRequest(
-                        userId,
-                        author.getFirst_name(),
-                        author.getLast_name(),
-                        author.getPatronymic_name(),
-                        authorOrganizationOGRN,
-                        authorOrganization.get().getShort_name(),
-                        dto.getStartDate(),
-                        dto.getEndDate(),
-                        dto.getStatus(),
-                        dto.getType(),
-                        dto.getTargetUniversityAddress(),
-                        targetOrganization.get().getShort_name(),
-                        dto.getTargetUniversityId(),
-                        getRequestNumber())
-                );
+
+            if (authorOrganization.isPresent()) {
+                Optional<String> authorOrganizationGlobalId = authorOrganization.get().getOrganizationId();
+                Optional<OrganizationDTO> targetOrganization =
+                        ScosApiUtils.getOrganization(
+                                devScosApiClient,
+                                dto.getTargetUniversityId()
+                        );
+
+                if (targetOrganization.isPresent() && authorOrganizationGlobalId.isPresent()) {
+                    return Optional.of(new PassRequest(
+                            userId,
+                            author.getFirst_name(),
+                            author.getLast_name(),
+                            author.getPatronymic_name(),
+                            authorOrganizationGlobalId.get(),
+                            authorOrganization.get().getShort_name(),
+                            dto.getStartDate(),
+                            dto.getEndDate(),
+                            dto.getStatus(),
+                            dto.getType(),
+                            dto.getTargetUniversityAddress(),
+                            targetOrganization.get().getShort_name(),
+                            dto.getTargetUniversityId(),
+                            getRequestNumber())
+                    );
+                }
             }
         }
 
