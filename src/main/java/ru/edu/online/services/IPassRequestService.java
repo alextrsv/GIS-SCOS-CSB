@@ -31,7 +31,7 @@ public interface IPassRequestService {
 
     Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 
-    Optional<PassRequest> getPassRequestById(UUID id, String authorId);
+    Optional<PassRequest> getPassRequestById(UUID id);
 
     Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto, Long page, Long pageSize);
 

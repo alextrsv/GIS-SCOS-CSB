@@ -78,7 +78,7 @@ public class DynamicQRUserServiceImpl implements IDynamicQRUserService {
                 .collect(Collectors.toList());
 
         acceptedRequestsForUser.addAll(passRequestUserRepository.getByScosId(user.getUserId()).stream()
-                .map(passRequestUser -> passRequestService.getPassRequestById(passRequestUser.getPassRequestId(), passRequestUser.getScosId()).get())
+                .map(passRequestUser -> passRequestService.getPassRequestById(passRequestUser.getPassRequestId()).get())
                 .filter(passRequest -> passRequest.getType() == PassRequestType.GROUP)
                 .collect(Collectors.toList()));
 

@@ -112,7 +112,7 @@ public class PassRequestController {
             userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return passRequestService.getPassRequestById(passRequestId, principal.getName()).map(ResponseEntity::ok)
+        return passRequestService.getPassRequestById(passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 

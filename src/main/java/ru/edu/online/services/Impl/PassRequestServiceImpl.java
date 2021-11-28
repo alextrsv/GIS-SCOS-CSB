@@ -170,7 +170,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return заявка
      */
     @Override
-    public Optional<PassRequest> getPassRequestById(UUID passRequestId, String authorId) {
+    public Optional<PassRequest> getPassRequestById(UUID passRequestId) {
         Optional<PassRequest> passRequest = getPassRequest(passRequestId);
         if (passRequest.isPresent()) {
             log.info("getting pass request with id: {}", passRequestId);
