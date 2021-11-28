@@ -54,17 +54,22 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         //2.Запрос к СЦОСу на полуение объекта пользователя
         Optional<UserDTO> scosUser = gisScosApiRestClient.makeGetUserRequest(userId);
         if (scosUser.isEmpty()) return Optional.empty();
-        String userEmail = scosUser.get().getEmail();
-//        3. Запрос к ВАМу на получение студента по почте (снилсу)
-        Optional<StudentDTO> vamStudent;
-        if(userEmail.equals("stud_bilet_01@dev.online.edu.ru"))
-            vamStudent = vamRestClient.makeGetStudentByEmailRequestFor01(userEmail);
-        else
-            vamStudent = vamRestClient.makeGetStudentByEmailRequest(userEmail);
-//        4. Если запрос к ВАМу вернул объект студента - работаю с этим объектом.
-        if (vamStudent.isPresent()) {
-            vamStudent.get().setScos_id(scosUser.get().getUser_id());
-            content = studentServiceImpl.makeContent(vamStudent.get());
+
+        if (scosUser.get().getEmail() != null) {
+
+            String userEmail = scosUser.get().getEmail();
+            Optional<StudentDTO> vamStudent;
+            if (userEmail.equals("stud_bilet_01@dev.online.edu.ru"))
+                vamStudent = vamRestClient.makeGetStudentByEmailRequestFor01(userEmail);
+            else
+                vamStudent = vamRestClient.makeGetStudentByEmailRequest(userEmail);
+            if (vamStudent.isPresent()) {
+                vamStudent.get().setScos_id(scosUser.get().getUser_id());
+                content = studentServiceImpl.makeContent(vamStudent.get());
+            }
+            else{
+                content = userServiceImpl.makeContent(scosUser.get());
+            }
         }
 //        5. Если запрос к ВАМу ничего не возвращает - это не студент, работаю с пользователем из СЦОСА
         else{
