@@ -71,13 +71,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
             content = userServiceImpl.makeContent(scosUser.get());
         }
 
-        BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage("{\"userId\":\"05ff4844-5a9b-4a27-94b9-3f2a2f6ca576\",\"surname\":\"Тестовый 01\",\"name\":\"Студент\",\"middle_name\":\"\",\"organization\":\"Университет ИТМО\",\"status\":\"status\",\"role\":\"student\",\"stud_bilet\":\"fcf7d554-0\",\"education_form\":\"FULL_TIME\",\"start_year\":\"2018\",\"stud_bilet_duration\":\"2022\",\"accessed_organizations\":[{\"universityName\":\"МГТУ им. Н.Э. Баумана\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},{\"universityName\":\"МГТУ им. Н.Э. Баумана\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},{\"universityName\":\"МГТУ им. Н.Э. Баумана\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},\n" +
-                "{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},\n" +
-                "{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},\n" +
-                "{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},\n" +
-                "{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},\n" +
-                "{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"},\n" +
-                "{\"universityName\":\"Университет ИТМО\",\"universityAddress\":\"\",\"dateInterval\":\"2021-08-01 - 2022-07-01\"}], \"hash\": \"87cc7ab65887058b3d0933782088fac0aa73254da3f8d92dc5d0a1407b66a4475c0b5a724e8b390c23580ed4b968aed463686df66d6d1b8ce78df5feb08c5de5\"}");
+        BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
         return Converter.getResource(qrCodeImage);
     }
 
