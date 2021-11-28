@@ -75,11 +75,7 @@ public class PassFileServiceImpl implements IPassFileService {
         if (currentRequest.isPresent()) {
             passFile = new PassFile(
                     file.getOriginalFilename(),
-                    PassFileType.of(
-                            Objects.requireNonNull(
-                                    file.getOriginalFilename()
-                            ).split("\\.")[1]
-                    ),
+                    PassFileType.of(getFileExtension(file)),
                     path,
                     passRequestId
             );
@@ -95,6 +91,18 @@ public class PassFileServiceImpl implements IPassFileService {
             log.warn("file hasn't been uploaded");
             return Optional.empty();
         }
+    }
+
+
+    private String getFileExtension(MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        if (fileName == null) return "";
+        // если в имени файла есть точка и она не является первым символом в названии файла
+        if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
+            // то вырезаем все знаки после последней точки в названии файла, то есть ХХХХХ.txt -> txt
+            return fileName.substring(fileName.lastIndexOf(".")+1);
+            // в противном случае возвращаем заглушку, то есть расширение не найдено
+        else return "";
     }
 
     /**
