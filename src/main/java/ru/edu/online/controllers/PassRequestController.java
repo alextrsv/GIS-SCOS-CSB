@@ -95,6 +95,7 @@ public class PassRequestController {
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        dto.setAuthorId(principal.getName());
         return passRequestCommentsService.addCommentToPassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }

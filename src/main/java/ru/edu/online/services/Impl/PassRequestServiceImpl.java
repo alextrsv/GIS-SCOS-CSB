@@ -115,8 +115,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 if (!dynamicQRUserRepository.existsByUserId(user.getUserId()))
                     dynamicQRUserRepository.save(new DynamicQRUser(user.getUserId(), dto.getUniversityId()));
             }
-            if (getPassRequestById(passRequestId, dto.getAuthorId()).isPresent())
-                return getPassRequestById(passRequestId, userId);
             log.info("group pass request was added");
 
             passRequestCommentsService.addCommentToPassRequest(
@@ -127,7 +125,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                     )
             );
             dto.setId(passRequestId);
-            updatePassRequestStatus(dto);
+            //updatePassRequestStatus(dto);
             return getPassRequest(passRequestId);
         }
 
