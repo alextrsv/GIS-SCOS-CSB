@@ -24,6 +24,7 @@ import ru.edu.online.utils.ScosApiUtils;
 import ru.edu.online.utils.VamApiUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -657,7 +658,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
         for (PassRequest request : expiredList) {
             Optional<PassRequestChangeLogEntry> entry = findInvalidRequests(request);
-            if (entry.isPresent() && entry.get().getDate().isBefore(LocalDate.now().minusDays(7))) {
+            if (entry.isPresent() && entry.get().getDate().isBefore(LocalDateTime.now().minusDays(7))) {
                 log.info("old pass request with id {} was removed", request.getId());
                 passRequestRepository.deleteById(request.getId());
             }
@@ -912,7 +913,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @param requests список заявок
      * @param statuses стутус заявки
      * @param page номер страницы
-     * @param pageSize размер страницы     *
+     * @param pageSize размер страницы
      * @return список отобранных заявок по критериям выше
      */
     private ResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationForUser(List<PassRequest> requests,
