@@ -1,15 +1,15 @@
 package ru.edu.online.services.Impl;
 
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
+import ru.edu.online.entities.QRUser;
+import ru.edu.online.entities.dto.PermanentUserQRDTO;
 import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.enums.QRDataVerifyStatus;
-import ru.edu.online.entities.QRUser;
 import ru.edu.online.services.IPermanentQRService;
 import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
@@ -76,7 +76,6 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
                 return Optional.of(scosUser.get());
             }
         }
-//        5. Если запрос к ВАМу ничего не возвращает - это не студент, работаю с пользователем из СЦОСА
         else{
             this.qrUserServiceImps = userServiceImpl;
             return Optional.of(scosUser.get());
@@ -87,24 +86,34 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     @Override
     public Optional<Resource> downloadQRAsFile(String userId) {
         Optional<QRUser> qrUser =  getDefinedRole(userId);
-        String content = qrUserServiceImps.getContentWithHash(qrUser.get());
-//        String content = String.format("{\"id\":\"%s\", \"hash\":\"%s\"}", userId, qrUserServiceImps.getHash(qrUser.get()));
+//        String content = qrUserServiceImps.getContentWithHash(qrUser.get());
+        String content = String.format("{\"id\":\"%s\", \"hash\":\"%s\"}", userId, qrUserServiceImps.getHash(qrUser.get()));
         BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
         return Converter.getResource(qrCodeImage);
     }
 
     @Override
     public Optional<QRDataVerifyStatus> verifyData(String userId, String dataHash) {
-
         Optional<QRUser> qrUser =  getDefinedRole(userId);
-
         try {
-            String newHash = HashingUtil.getHash(qrUserServiceImps.getFullStaticQRPayload(qrUser.get()));
+            String newHash = HashingUtil.getHash(qrUserServiceImps.getFullStaticQRPayload(qrUser.get()).toString());
             if (newHash.equals(dataHash)) return Optional.of(QRDataVerifyStatus.OK);
             else return Optional.of(QRDataVerifyStatus.INVALID);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<PermanentUserQRDTO> getFullUserInfo(String userId) {
+        Optional<QRUser> qrUser = getDefinedRole(userId);
+        return Optional.ofNullable(qrUserServiceImps.getFullStaticQRPayload(qrUser.get()));
+    }
+
+    @Override
+    public Optional<PermanentUserQRDTO> getAbbreviatedStaticQRPayload(String userId) {
+        Optional<QRUser> qrUser = getDefinedRole(userId);
+        return Optional.ofNullable(qrUserServiceImps.getAbbreviatedStaticQRPayload(qrUser.get()));
     }
 }

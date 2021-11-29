@@ -1,16 +1,15 @@
 package ru.edu.online.services.Impl;
 
-import com.google.gson.Gson;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.entities.DynamicQRUser;
+import ru.edu.online.entities.QRUser;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.OrganizationInQRDTO;
 import ru.edu.online.entities.dto.PermanentUserQRDTO;
 import ru.edu.online.entities.dto.UserDTO;
-import ru.edu.online.entities.QRUser;
 import ru.edu.online.services.IDynamicQRUserService;
 import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
@@ -38,7 +37,7 @@ public class UserServiceImpl implements QRUserService {
     @SneakyThrows
     @Override
     public String getContentWithHash(QRUser qrUser) {
-        String finalContent = getFullStaticQRPayload(qrUser);
+        String finalContent = getFullStaticQRPayload(qrUser).toString();
         String hash = HashingUtil.getHash(finalContent);
         finalContent = finalContent.substring(0, finalContent.length()-1);
         finalContent += ", \"hash\": \"" + hash + "\"}";
@@ -46,7 +45,7 @@ public class UserServiceImpl implements QRUserService {
     }
 
     @Override
-    public String getFullStaticQRPayload(QRUser qrUser) {
+    public PermanentUserQRDTO getFullStaticQRPayload(QRUser qrUser) {
         UserDTO user = (UserDTO) qrUser;
 
         Optional<OrganizationDTO> organizationDTO = getOrganization(user);
@@ -64,22 +63,32 @@ public class UserServiceImpl implements QRUserService {
         permanentUserQRDTO.setRole(getUserRolesAsString(user));
         permanentUserQRDTO.setAccessed_organizations(getDPermittedOrgs(user));
 
-        Gson g = new Gson();
-        String content = g.toJson(permanentUserQRDTO);
-
-        System.out.println(content);
-        return content;
+        return permanentUserQRDTO;
     }
 
     @Override
-    public String getAbbreviatedStaticQRPayload(QRUser qrUser) {
-        return null;
+    public PermanentUserQRDTO getAbbreviatedStaticQRPayload(QRUser qrUser) {
+        UserDTO user = (UserDTO) qrUser;
+
+        Optional<OrganizationDTO> organizationDTO = getOrganization(user);
+        organizationDTO.flatMap(OrganizationDTO::getOrganizationId).ifPresent(user::setOrganizationID);
+
+        PermanentUserQRDTO permanentUserQRDTO = new PermanentUserQRDTO();
+
+        permanentUserQRDTO.setUserId(String.valueOf(user.getUser_id()));
+        permanentUserQRDTO.setSurname(user.getLast_name());
+        permanentUserQRDTO.setName(user.getFirst_name());
+        permanentUserQRDTO.setMiddle_name(user.getPatronymic_name());
+        organizationDTO.ifPresentOrElse(organization -> permanentUserQRDTO.setOrganization(organization.getShort_name()),
+                () -> permanentUserQRDTO.setOrganization(""));
+
+        return permanentUserQRDTO;
     }
 
     @SneakyThrows
     @Override
     public String getHash(QRUser qrUser) {
-        return HashingUtil.getHash(getFullStaticQRPayload(qrUser));
+        return HashingUtil.getHash(getFullStaticQRPayload(qrUser).toString());
     }
 
 

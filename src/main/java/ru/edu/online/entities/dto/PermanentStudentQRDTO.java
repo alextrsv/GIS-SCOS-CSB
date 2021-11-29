@@ -1,24 +1,25 @@
 package ru.edu.online.entities.dto;
 
+import com.google.gson.Gson;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-public class PermanentStudentQRDTO {
-    String userId;
-    String surname;
-    String name;
-    String middle_name;
-    String organization;
-    String status;
-    String role;
+public class PermanentStudentQRDTO extends PermanentUserQRDTO {
     String stud_bilet;
     String education_form;
     String start_year;
     String stud_bilet_duration;
-    List<OrganizationInQRDTO> accessed_organizations;
+
+    @Override
+    public String toString() {
+        Gson p = new Gson();
+        return p.toJson(this);
+    }
 }
 
