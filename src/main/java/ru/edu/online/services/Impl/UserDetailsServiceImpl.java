@@ -54,10 +54,13 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public UserRole getUserRole(String userId) {
-        if (isSecurityOfficer(userId)) {
+        if (hasRole(userId, ScosUserRole.SUPER_USER)) {
+            return UserRole.SUPER_USER;
+        }
+        if (hasRole(userId, ScosUserRole.SECURITY_OFFICER)) {
             return UserRole.SECURITY;
         }
-        if (isUniversity(userId)) {
+        if (hasRole(userId, ScosUserRole.UNIVERSITY)) {
             return UserRole.ADMIN;
         }
         if (userId.equals("ba878477-1c00-4e3e-9a19-f61a147a2f83")) {
@@ -77,7 +80,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public boolean isSecurityOfficer(String userId) {
-        return hasRole(userId, ScosUserRole.SECURITY_OFFICER);
+        return getUserRole(userId) == UserRole.SECURITY;
     }
 
     /**
@@ -87,7 +90,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public boolean isUniversity(String userId) {
-        return hasRole(userId, ScosUserRole.UNIVERSITY);
+        return getUserRole(userId) == UserRole.ADMIN;
     }
 
     /**
@@ -97,7 +100,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public boolean isSuperUser(String userId) {
-        return hasRole(userId, ScosUserRole.SUPER_USER);
+        return getUserRole(userId) == UserRole.SUPER_USER;
     }
 
     /**
