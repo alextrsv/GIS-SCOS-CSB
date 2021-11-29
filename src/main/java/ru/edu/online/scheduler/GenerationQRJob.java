@@ -12,8 +12,7 @@ import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.repositories.IDynamicQRRepository;
 import ru.edu.online.repositories.IDynamicQRUserRepository;
 import ru.edu.online.services.IDynamicQRUserService;
-import ru.edu.online.services.IStudentService;
-import ru.edu.online.services.IUserService;
+
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,9 +28,9 @@ public class GenerationQRJob extends QuartzJobBean {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-    private final IUserService IUserService;
-
-    private final IStudentService IStudentService;
+//    private final IUserService IUserService;
+//
+//    private final IStudentService IStudentService;
 
     private final IDynamicQRUserRepository dynamicQRUserRepository;
 
@@ -39,12 +38,12 @@ public class GenerationQRJob extends QuartzJobBean {
 
 
     @Autowired
-    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, IStudentService IStudentService, IUserService IUserService, IDynamicQRUserRepository dynamicQRUserRepository, IDynamicQRUserService dynamicQRUserService) {
+    public GenerationQRJob(IDynamicQRRepository dynamicQRRepository, VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, IDynamicQRUserRepository dynamicQRUserRepository, IDynamicQRUserService dynamicQRUserService) {
         this.dynamicQRRepository = dynamicQRRepository;
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
-        this.IStudentService = IStudentService;
-        this.IUserService = IUserService;
+//        this.IStudentService = IStudentService;
+//        this.IUserService = IUserService;
         this.dynamicQRUserRepository = dynamicQRUserRepository;
         this.dynamicQRUserService = dynamicQRUserService;
     }

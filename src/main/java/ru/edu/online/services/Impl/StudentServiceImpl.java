@@ -1,6 +1,7 @@
 package ru.edu.online.services.Impl;
 
 import com.google.gson.Gson;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
@@ -10,9 +11,10 @@ import ru.edu.online.entities.dto.OrganizationInQRDTO;
 import ru.edu.online.entities.dto.PermanentStudentQRDTO;
 import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.StudyPlanDTO;
+import ru.edu.online.entities.interfaces.QRUser;
 import ru.edu.online.services.IDynamicQRUserService;
 import ru.edu.online.services.IPassRequestService;
-import ru.edu.online.services.IStudentService;
+import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
 
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-public class StudentServiceImpl implements IStudentService {
+public class StudentServiceImpl implements QRUserService {
 
     private final IPassRequestService passRequestService;
 
@@ -41,45 +43,28 @@ public class StudentServiceImpl implements IStudentService {
     }
 
 
-    @Override
-    public Set<String> getPermittedOrganizations(StudentDTO studentDTO) {
-        return dynamicQRUserService.getPermittedOrganizations(new DynamicQRUser(studentDTO));
-    }
+//    private Set<String> getPermittedOrganizations(StudentDTO studentDTO) {
+//        return dynamicQRUserService.getPermittedOrganizations(new DynamicQRUser(studentDTO));
+//    }
+
+//    public String makeContent(StudentDTO studentDTO){
+//        String finalContent = makeUsefullContent(studentDTO);
+//        try {
+//            String hash = HashingUtil.getHash(finalContent);
+//            finalContent = finalContent.substring(0, finalContent.length()-1);
+//            finalContent += ", \"hash\": \"" + hash + "\"}";
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("fianl content:");
+//        System.out.println(finalContent + "\n\n");
+//        return finalContent;
+//    }
+
 
     @Override
-    public String getOrganizationsName(StudentDTO studentDTO) {
-        return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).get().getShort_name();
-    }
-
-
-    @Override
-    public String makeContent(StudentDTO studentDTO){
-        String finalContent = makeUsefullContent(studentDTO);
-        try {
-            String hash = HashingUtil.getHash(finalContent);
-            finalContent = finalContent.substring(0, finalContent.length()-1);
-            finalContent += ", \"hash\": \"" + hash + "\"}";
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        System.out.println("fianl content:");
-        System.out.println(finalContent + "\n\n");
-        return finalContent;
-    }
-
-    private List<OrganizationInQRDTO> getDPermittedOrgs(StudentDTO studentDTO){
-
-        List<OrganizationInQRDTO> orgs = new ArrayList<>();
-
-        dynamicQRUserService.getAcceptedPassRequests(new DynamicQRUser(studentDTO))
-                .forEach(passRequest -> {
-                    orgs.add(new OrganizationInQRDTO(passRequest.getTargetUniversityName(), "",
-                            passRequest.getStartDate().toString() + " - " + passRequest.getEndDate().toString()));
-                });
-        return orgs;
-    }
-
-    public String makeUsefullContent(StudentDTO studentDTO) {
+    public String getFullStaticQRPayload(QRUser qrUser) {
+        StudentDTO studentDTO = (StudentDTO) qrUser;
         PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
 
         permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getScos_id())); // id из SCOS
@@ -101,6 +86,36 @@ public class StudentServiceImpl implements IStudentService {
         System.out.println("CONTENT:");
         System.out.println(content+ "\n\n");
         return content;
+    }
+
+    @Override
+    public String getAbbreviatedStaticQRPayload(QRUser qrUser) {
+        StudentDTO studentDTO = (StudentDTO) qrUser;
+        PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
+
+        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getScos_id())); // id из SCOS
+        permanentStudentQRDTO.setSurname(studentDTO.getSurname());
+        permanentStudentQRDTO.setName(studentDTO.getName());
+        permanentStudentQRDTO.setMiddle_name( studentDTO.getMiddle_name());
+        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));
+        Gson p = new Gson();
+
+        String content = p.toJson(permanentStudentQRDTO);
+        System.out.println("CONTENT:");
+        System.out.println(content+ "\n\n");
+        return content;
+    }
+
+    @SneakyThrows
+    @Override
+    public String getHash(QRUser qrUser) {
+        return HashingUtil.getHash(getFullStaticQRPayload(qrUser));
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    private String getOrganizationsName(StudentDTO studentDTO) {
+        return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).get().getShort_name();
     }
 
     private String getStartYear(StudentDTO studentDTO) {
@@ -131,5 +146,17 @@ public class StudentServiceImpl implements IStudentService {
                 return Optional.of(plan);
         }
         return Optional.empty();
+    }
+
+    private List<OrganizationInQRDTO> getDPermittedOrgs(StudentDTO studentDTO){
+
+        List<OrganizationInQRDTO> orgs = new ArrayList<>();
+
+        dynamicQRUserService.getAcceptedPassRequests(new DynamicQRUser(studentDTO))
+                .forEach(passRequest -> {
+                    orgs.add(new OrganizationInQRDTO(passRequest.getTargetUniversityName(), "",
+                            passRequest.getStartDate().toString() + " - " + passRequest.getEndDate().toString()));
+                });
+        return orgs;
     }
 }
