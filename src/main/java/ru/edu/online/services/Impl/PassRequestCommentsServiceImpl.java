@@ -10,7 +10,7 @@ import ru.edu.online.repositories.IPassRequestCommentRepository;
 import ru.edu.online.repositories.IPassRequestRepository;
 import ru.edu.online.services.IPassRequestCommentsService;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,8 +46,8 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
             comment.setComment(dto.getComment());
             comment.setPassRequestId(dto.getPassRequestId());
             comment.setAuthorId(dto.getAuthorId());
-            comment.setCreationDate(LocalDate.now());
-            comment.setEditDate(LocalDate.now());
+            comment.setCreationDate(LocalDateTime.now());
+            comment.setEditDate(LocalDateTime.now());
 
             request.get().getComments().add(comment);
             passRequestCommentRepository.save(comment);
@@ -84,7 +84,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
             comment.get().setComment(dto.getComment());
             comment.get().setPassRequestId(dto.getPassRequestId());
             comment.get().setAuthorId(dto.getAuthorId());
-            comment.get().setEditDate(LocalDate.now());
+            comment.get().setEditDate(LocalDateTime.now());
 
             passRequestCommentRepository.save(comment.get());
             log.info("Comment has successfully updated");

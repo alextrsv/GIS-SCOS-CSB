@@ -8,7 +8,7 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -31,7 +31,7 @@ public class PassRequestComment {
     /** Комментарий */
     private String comment;
     /** Дата создания */
-    private LocalDate creationDate;
+    private LocalDateTime creationDate;
     /** Дата редактирования */
-    private LocalDate editDate;
+    private LocalDateTime editDate;
 }

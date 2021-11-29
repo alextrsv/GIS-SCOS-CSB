@@ -8,6 +8,7 @@ import ru.edu.online.entities.enums.PassRequestType;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,7 +45,7 @@ public class PassRequest {
     private String targetUniversityAddress;
     /** Дата создания заявки */
     @Setter(AccessLevel.PROTECTED)
-    private LocalDate creationDate;
+    private LocalDateTime creationDate;
     /** Дата начала периода действия заявки */
     private LocalDate startDate;
     /** Дата конца периода действия заявки */
@@ -100,7 +101,7 @@ public class PassRequest {
                        PassRequestType type, String targetUniversityAddress,
                        String targetUniversityName, String targetUniversityId,
                        Long number) {
-        this.creationDate = LocalDate.now();
+        this.creationDate = LocalDateTime.now();
         this.authorId = authorId;
         this.targetUniversityId = targetUniversityId;
         this.startDate = startDate;
