@@ -10,7 +10,7 @@ import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.OrganizationInQRDTO;
 import ru.edu.online.entities.dto.PermanentUserQRDTO;
 import ru.edu.online.entities.dto.UserDTO;
-import ru.edu.online.entities.interfaces.QRUser;
+import ru.edu.online.entities.QRUser;
 import ru.edu.online.services.IDynamicQRUserService;
 import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
@@ -35,8 +35,15 @@ public class UserServiceImpl implements QRUserService {
     }
 
 
-
-    //////////////////////////////////////////////////////////
+    @SneakyThrows
+    @Override
+    public String getContentWithHash(QRUser qrUser) {
+        String finalContent = getFullStaticQRPayload(qrUser);
+        String hash = HashingUtil.getHash(finalContent);
+        finalContent = finalContent.substring(0, finalContent.length()-1);
+        finalContent += ", \"hash\": \"" + hash + "\"}";
+        return finalContent;
+    }
 
     @Override
     public String getFullStaticQRPayload(QRUser qrUser) {
@@ -74,8 +81,6 @@ public class UserServiceImpl implements QRUserService {
     public String getHash(QRUser qrUser) {
         return HashingUtil.getHash(getFullStaticQRPayload(qrUser));
     }
-    ////////////////////////////////////////////////////////////////////////////////
-
 
 
     public String getOrganizationsName(UserDTO userDTO) {
@@ -94,7 +99,6 @@ public class UserServiceImpl implements QRUserService {
         return orgs;
     }
 
-
     public String getUserRolesAsString(UserDTO user) {
         return String.join(", ", user.getRoles());
     }
@@ -103,5 +107,4 @@ public class UserServiceImpl implements QRUserService {
         if (userDTO.getUserOrganizationORGN().size() < 1) return Optional.empty();
         return gisScosApiRestClient.makeGetOrganizationByOrgnRequest(userDTO.getUserOrganizationORGN().get(0));
     }
-
 }

@@ -4,7 +4,7 @@ package ru.edu.online.entities.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.edu.online.entities.interfaces.QRUser;
+import ru.edu.online.entities.QRUser;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class StudentDTO implements QRUser {
+public class StudentDTO extends QRUser {
 
     String id;
     String surname;

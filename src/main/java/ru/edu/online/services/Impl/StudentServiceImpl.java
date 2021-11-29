@@ -7,26 +7,21 @@ import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.DynamicQRUser;
+import ru.edu.online.entities.QRUser;
 import ru.edu.online.entities.dto.OrganizationInQRDTO;
 import ru.edu.online.entities.dto.PermanentStudentQRDTO;
 import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.StudyPlanDTO;
-import ru.edu.online.entities.interfaces.QRUser;
 import ru.edu.online.services.IDynamicQRUserService;
-import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class StudentServiceImpl implements QRUserService {
-
-    private final IPassRequestService passRequestService;
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
@@ -35,31 +30,11 @@ public class StudentServiceImpl implements QRUserService {
     private final IDynamicQRUserService dynamicQRUserService;
 
     @Autowired
-    public StudentServiceImpl(IPassRequestService passRequestService, GisScosApiRestClient gisScosApiRestClient, VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService) {
-        this.passRequestService = passRequestService;
+    public StudentServiceImpl(GisScosApiRestClient gisScosApiRestClient, VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService) {
         this.gisScosApiRestClient = gisScosApiRestClient;
         this.vamRestClient = vamRestClient;
         this.dynamicQRUserService = dynamicQRUserService;
     }
-
-
-//    private Set<String> getPermittedOrganizations(StudentDTO studentDTO) {
-//        return dynamicQRUserService.getPermittedOrganizations(new DynamicQRUser(studentDTO));
-//    }
-
-//    public String makeContent(StudentDTO studentDTO){
-//        String finalContent = makeUsefullContent(studentDTO);
-//        try {
-//            String hash = HashingUtil.getHash(finalContent);
-//            finalContent = finalContent.substring(0, finalContent.length()-1);
-//            finalContent += ", \"hash\": \"" + hash + "\"}";
-//        } catch (NoSuchAlgorithmException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println("fianl content:");
-//        System.out.println(finalContent + "\n\n");
-//        return finalContent;
-//    }
 
 
     @Override
@@ -88,6 +63,16 @@ public class StudentServiceImpl implements QRUserService {
         return content;
     }
 
+    @SneakyThrows
+    @Override
+    public String getContentWithHash(QRUser qrUser){
+        String finalContent = getFullStaticQRPayload(qrUser);
+        String hash = HashingUtil.getHash(finalContent);
+        finalContent = finalContent.substring(0, finalContent.length()-1);
+        finalContent += ", \"hash\": \"" + hash + "\"}";
+        return finalContent;
+    }
+
     @Override
     public String getAbbreviatedStaticQRPayload(QRUser qrUser) {
         StudentDTO studentDTO = (StudentDTO) qrUser;
@@ -112,7 +97,6 @@ public class StudentServiceImpl implements QRUserService {
         return HashingUtil.getHash(getFullStaticQRPayload(qrUser));
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////
 
     private String getOrganizationsName(StudentDTO studentDTO) {
         return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).get().getShort_name();

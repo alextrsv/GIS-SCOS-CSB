@@ -13,7 +13,6 @@ import ru.edu.online.repositories.IDynamicQRRepository;
 import ru.edu.online.repositories.IDynamicQRUserRepository;
 import ru.edu.online.services.IDynamicQRUserService;
 
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,10 +27,6 @@ public class GenerationQRJob extends QuartzJobBean {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
-//    private final IUserService IUserService;
-//
-//    private final IStudentService IStudentService;
-
     private final IDynamicQRUserRepository dynamicQRUserRepository;
 
     private final IDynamicQRUserService dynamicQRUserService;
@@ -42,8 +37,6 @@ public class GenerationQRJob extends QuartzJobBean {
         this.dynamicQRRepository = dynamicQRRepository;
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
-//        this.IStudentService = IStudentService;
-//        this.IUserService = IUserService;
         this.dynamicQRUserRepository = dynamicQRUserRepository;
         this.dynamicQRUserService = dynamicQRUserService;
     }

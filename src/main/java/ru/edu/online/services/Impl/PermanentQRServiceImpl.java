@@ -8,7 +8,7 @@ import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.enums.QRDataVerifyStatus;
-import ru.edu.online.entities.interfaces.QRUser;
+import ru.edu.online.entities.QRUser;
 import ru.edu.online.services.IPermanentQRService;
 import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
@@ -44,12 +44,6 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         this.userServiceImpl = userServiceImpl;
     }
 
-
-//    private Optional<Resource> getQRasImage(String userId){
-//        Optional<QRUser> qrUser =  getDefinedRole(userId);
-//
-//        return Optional.empty();
-//    }
 
     private Optional<QRUser> getDefinedRole(String userId) {
         /*
@@ -93,61 +87,23 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     public Optional<Resource> downloadQRAsFile(String userId) {
         Optional<QRUser> qrUser =  getDefinedRole(userId);
 
-        String content = qrUserServiceImps.getFullStaticQRPayload(qrUser.get());
+        String content = qrUserServiceImps.getContentWithHash(qrUser.get());
         BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
         return Converter.getResource(qrCodeImage);
     }
 
     @Override
     public Optional<QRDataVerifyStatus> verifyData(String userId, String dataHash) {
-        QRDataVerifyStatus verifyStatus = null;
 
-        Optional<UserDTO> scosUser = gisScosApiRestClient.makeGetUserRequest(userId);
-        if (scosUser.isEmpty()) return Optional.empty();
-        String userEmail = scosUser.get().getEmail();
-//        3. Запрос к ВАМу на получение студента по почте (снилсу)
-        Optional<StudentDTO> vamStudent;
-        if(userEmail.equals("stud_bilet_01@dev.online.edu.ru"))
-            vamStudent = vamRestClient.makeGetStudentByEmailRequestFor01(userEmail);
-        else
-            vamStudent = vamRestClient.makeGetStudentByEmailRequest(userEmail);
-//        4. Если запрос к ВАМу вернул объект студента - работаю с этим объектом.
-        if (vamStudent.isPresent()) {
-            vamStudent.get().setScos_id(scosUser.get().getUser_id());
-            verifyStatus = verifyStudentData(vamStudent.get(), dataHash);
-        }
-//        5. Если запрос к ВАМу ничего не возвращает - это не студент, работаю с пользователем из СЦОСА
-        else{
-            verifyStatus = verufyUserData(scosUser.get(), dataHash);
-        }
-        return Optional.ofNullable(verifyStatus);
-    }
+        Optional<QRUser> qrUser =  getDefinedRole(userId);
 
-    private QRDataVerifyStatus verufyUserData(UserDTO userDTO, String hash) {
         try {
-            String newHash = HashingUtil.getHash(userServiceImpl.getFullStaticQRPayload(userDTO));
-            if (newHash.equals(hash)) return QRDataVerifyStatus.OK;
-            else return QRDataVerifyStatus.INVALID;
+            String newHash = HashingUtil.getHash(qrUserServiceImps.getFullStaticQRPayload(qrUser.get()));
+            if (newHash.equals(dataHash)) return Optional.of(QRDataVerifyStatus.OK);
+            else return Optional.of(QRDataVerifyStatus.INVALID);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
-
-    private QRDataVerifyStatus verifyStudentData(StudentDTO studentDTO, String hash) {
-        try {
-            String lastHash = HashingUtil.getHash(studentServiceImpl.getFullStaticQRPayload(studentDTO));
-            if (lastHash.equals(hash)) return QRDataVerifyStatus.OK;
-            else return QRDataVerifyStatus.INVALID;
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private Optional<StudentDTO> getStudent(String userId){
-        return vamRestClient.makeGetStudentRequest(userId);
-    }
-
-
 }
