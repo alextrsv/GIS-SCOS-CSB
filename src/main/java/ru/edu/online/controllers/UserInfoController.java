@@ -67,7 +67,8 @@ public class UserInfoController {
                                                                              @RequestParam Long page,
                                                                              @RequestParam Long itemsPerPage,
                                                                              @RequestParam(required = false) String search) {
-        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
+        if (userDetailsService.isUniversity(principal.getName())
+                || userDetailsService.isSuperUser(principal.getName())) {
             return ResponseEntity.of(
                     userDetailsService.getUsersByOrganization(
                             principal.getName(),
@@ -88,7 +89,8 @@ public class UserInfoController {
      */
     @GetMapping("/")
     public ResponseEntity<String> getAdminOrganizationOGRN(Principal principal) {
-        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
+        if (userDetailsService.isUniversity(principal.getName())
+                || userDetailsService.isSuperUser(principal.getName())) {
             return ResponseEntity.of(userDetailsService.getAdminOrganizationOGRN(principal.getName()));
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
