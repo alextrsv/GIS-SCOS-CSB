@@ -8,7 +8,6 @@ import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestChangeLogEntry;
 import ru.edu.online.entities.PassRequestUser;
-import ru.edu.online.entities.comparators.PassRequestCreationDateComparator;
 import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.PassRequestStatus;
 import ru.edu.online.entities.enums.PassRequestType;
@@ -210,7 +209,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return Optional.of(
                 requests.stream()
                         .filter(r -> r.getStatus() == dto.getStatus())
-                        .sorted(new PassRequestCreationDateComparator())
+                        .sorted(Comparator.comparing(PassRequest::getCreationDate).reversed())
                         .skip(pageSize * (page - 1))
                         .limit(pageSize)
                         .collect(Collectors.toList())
@@ -982,7 +981,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private List<PassRequest> paginateRequests(List<PassRequest> requests, long page, long pageSize) {
         return requests
                 .stream()
-                .sorted(new PassRequestCreationDateComparator())
+                .sorted(Comparator.comparing(PassRequest::getCreationDate).reversed())
                 .skip(pageSize * (page - 1))
                 .limit(pageSize)
                 .collect(Collectors.toList());
