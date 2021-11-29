@@ -1,5 +1,6 @@
 package ru.edu.online.services.Impl;
 
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -86,8 +87,8 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     @Override
     public Optional<Resource> downloadQRAsFile(String userId) {
         Optional<QRUser> qrUser =  getDefinedRole(userId);
-
         String content = qrUserServiceImps.getContentWithHash(qrUser.get());
+//        String content = String.format("{\"id\":\"%s\", \"hash\":\"%s\"}", userId, qrUserServiceImps.getHash(qrUser.get()));
         BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
         return Converter.getResource(qrCodeImage);
     }
