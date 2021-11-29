@@ -42,6 +42,8 @@ public class ScosApiUtils {
                 .bodyToMono(OrganizationDTO.class)
                 .onErrorResume(WebClientResponseException.class,
                         ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 503 ? Mono.empty() : Mono.error(ex))
                 .block());
     }
 
@@ -58,6 +60,8 @@ public class ScosApiUtils {
                 .bodyToMono(OrganizationDTO.class)
                 .onErrorResume(WebClientResponseException.class,
                         ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 503 ? Mono.empty() : Mono.error(ex))
                 .block());
     }
 
@@ -76,6 +80,8 @@ public class ScosApiUtils {
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
                 .onErrorResume(WebClientResponseException.class,
                         ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 503 ? Mono.empty() : Mono.error(ex))
                 .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
                 .block();
     }
@@ -89,6 +95,8 @@ public class ScosApiUtils {
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
                 .onErrorResume(WebClientResponseException.class,
                         ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 503 ? Mono.empty() : Mono.error(ex))
                 .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
                 .block();
     }
