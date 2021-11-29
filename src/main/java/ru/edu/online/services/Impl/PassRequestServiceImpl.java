@@ -288,6 +288,12 @@ public class PassRequestServiceImpl implements IPassRequestService {
     public Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByAuthorId(authorId);
+        requests.addAll(passRequestUserRepository.getByScosId(authorId)
+                .stream()
+                .map(PassRequestUser::getPassRequestId)
+                .map(this::getPassRequestById)
+                .map(Optional::get)
+                .collect(Collectors.toList()));
         log.info("Getting passRequests count by status for user");
         Map<PassRequestStatus, Long> statusesCount = new HashMap<>();
         for (PassRequestStatus status : PassRequestStatus.values()) {
@@ -914,9 +920,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                            PassRequestStatus[] statuses,
                                                                            Long page,
                                                                            Long pageSize) {
-        List<PassRequest> filteredRequest = new LinkedList<>();
+        List<PassRequest> filteredRequests = new LinkedList<>();
         for (PassRequestStatus status : statuses) {
-            filteredRequest.addAll(
+            filteredRequests.addAll(
                     requests.stream()
                             .filter(request -> request.getStatus() == status)
                             .collect(Collectors.toList())
@@ -925,10 +931,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
         return new ResponseDTO<>(
                 page,
                 pageSize,
-                filteredRequest.size() % pageSize == 0 ?
-                        filteredRequest.size() / pageSize : filteredRequest.size() / pageSize + 1,
-                (long) filteredRequest.size(),
-                paginateRequests(filteredRequest, page, pageSize)
+                filteredRequests.size() % pageSize == 0 ?
+                        filteredRequests.size() / pageSize : filteredRequests.size() / pageSize + 1,
+                (long) filteredRequests.size(),
+                paginateRequests(filteredRequests, page, pageSize)
         );
     }
 
