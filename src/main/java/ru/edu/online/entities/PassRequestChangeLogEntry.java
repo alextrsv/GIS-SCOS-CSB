@@ -8,7 +8,7 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -27,7 +27,7 @@ public class PassRequestChangeLogEntry {
     /** Идентификатор заявки, которая была изменена */
     private UUID passRequestId;
     /** Дата изменения */
-    private LocalDate date;
+    private LocalDateTime date;
     /** Параметр, который был изменён */
     private String parameter;
     /** Старое значение */
@@ -37,7 +37,7 @@ public class PassRequestChangeLogEntry {
 
     public PassRequestChangeLogEntry(String parameter, String oldValue,
                                      String newValue, UUID passRequestId) {
-        this.date = LocalDate.now();
+        this.date = LocalDateTime.now();
         this.parameter = parameter;
         this.oldValue = oldValue;
         this.newValue = newValue;
