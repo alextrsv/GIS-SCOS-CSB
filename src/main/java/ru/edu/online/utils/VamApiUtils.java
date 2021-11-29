@@ -2,6 +2,8 @@ package ru.edu.online.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import ru.edu.online.entities.dto.StudentsDTO;
 
@@ -32,7 +34,10 @@ public class VamApiUtils {
                 .uri(String.join("", "/students?", parameter, "=", value))
                 .retrieve()
                 .bodyToMono(StudentsDTO.class)
-                .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 503 ? Mono.empty() : Mono.error(ex))
                 .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
                 .block();
     }
