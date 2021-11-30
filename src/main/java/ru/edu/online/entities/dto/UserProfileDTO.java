@@ -20,6 +20,7 @@ public class UserProfileDTO {
     private String patronymicName;
     private String studNumber;
     private String educationForm;
+    private String photoURL;
     private Integer studyYear;
     private UserRole role;
 
