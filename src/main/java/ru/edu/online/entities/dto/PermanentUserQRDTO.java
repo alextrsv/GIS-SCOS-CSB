@@ -1,5 +1,6 @@
 package ru.edu.online.entities.dto;
 
+import com.google.gson.Gson;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,4 +17,10 @@ public class PermanentUserQRDTO {
     String status;
     String role;
     List<OrganizationInQRDTO> accessed_organizations;
+
+    @Override
+    public String toString() {
+        Gson p = new Gson();
+        return p.toJson(this);
+    }
 }

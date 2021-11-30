@@ -7,8 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.edu.online.entities.dto.PermanentUserQRDTO;
 import ru.edu.online.entities.enums.QRDataVerifyStatus;
+import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.services.IPermanentQRService;
+import ru.edu.online.services.IUserDetailsService;
+
+import java.security.Principal;
+import java.util.Optional;
 
 /**
  * контроллер для работы со статическими QR-кодами
@@ -18,10 +24,12 @@ import ru.edu.online.services.IPermanentQRService;
 public class PermanentQRController {
 
     private final IPermanentQRService permanentQRService;
+    private final IUserDetailsService userDetailsService;
 
     @Autowired
-    public PermanentQRController(IPermanentQRService permanentQRService) {
+    public PermanentQRController(IPermanentQRService permanentQRService, IUserDetailsService userDetailsService) {
         this.permanentQRService = permanentQRService;
+        this.userDetailsService = userDetailsService;
     }
 
     @PostMapping("hash")
@@ -38,6 +46,23 @@ public class PermanentQRController {
                                 .contentType(MediaType.IMAGE_PNG)
                                 .header(HttpHeaders.CONTENT_DISPOSITION, "got permanent QR code")
                                 .body(resource))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+
+    @GetMapping("payload/{id}")
+    public ResponseEntity<PermanentUserQRDTO> getScanningUserInfo(@PathVariable String id,
+                                                                  Principal principal){
+
+        Optional<PermanentUserQRDTO> result;
+
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED)
+        {
+            result = permanentQRService.getAbbreviatedStaticQRPayload(id);
+        }
+        else result = permanentQRService.getFullUserInfo(id);
+
+        return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 

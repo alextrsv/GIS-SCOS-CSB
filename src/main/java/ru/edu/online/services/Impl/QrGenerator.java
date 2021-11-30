@@ -21,7 +21,7 @@ public class QrGenerator {
         Map<EncodeHintType, ?> hints = Map.of(
                 EncodeHintType.CHARACTER_SET, "utf-8",
                 EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M,
-                EncodeHintType.MARGIN, 0);
+                EncodeHintType.MARGIN, 2);
 
 
         BitMatrix bitMatrix = null;

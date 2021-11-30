@@ -1,30 +1,23 @@
 package ru.edu.online.services.Impl;
 
-import com.google.gson.Gson;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.DynamicQRUser;
-import ru.edu.online.entities.dto.OrganizationInQRDTO;
-import ru.edu.online.entities.dto.PermanentStudentQRDTO;
-import ru.edu.online.entities.dto.StudentDTO;
-import ru.edu.online.entities.dto.StudyPlanDTO;
+import ru.edu.online.entities.QRUser;
+import ru.edu.online.entities.dto.*;
 import ru.edu.online.services.IDynamicQRUserService;
-import ru.edu.online.services.IPassRequestService;
-import ru.edu.online.services.IStudentService;
+import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
-public class StudentServiceImpl implements IStudentService {
-
-    private final IPassRequestService passRequestService;
+public class StudentServiceImpl implements QRUserService {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 
@@ -33,53 +26,27 @@ public class StudentServiceImpl implements IStudentService {
     private final IDynamicQRUserService dynamicQRUserService;
 
     @Autowired
-    public StudentServiceImpl(IPassRequestService passRequestService, GisScosApiRestClient gisScosApiRestClient, VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService) {
-        this.passRequestService = passRequestService;
+    public StudentServiceImpl(GisScosApiRestClient gisScosApiRestClient, VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService) {
         this.gisScosApiRestClient = gisScosApiRestClient;
         this.vamRestClient = vamRestClient;
         this.dynamicQRUserService = dynamicQRUserService;
     }
 
 
-    @Override
-    public Set<String> getPermittedOrganizations(StudentDTO studentDTO) {
-        return dynamicQRUserService.getPermittedOrganizations(new DynamicQRUser(studentDTO));
-    }
 
+    @SneakyThrows
     @Override
-    public String getOrganizationsName(StudentDTO studentDTO) {
-        return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).get().getShort_name();
-    }
-
-
-    @Override
-    public String makeContent(StudentDTO studentDTO){
-        String finalContent = makeUsefullContent(studentDTO);
-        try {
-            String hash = HashingUtil.getHash(finalContent);
-            finalContent = finalContent.substring(0, finalContent.length()-1);
-            finalContent += ", \"hash\": \"" + hash + "\"}";
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        System.out.println("fianl content:");
-        System.out.println(finalContent + "\n\n");
+    public String getContentWithHash(QRUser qrUser){
+        String finalContent = getFullStaticQRPayload(qrUser).toString();
+        String hash = HashingUtil.getHash(finalContent);
+        finalContent = finalContent.substring(0, finalContent.length()-1);
+        finalContent += ", \"hash\": \"" + hash + "\"}";
         return finalContent;
     }
 
-    private List<OrganizationInQRDTO> getDPermittedOrgs(StudentDTO studentDTO){
-
-        List<OrganizationInQRDTO> orgs = new ArrayList<>();
-
-        dynamicQRUserService.getAcceptedPassRequests(new DynamicQRUser(studentDTO))
-                .forEach(passRequest -> {
-                    orgs.add(new OrganizationInQRDTO(passRequest.getTargetUniversityName(), "",
-                            passRequest.getStartDate().toString() + " - " + passRequest.getEndDate().toString()));
-                });
-        return orgs;
-    }
-
-    public String makeUsefullContent(StudentDTO studentDTO) {
+    @Override
+    public PermanentUserQRDTO getFullStaticQRPayload(QRUser qrUser) {
+        StudentDTO studentDTO = (StudentDTO) qrUser;
         PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
 
         permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getScos_id())); // id из SCOS
@@ -95,12 +62,32 @@ public class StudentServiceImpl implements IStudentService {
         permanentStudentQRDTO.setStud_bilet_duration(getEndYear(studentDTO));
         permanentStudentQRDTO.setAccessed_organizations(getDPermittedOrgs(studentDTO));
 
-        Gson p = new Gson();
+        return permanentStudentQRDTO;
+    }
 
-        String content = p.toJson(permanentStudentQRDTO);
-        System.out.println("CONTENT:");
-        System.out.println(content+ "\n\n");
-        return content;
+    @Override
+    public PermanentUserQRDTO getAbbreviatedStaticQRPayload(QRUser qrUser) {
+        StudentDTO studentDTO = (StudentDTO) qrUser;
+        PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
+
+        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getScos_id())); // id из SCOS
+        permanentStudentQRDTO.setSurname(studentDTO.getSurname());
+        permanentStudentQRDTO.setName(studentDTO.getName());
+        permanentStudentQRDTO.setMiddle_name( studentDTO.getMiddle_name());
+        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));
+
+        return permanentStudentQRDTO;
+    }
+
+    @SneakyThrows
+    @Override
+    public String getHash(QRUser qrUser) {
+        return HashingUtil.getHash(getFullStaticQRPayload(qrUser).toString());
+    }
+
+
+    private String getOrganizationsName(StudentDTO studentDTO) {
+        return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).get().getShort_name();
     }
 
     private String getStartYear(StudentDTO studentDTO) {
@@ -131,5 +118,17 @@ public class StudentServiceImpl implements IStudentService {
                 return Optional.of(plan);
         }
         return Optional.empty();
+    }
+
+    private List<OrganizationInQRDTO> getDPermittedOrgs(StudentDTO studentDTO){
+
+        List<OrganizationInQRDTO> orgs = new ArrayList<>();
+
+        dynamicQRUserService.getAcceptedPassRequests(new DynamicQRUser(studentDTO))
+                .forEach(passRequest -> {
+                    orgs.add(new OrganizationInQRDTO(passRequest.getTargetUniversityName(), "",
+                            passRequest.getStartDate().toString() + " - " + passRequest.getEndDate().toString()));
+                });
+        return orgs;
     }
 }
