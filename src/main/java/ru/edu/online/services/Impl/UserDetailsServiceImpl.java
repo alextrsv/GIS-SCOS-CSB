@@ -17,10 +17,7 @@ import ru.edu.online.utils.VamApiUtils;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -214,10 +211,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                                                                         Long page,
                                                                         Long pageSize,
                                                                         String search) {
-        UserDTO userDTO = ScosApiUtils.getUserDetails(devScosApiClient, userId);
+        Optional<UserDTO> user = Optional.of(ScosApiUtils.getUserDetails(devScosApiClient, userId));
         StudentsDTO students = VamApiUtils.getStudents(
                 "organization_id",
-                userDTO.getEmployments()
+                user.get().getEmployments()
                         .stream()
                         .findFirst()
                         .get()
@@ -228,14 +225,30 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         List<UserDetailsDTO> users = new ArrayList<>();
 
         for (StudentDTO student : students.getResults()) {
-            UserDetailsDTO user = new UserDetailsDTO();
-            user.setUserId(ScosApiUtils.getUserByEmail(devScosApiClient, student.getEmail()).getUser_id());
-            user.setFirstName(student.getName());
-            user.setLastName(student.getSurname());
-            user.setPatronymicName(student.getMiddle_name());
-            user.setEmail(student.getEmail());
-            user.setRoles(new String[]{"STUDENT"});
-            users.add(user);
+            UserDetailsDTO userDetails = new UserDetailsDTO();
+            user = Arrays.stream(
+                            ScosApiUtils.getUserByFIO(
+                                            devScosApiClient,
+                                            student.getName(),
+                                            student.getSurname())
+                                    .getData())
+                    .filter(u -> u.getUser_id().equals(
+                            ScosApiUtils.getUserByEmail(
+                                    devScosApiClient,
+                                    student.getEmail()
+                            ).getUser_id())
+                    )
+                    .findFirst();
+            if (user.isPresent()) {
+                userDetails.setUserId(user.get().getUser_id());
+                userDetails.setFirstName(student.getName());
+                userDetails.setLastName(student.getSurname());
+                userDetails.setPatronymicName(student.getMiddle_name());
+                userDetails.setEmail(student.getEmail());
+                userDetails.setRoles(new String[]{"STUDENT"});
+                userDetails.setPhotoURL(user.get().getPhoto_url());
+                users.add(userDetails);
+            }
         }
 
         if (Optional.ofNullable(search).isPresent()) {
@@ -258,12 +271,24 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
     private UserProfileDTO getStudentProfile(String userId) {
         UserDTO user = ScosApiUtils.getUserDetails(devScosApiClient, userId);
+
+        user = Arrays.stream(
+                ScosApiUtils.getUserByFIO(
+                        devScosApiClient,
+                        user.getFirst_name(),
+                        user.getLast_name())
+                        .getData())
+                .filter(u -> u.getUser_id().equals(userId))
+                .findFirst()
+                .get();
+
         StudentsDTO students = VamApiUtils.getStudents("email", user.getEmail(), devVamApiClient);
+        UserDTO finalUser = user;
         Optional<StudentDTO> student = students.getResults()
                 .stream()
                 .filter(
                         s ->
-                                s.getEmail().equals(user.getEmail())
+                                s.getEmail().equals(finalUser.getEmail())
                 )
                 .filter(s -> s.getStudy_year() != null)
                 .findFirst();
@@ -280,11 +305,12 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setLastName(student.get().getSurname());
                 userProfile.setPatronymicName(student.get().getMiddle_name());
                 userProfile.setStudyYear(student.get().getStudy_year());
-                userProfile.setStudNumber("25643682");
+                userProfile.setStudNumber(String.valueOf(new Random().nextInt(1000000)));
                 userProfile.setEducationForm("Бюджет");
                 userProfile.setOrganizationFullName(organization.get().getFull_name());
                 userProfile.setOrganizationShortName(organization.get().getShort_name());
                 userProfile.setRole(UserRole.STUDENT);
+                userProfile.setPhotoURL(user.getPhoto_url());
 
                 return userProfile;
             }
