@@ -49,8 +49,6 @@ public interface IPassRequestService {
 
     Optional<PassRequest> updatePassRequestDates(PassRequestDTO dto);
 
-    Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto);
-
     Optional<PassRequest> deletePassRequestById(UUID id);
 
     Optional<List<PassRequestUser>> deleteUserFromPassRequest(PassRequestUserDTO[] dto);

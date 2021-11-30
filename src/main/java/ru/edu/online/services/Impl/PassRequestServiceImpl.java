@@ -252,7 +252,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         requests,
                         new PassRequestStatus[]{
                                 PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                                PassRequestStatus.CANCELED_BY_CREATOR
                         },
                         page,
                         pageSize
@@ -471,7 +470,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 new PassRequestStatus[]{
                         PassRequestStatus.ACCEPTED,
                         PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                        PassRequestStatus.CANCELED_BY_CREATOR
                 },
                 universityId,
                 page,
@@ -548,39 +546,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Отменить заявку
-     * @param dto создателя заявки
-     * @return отменённая заявка или Optional.empty
-     * если заявка не найдена, пользователь не является автором
-     * или заявка уже не находится на рассмотрении (несоответствие статуса)
-     */
-    @Override
-    public Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto) {
-        Optional<PassRequest> request = getPassRequest(dto);
-
-        if (request.isPresent()) {
-            // Являестя ли пользователь создателем заявки?
-            // если да, получаем статус, нет - null
-            PassRequestStatus status =
-                    isAuthor(request.get(), dto) ? request.get().getStatus() : null;
-            // Если заявку ещё имеет смысл отменять.
-            // (с остальными статусами не актуально)
-            if (status == PassRequestStatus.TARGET_ORGANIZATION_REVIEW) {
-
-                request.get().setStatus(PassRequestStatus.CANCELED_BY_CREATOR);
-                passRequestRepository.save(request.get());
-                log.info("Pass request cancelled by creator");
-                return request;
-            }
-            log.warn("Impossible to cancel pass request! " +
-                    "UserDTO is not author or pass request status invalid.");
-            return Optional.empty();
-        }
-        log.warn("Impossible to cancel pass request! Pass request not found.");
-        return Optional.empty();
-    }
-
-    /**
      * Удаление заявки по id
      * @param id заявки
      * @return в случае, если заявка была найдена и удалена,
@@ -649,10 +614,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
         expiredList
                 .addAll(
-                        passRequestRepository.findAllByStatus(PassRequestStatus.CANCELED_BY_CREATOR)
-                );
-        expiredList
-                .addAll(
                         passRequestRepository.findAllByStatus(PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION)
                 );
 
@@ -686,7 +647,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private boolean isExpired(PassRequestStatus status, LocalDate startDate) {
         return (status != PassRequestStatus.ACCEPTED &&
                 status != PassRequestStatus.EXPIRED &&
-                status != PassRequestStatus.CANCELED_BY_CREATOR &&
                 startDate.isBefore(LocalDate.now()));
     }
 
@@ -731,7 +691,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
         Optional<PassRequestChangeLogEntry> entry;
         PassRequestStatus[] statuses = new PassRequestStatus[]{
                 PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                PassRequestStatus.CANCELED_BY_CREATOR,
                 PassRequestStatus.EXPIRED
         };
 
@@ -746,16 +705,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
         }
 
         return Optional.empty();
-    }
-
-    /**
-     * Является ли пользователь автором заявки?
-     * @param request заявка
-     * @param dto пользователя заявки
-     * @return true - является, false - не является
-     */
-    private boolean isAuthor(PassRequest request, PassRequestUserDTO dto) {
-        return (Objects.equals(request.getAuthorId(), dto.getUserId()));
     }
 
     /**

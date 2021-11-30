@@ -332,17 +332,6 @@ public class PassRequestController {
     }
 
     /**
-     * Отмена заявки создателем
-     * @param dto пользователя заявки
-     * @return отменённая заявка
-     */
-    @PutMapping("/cancel")
-    public ResponseEntity<PassRequest> cancelPassRequest(@RequestBody PassRequestUserDTO dto) {
-        return passRequestService.cancelPassRequest(dto).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    /**
      * Удаление заявки по id
      * @param id заявки
      * @return статус OK (временное решение до spring security)
