@@ -8,7 +8,7 @@
         <version>2.5.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>ru.dev.online.edu.ru</groupId>
+    <groupId>csb</groupId>
     <artifactId>student-card</artifactId>
     <version>0.1.7-SNAPSHOT</version>
     <name>student-card</name>
