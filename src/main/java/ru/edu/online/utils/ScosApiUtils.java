@@ -6,6 +6,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import ru.edu.online.entities.dto.OrganizationDTO;
+import ru.edu.online.entities.dto.UserByFIOResponseDTO;
 import ru.edu.online.entities.dto.UserDTO;
 
 import java.time.Duration;
@@ -92,6 +93,29 @@ public class ScosApiUtils {
                 .uri(String.join("", "/users?email=", email))
                 .retrieve()
                 .bodyToMono(UserDTO.class)
+                .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                .onErrorResume(WebClientResponseException.class,
+                        ex -> ex.getRawStatusCode() == 503 ? Mono.empty() : Mono.error(ex))
+                .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
+                .block();
+    }
+
+    /**
+     * Получение списка пользователей по ФИО
+     * @param scosApiClient клиент для запроса
+     * @param firstName имя
+     * @param lastName фамилия
+     * @return список пользователей СЦОСа по ФИО
+     */
+    public static UserByFIOResponseDTO getUserByFIO(WebClient scosApiClient, String firstName,
+                                                    String lastName, String patronymicName) {
+        return scosApiClient
+                .get()
+                .uri(String.join("", "/users?page=0&size=100&query=", lastName, " ", firstName, " ", patronymicName))
+                .retrieve()
+                .bodyToMono(UserByFIOResponseDTO.class)
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
                 .onErrorResume(WebClientResponseException.class,
                         ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
