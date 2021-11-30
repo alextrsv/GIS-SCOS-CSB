@@ -31,7 +31,8 @@ public class VamApiUtils {
     public static StudentsDTO getStudents(String parameter, String value, WebClient vamApiClient) {
         return vamApiClient
                 .get()
-                .uri(String.join("", "/students?", parameter, "=", value))
+                .uri(String.join("", "/students?", parameter, "=", value,
+                        "&page_size=100000"))
                 .retrieve()
                 .bodyToMono(StudentsDTO.class)
                 .onErrorResume(WebClientResponseException.class,
