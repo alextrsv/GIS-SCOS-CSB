@@ -110,10 +110,10 @@ public class ScosApiUtils {
      * @return список пользователей СЦОСа по ФИО
      */
     public static UserByFIOResponseDTO getUserByFIO(WebClient scosApiClient, String firstName,
-                                                    String lastName, String patronymicName) {
+                                                    String lastName) {
         return scosApiClient
                 .get()
-                .uri(String.join("", "/users?page=0&size=100&query=", lastName, " ", firstName, " ", patronymicName))
+                .uri(String.join("", "/users?page=0&size=100&query=", lastName, " ", firstName))
                 .retrieve()
                 .bodyToMono(UserByFIOResponseDTO.class)
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
