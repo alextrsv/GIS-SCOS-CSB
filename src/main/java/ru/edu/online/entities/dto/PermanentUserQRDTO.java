@@ -16,6 +16,7 @@ public class PermanentUserQRDTO {
     String organization;
     String status;
     String role;
+    String photo_url;
     List<OrganizationInQRDTO> accessed_organizations;
 
     @Override

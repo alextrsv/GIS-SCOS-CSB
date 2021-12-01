@@ -22,6 +22,7 @@ public class UserDTO extends QRUser {
     private List<EmploymentDTO> employments;
     private List<String> roles;
     private String organizationID; //не принимается из СЦОС, устанавливается в UserServiceImpl
+    private String photo_url;
 
 
     public List<String> getUserOrganizationORGN(){

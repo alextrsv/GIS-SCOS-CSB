@@ -61,6 +61,7 @@ public class UserServiceImpl implements QRUserService {
                 () -> permanentUserQRDTO.setOrganization(""));
         permanentUserQRDTO.setStatus("status");
         permanentUserQRDTO.setRole(getUserRolesAsString(user));
+        permanentUserQRDTO.setPhoto_url(user.getPhoto_url());
         permanentUserQRDTO.setAccessed_organizations(getDPermittedOrgs(user));
 
         return permanentUserQRDTO;

@@ -26,6 +26,7 @@ public class StudentDTO extends QRUser {
     Integer study_year;
     String organization_id;
     List<StudyPlanDTO> study_plans;
+    String photo_url;
 
 
 

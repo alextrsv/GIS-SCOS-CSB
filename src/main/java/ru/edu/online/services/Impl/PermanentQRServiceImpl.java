@@ -67,6 +67,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
             else
                 vamStudent = vamRestClient.makeGetStudentByEmailRequest(userEmail);
             if (vamStudent.isPresent()) {
+                vamStudent.get().setPhoto_url(scosUser.get().getPhoto_url());
                 vamStudent.get().setScos_id(scosUser.get().getUser_id());
                 this.qrUserServiceImps = studentServiceImpl;
                 return Optional.of(vamStudent.get());
