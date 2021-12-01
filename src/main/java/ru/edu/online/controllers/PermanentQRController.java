@@ -56,11 +56,11 @@ public class PermanentQRController {
 
         Optional<PermanentUserQRDTO> result;
 
-        if (userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED)
-        {
-            result = permanentQRService.getAbbreviatedStaticQRPayload(id);
-        }
-        else result = permanentQRService.getFullUserInfo(id);
+//        if (userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED)
+//        {
+//            result = permanentQRService.getAbbreviatedStaticQRPayload(id);
+//        }
+        result = permanentQRService.getFullUserInfo(id);
 
         return result.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());

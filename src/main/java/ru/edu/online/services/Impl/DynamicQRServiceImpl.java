@@ -47,7 +47,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
      * */
     @Override
     public Optional<List<DynamicQR>> getQRByUserAndOrganization(String userId, String organizationId) {
-        List<DynamicQR> usersQrs = dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId);
+            List<DynamicQR> usersQrs = dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId);
         if (!usersQrs.isEmpty())
             return Optional.ofNullable(dynamicQRRepository.getByUserIdAndUniversityId(userId, organizationId));
         else return Optional.empty();
@@ -117,7 +117,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
     private Integer sendToStudent(StudentDTO studentDTO, String organizationId){
 //        studentDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
 
-        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
+        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationByOrgnRequest(organizationId);
         if (organizationDTO.isEmpty()) return -1;
 
         Optional<DynamicQR> qr = getActiveQRByOrganization(studentDTO.getScos_id(), organizationId);
@@ -133,7 +133,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
     private Integer sendToUser(UserDTO userDTO, String organizationId){
 //        userDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
 
-        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
+        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationByOrgnRequest(organizationId);
         if (organizationDTO.isEmpty()) return -1;
 
         Optional<DynamicQR> qr = getActiveQRByOrganization(userDTO.getUser_id(), organizationId);
