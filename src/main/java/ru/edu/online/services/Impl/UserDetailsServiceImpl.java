@@ -106,7 +106,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      * @return global_id организации админа
      */
     @Override
-    public Optional<String> getAdminOrganizationGlobalId(String userId) {
+    public Optional<String> getUserOrganizationGlobalId(String userId) {
         UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, userId);
         Optional<EmploymentDTO> employmentDTO = admin
                 .getEmployments()

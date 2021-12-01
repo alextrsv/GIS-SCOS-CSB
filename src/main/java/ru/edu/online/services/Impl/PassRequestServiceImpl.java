@@ -230,7 +230,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                                                  long page,
                                                                                                  long usersPerPage,
                                                                                                  String search) {
-        Optional<String> adminOrganizationGlobalId = userDetailsService.getAdminOrganizationGlobalId(userId);
+        Optional<String> adminOrganizationGlobalId = userDetailsService.getUserOrganizationGlobalId(userId);
         if (adminOrganizationGlobalId.isPresent()) {
             List<PassRequest> acceptedRequestsForUniversity =
                     getPassRequestByStatusForUniversity(
@@ -446,7 +446,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<Map<PassRequestStatus, Integer>> getPassRequestsCountByStatusForAdmin(String userId) {
         Map<PassRequestStatus, Integer> requestsCountByStatus = new HashMap<>();
-        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationGlobalId(userId);
+        Optional<String> adminUniversityId = userDetailsService.getUserOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             for (PassRequestStatus status : PassRequestStatus.values()) {
                 requestsCountByStatus.put(
@@ -472,7 +472,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                       Long pageSize,
                                                                       String search,
                                                                       String userId) {
-        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationGlobalId(userId);
+        Optional<String> adminUniversityId = userDetailsService.getUserOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             switch (status) {
                 case PROCESSED:
