@@ -341,7 +341,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<Map<PassRequestStatus, Integer>> getPassRequestsCountByStatusForAdmin(String userId) {
         Map<PassRequestStatus, Integer> requestsCountByStatus = new HashMap<>();
-        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationOGRN(userId);
+        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             for (PassRequestStatus status : PassRequestStatus.values()) {
                 requestsCountByStatus.put(
@@ -367,7 +367,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                       Long pageSize,
                                                                       String search,
                                                                       String userId) {
-        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationOGRN(userId);
+        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             switch (status) {
                 case PROCESSED:
@@ -777,7 +777,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getTargetUniversityAddress(),
                             targetOrganization.get().getShort_name(),
                             dto.getTargetUniversityId(),
-                            getRequestNumber())
+                            PassRequestUtils.getRequestNumber(passRequestRepository))
                     );
                 }
             }
@@ -829,7 +829,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getTargetUniversityAddress(),
                             targetOrganization.get().getShort_name(),
                             dto.getTargetUniversityId(),
-                            getRequestNumber())
+                            PassRequestUtils.getRequestNumber(passRequestRepository))
                     );
                 }
             }
@@ -883,10 +883,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 filteredRequests.size() % pageSize == 0 ?
                         filteredRequests.size() / pageSize : filteredRequests.size() / pageSize + 1,
                 (long) filteredRequests.size(),
-                paginateRequests(filteredRequests, page, pageSize)
+                PassRequestUtils.paginateRequests(filteredRequests, page, pageSize)
         );
     }
-
 
     /**
      * Получить запросы для университета с поиском и пагинацией по категории
@@ -917,7 +916,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             requestList = PassRequestUtils.filterRequest(requestList, search, devScosApiClient);
         }
         long requestsCount = requestList.size();
-        requestList = paginateRequests(requestList, page, pageSize);
+        requestList = PassRequestUtils.paginateRequests(requestList, page, pageSize);
 
         return new ResponseDTO<>(
                 page,
@@ -926,18 +925,5 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 requestsCount,
                 requestList
         );
-    }
-
-    private List<PassRequest> paginateRequests(List<PassRequest> requests, long page, long pageSize) {
-        return requests
-                .stream()
-                .sorted(Comparator.comparing(PassRequest::getCreationDate).reversed())
-                .skip(pageSize * (page - 1))
-                .limit(pageSize)
-                .collect(Collectors.toList());
-    }
-
-    private Long getRequestNumber() {
-        return passRequestRepository.countAllByNumberGreaterThan(0L) + 1;
     }
 }

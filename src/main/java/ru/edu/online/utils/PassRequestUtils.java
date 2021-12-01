@@ -4,11 +4,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.enums.PassRequestSearchFilter;
+import ru.edu.online.repositories.IPassRequestRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -89,5 +87,30 @@ public class PassRequestUtils {
         }
 
         return filteredList;
+    }
+
+    /**
+     * Получить номер для новой заявки
+     * @param requestRepository репозиторий заявок
+     * @return номер новой заявки
+     */
+    public static Long getRequestNumber(IPassRequestRepository requestRepository) {
+        return requestRepository.countAllByNumberGreaterThan(0L) + 1;
+    }
+
+    /**
+     * Сделать пагинацию для списка заявок с сортировкой по дате создания
+     * @param page номер страницы
+     * @param requestsPerPage количество запросов на странице
+     * @param requests запросы
+     * @return страница запросов
+     */
+    public static List<PassRequest> paginateRequests(List<PassRequest> requests, long page, long requestsPerPage) {
+        return requests
+                .stream()
+                .sorted(Comparator.comparing(PassRequest::getCreationDate).reversed())
+                .skip(requestsPerPage * (page - 1))
+                .limit(requestsPerPage)
+                .collect(Collectors.toList());
     }
 }
