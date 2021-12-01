@@ -22,7 +22,6 @@ public class RunAfterStartup {
     public void runAfterStartup() {
         getAllStudentsJob.doJob();
         schedulerService.startGeneratingQRJob();
-//        schedulerService.startGettingStudentsQRJob();
-//        getAllStudentsJob.doJob();
+        schedulerService.startGettingStudentsQRJob();
     }
 }

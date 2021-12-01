@@ -72,10 +72,10 @@ public class QRMessage extends MimeMessage {
     private MimeBodyPart getTextBodyPart() throws MessagingException {
         MimeBodyPart textBodyPart = new MimeBodyPart();
 
-        this.setSubject("Your pass QR-code");
-        textBodyPart.setText("Hello, " + studentDTO.getName()
-                + "!\n Here your personal QR-code for organization: "
-                + organizationDTO.getFull_name());
+        this.setSubject("Ваш QR-код для прохода в организацию");
+        textBodyPart.setText("Здравствуйте, " + studentDTO.getName()
+                + "!\n Ваш персональный QR-код для прохода в организацию "
+                + organizationDTO.getShort_name());
         return textBodyPart;
     }
 
