@@ -11,6 +11,7 @@ import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
+import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
@@ -23,10 +24,13 @@ import java.util.Optional;
 @RequestMapping("/user")
 public class UserInfoController {
 
+    private final IPassRequestService passRequestService;
     private final IUserDetailsService userDetailsService;
 
     @Autowired
-    public UserInfoController(IUserDetailsService userDetailsService) {
+    public UserInfoController(IPassRequestService passRequestService,
+                              IUserDetailsService userDetailsService) {
+        this.passRequestService = passRequestService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -52,6 +56,27 @@ public class UserInfoController {
             return ResponseEntity.of(userDetailsService.getUserProfile(userId));
         }
         return ResponseEntity.of(userDetailsService.getUserProfile(principal.getName()));
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<ResponseDTO<UserDetailsDTO>> getUsersFromAcceptedPassRequestsAdminUniversity(
+            Principal principal,
+            @RequestParam Long page,
+            @RequestParam Long itemsPerPage,
+            @RequestParam(required = false) String search) {
+        if (userDetailsService.isSuperUser(principal.getName())
+                || userDetailsService.isUniversity(principal.getName())) {
+            return ResponseEntity.of(
+                    passRequestService
+                            .getUsersFromAcceptedPassRequestsAdminUniversity(
+                                    principal.getName(),
+                                    page,
+                                    itemsPerPage,
+                                    search)
+            );
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     /**
@@ -91,7 +116,7 @@ public class UserInfoController {
     public ResponseEntity<String> getAdminOrganizationOGRN(Principal principal) {
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
-            return ResponseEntity.of(userDetailsService.getAdminOrganizationOGRN(principal.getName()));
+            return ResponseEntity.of(userDetailsService.getAdminOrganizationGlobalId(principal.getName()));
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }

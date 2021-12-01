@@ -21,6 +21,7 @@ import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.services.IUserDetailsService;
 import ru.edu.online.utils.PassRequestUtils;
 import ru.edu.online.utils.ScosApiUtils;
+import ru.edu.online.utils.UserUtils;
 import ru.edu.online.utils.VamApiUtils;
 
 import java.time.LocalDate;
@@ -215,6 +216,110 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         .limit(pageSize)
                         .collect(Collectors.toList())
         );
+    }
+
+    /**
+     * Получить пользователей ООВО админа, у которых есть одобренные заявки в его ООВО
+     * @param userId идентификатор администратора
+     * @param page номер страницы
+     * @param usersPerPage количество пользователей на странице
+     * @param search поиск по почте (опционально)
+     * @return страница пользователей из ООВО админа с одобренными заявками
+     */
+    public Optional<ResponseDTO<UserDetailsDTO>> getUsersFromAcceptedPassRequestsAdminUniversity(String userId,
+                                                                                                 long page,
+                                                                                                 long usersPerPage,
+                                                                                                 String search) {
+        Optional<String> adminOrganizationGlobalId = userDetailsService.getAdminOrganizationGlobalId(userId);
+        if (adminOrganizationGlobalId.isPresent()) {
+            List<PassRequest> acceptedRequestsForUniversity =
+                    getPassRequestByStatusForUniversity(
+                            PassRequestStatus.ACCEPTED,
+                            adminOrganizationGlobalId.get()
+                    );
+            List<UserDetailsDTO> users =
+                    getUsersFromSinglePassRequests(
+                            acceptedRequestsForUniversity.stream()
+                                    .filter(request -> request.getType() == PassRequestType.SINGLE)
+                                    .collect(Collectors.toList()
+                                    )
+                    );
+
+            users.addAll(
+                    getUsersFromGroupPassRequests(
+                            acceptedRequestsForUniversity.stream()
+                                    .filter(request -> request.getType() == PassRequestType.GROUP)
+                                    .collect(Collectors.toList()
+                                    )
+                    )
+            );
+
+            if (Optional.ofNullable(search).isPresent()) {
+                users = UserUtils.searchByEmail(users, search);
+            }
+            long usersCount = users.size();
+            users = UserUtils.paginateUsers(users, page, usersPerPage);
+
+            return Optional.of(new ResponseDTO<>(
+                    page,
+                    usersPerPage,
+                    usersCount % usersPerPage == 0 ? usersCount / usersPerPage : usersCount / usersPerPage + 1,
+                    usersCount,
+                    users
+            ));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Получить пользователей из одиночных одобренных заявок
+     * @param singleRequests одиночные одобренные заявки
+     * @return пользователи одиночных заявок
+     */
+    private List<UserDetailsDTO> getUsersFromSinglePassRequests(List<PassRequest> singleRequests) {
+        List<UserDetailsDTO> users = new LinkedList<>();
+        for (PassRequest request : singleRequests) {
+            Optional<UserProfileDTO> profile = userDetailsService.getUserProfile(request.getAuthorId());
+            if (profile.isPresent()) {
+                UserDetailsDTO userDetails = new UserDetailsDTO();
+
+                userDetails.setUserId(request.getAuthorId());
+                userDetails.setFirstName(profile.get().getFirstName());
+                userDetails.setLastName(profile.get().getLastName());
+                userDetails.setPatronymicName(profile.get().getPatronymicName());
+                userDetails.setEmail(profile.get().getEmail());
+                userDetails.setPhotoURL(profile.get().getPhotoURL());
+
+                users.add(userDetails);
+            }
+        }
+
+        return users;
+    }
+
+
+    private List<UserDetailsDTO> getUsersFromGroupPassRequests(List<PassRequest> groupRequests) {
+        List<UserDetailsDTO> users = new LinkedList<>();
+
+        for (PassRequest request : groupRequests) {
+            for (PassRequestUser user : request.getPassRequestUsers()) {
+                Optional<UserProfileDTO> profile = userDetailsService.getUserProfile(user.getScosId());
+                if (profile.isPresent()) {
+                    UserDetailsDTO userDetails = new UserDetailsDTO();
+
+                    userDetails.setUserId(user.getScosId());
+                    userDetails.setFirstName(profile.get().getFirstName());
+                    userDetails.setLastName(profile.get().getLastName());
+                    userDetails.setPatronymicName(profile.get().getPatronymicName());
+                    userDetails.setEmail(profile.get().getEmail());
+                    userDetails.setPhotoURL(profile.get().getPhotoURL());
+
+                    users.add(userDetails);
+                }
+            }
+        }
+
+        return users;
     }
 
     /**
