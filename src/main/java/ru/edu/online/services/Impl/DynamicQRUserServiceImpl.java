@@ -80,6 +80,7 @@ public class DynamicQRUserServiceImpl implements IDynamicQRUserService {
         acceptedRequestsForUser.addAll(passRequestUserRepository.getByScosId(user.getUserId()).stream()
                 .map(passRequestUser -> passRequestService.getPassRequestById(passRequestUser.getPassRequestId()).get())
                 .filter(passRequest -> passRequest.getType() == PassRequestType.GROUP)
+                .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
                 .collect(Collectors.toList()));
 
         return new LinkedHashSet<>(acceptedRequestsForUser);
