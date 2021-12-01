@@ -108,15 +108,16 @@ public class UserInfoController {
     }
 
     /**
-     * Получить ОГРН организации админа
-     * @param principal атворизхация админа
-     * @return ОГРН организации админа
+     * Получить global_id организации пользователея
+     * @param principal атворизхация пользователея
+     * @return global_id организации пользователея
      */
     @GetMapping("/")
-    public ResponseEntity<String> getAdminOrganizationOGRN(Principal principal) {
+    public ResponseEntity<String> getUserOrganizationGlobalId(Principal principal) {
         if (userDetailsService.isUniversity(principal.getName())
-                || userDetailsService.isSuperUser(principal.getName())) {
-            return ResponseEntity.of(userDetailsService.getAdminOrganizationGlobalId(principal.getName()));
+                || userDetailsService.isSuperUser(principal.getName())
+                || userDetailsService.isSecurityOfficer(principal.getName())) {
+            return ResponseEntity.of(userDetailsService.getUserOrganizationGlobalId(principal.getName()));
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
