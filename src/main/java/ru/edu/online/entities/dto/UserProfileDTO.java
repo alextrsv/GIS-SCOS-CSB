@@ -18,6 +18,7 @@ public class UserProfileDTO {
     private String firstName;
     private String lastName;
     private String patronymicName;
+    private String email;
     private String studNumber;
     private String educationForm;
     private String photoURL;
