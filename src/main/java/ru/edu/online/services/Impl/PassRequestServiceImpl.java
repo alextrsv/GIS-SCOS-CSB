@@ -862,7 +862,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                     );
             if (authorOrganization.isPresent()) {
                 Optional<OrganizationDTO> targetOrganization =
-                        ScosApiUtils.getOrganization(
+                        ScosApiUtils.getOrganizationByGlobalId(
                                 devScosApiClient,
                                 dto.getTargetUniversityId()
                         );
@@ -914,7 +914,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             if (authorOrganization.isPresent()) {
                 Optional<String> authorOrganizationGlobalId = authorOrganization.get().getOrganizationId();
                 Optional<OrganizationDTO> targetOrganization =
-                        ScosApiUtils.getOrganization(
+                        ScosApiUtils.getOrganizationByGlobalId(
                                 devScosApiClient,
                                 dto.getTargetUniversityId()
                         );
