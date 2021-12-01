@@ -133,7 +133,7 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
     private Integer sendToUser(UserDTO userDTO, String organizationId){
 //        userDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
 
-        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
+        Optional<OrganizationDTO> organizationDTO = gisScosApiRestClient.makeGetOrganizationByOrgnRequest(organizationId);
         if (organizationDTO.isEmpty()) return -1;
 
         Optional<DynamicQR> qr = getActiveQRByOrganization(userDTO.getUser_id(), organizationId);
