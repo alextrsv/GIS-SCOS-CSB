@@ -28,5 +28,5 @@ public interface IUserDetailsService {
                                                                  Long pageSize,
                                                                  String search);
 
-    Optional<String> getAdminOrganizationOGRN(String userId);
+    Optional<String> getAdminOrganizationGlobalId(String userId);
 }

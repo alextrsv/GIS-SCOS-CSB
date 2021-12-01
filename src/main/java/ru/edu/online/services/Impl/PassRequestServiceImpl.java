@@ -21,6 +21,7 @@ import ru.edu.online.services.IPassRequestService;
 import ru.edu.online.services.IUserDetailsService;
 import ru.edu.online.utils.PassRequestUtils;
 import ru.edu.online.utils.ScosApiUtils;
+import ru.edu.online.utils.UserUtils;
 import ru.edu.online.utils.VamApiUtils;
 
 import java.time.LocalDate;
@@ -218,6 +219,110 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
+     * Получить пользователей ООВО админа, у которых есть одобренные заявки в его ООВО
+     * @param userId идентификатор администратора
+     * @param page номер страницы
+     * @param usersPerPage количество пользователей на странице
+     * @param search поиск по почте (опционально)
+     * @return страница пользователей из ООВО админа с одобренными заявками
+     */
+    public Optional<ResponseDTO<UserDetailsDTO>> getUsersFromAcceptedPassRequestsAdminUniversity(String userId,
+                                                                                                 long page,
+                                                                                                 long usersPerPage,
+                                                                                                 String search) {
+        Optional<String> adminOrganizationGlobalId = userDetailsService.getAdminOrganizationGlobalId(userId);
+        if (adminOrganizationGlobalId.isPresent()) {
+            List<PassRequest> acceptedRequestsForUniversity =
+                    getPassRequestByStatusForUniversity(
+                            PassRequestStatus.ACCEPTED,
+                            adminOrganizationGlobalId.get()
+                    );
+            List<UserDetailsDTO> users =
+                    getUsersFromSinglePassRequests(
+                            acceptedRequestsForUniversity.stream()
+                                    .filter(request -> request.getType() == PassRequestType.SINGLE)
+                                    .collect(Collectors.toList()
+                                    )
+                    );
+
+            users.addAll(
+                    getUsersFromGroupPassRequests(
+                            acceptedRequestsForUniversity.stream()
+                                    .filter(request -> request.getType() == PassRequestType.GROUP)
+                                    .collect(Collectors.toList()
+                                    )
+                    )
+            );
+
+            if (Optional.ofNullable(search).isPresent()) {
+                users = UserUtils.searchByEmail(users, search);
+            }
+            long usersCount = users.size();
+            users = UserUtils.paginateUsers(users, page, usersPerPage);
+
+            return Optional.of(new ResponseDTO<>(
+                    page,
+                    usersPerPage,
+                    usersCount % usersPerPage == 0 ? usersCount / usersPerPage : usersCount / usersPerPage + 1,
+                    usersCount,
+                    users
+            ));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Получить пользователей из одиночных одобренных заявок
+     * @param singleRequests одиночные одобренные заявки
+     * @return пользователи одиночных заявок
+     */
+    private List<UserDetailsDTO> getUsersFromSinglePassRequests(List<PassRequest> singleRequests) {
+        List<UserDetailsDTO> users = new LinkedList<>();
+        for (PassRequest request : singleRequests) {
+            Optional<UserProfileDTO> profile = userDetailsService.getUserProfile(request.getAuthorId());
+            if (profile.isPresent()) {
+                UserDetailsDTO userDetails = new UserDetailsDTO();
+
+                userDetails.setUserId(request.getAuthorId());
+                userDetails.setFirstName(profile.get().getFirstName());
+                userDetails.setLastName(profile.get().getLastName());
+                userDetails.setPatronymicName(profile.get().getPatronymicName());
+                userDetails.setEmail(profile.get().getEmail());
+                userDetails.setPhotoURL(profile.get().getPhotoURL());
+
+                users.add(userDetails);
+            }
+        }
+
+        return users;
+    }
+
+
+    private List<UserDetailsDTO> getUsersFromGroupPassRequests(List<PassRequest> groupRequests) {
+        List<UserDetailsDTO> users = new LinkedList<>();
+
+        for (PassRequest request : groupRequests) {
+            for (PassRequestUser user : request.getPassRequestUsers()) {
+                Optional<UserProfileDTO> profile = userDetailsService.getUserProfile(user.getScosId());
+                if (profile.isPresent()) {
+                    UserDetailsDTO userDetails = new UserDetailsDTO();
+
+                    userDetails.setUserId(user.getScosId());
+                    userDetails.setFirstName(profile.get().getFirstName());
+                    userDetails.setLastName(profile.get().getLastName());
+                    userDetails.setPatronymicName(profile.get().getPatronymicName());
+                    userDetails.setEmail(profile.get().getEmail());
+                    userDetails.setPhotoURL(profile.get().getPhotoURL());
+
+                    users.add(userDetails);
+                }
+            }
+        }
+
+        return users;
+    }
+
+    /**
      * Получить список заявок по статусу для пользователя
      * @param authorId заявки
      * @param page номер страницы
@@ -252,7 +357,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         requests,
                         new PassRequestStatus[]{
                                 PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                                PassRequestStatus.CANCELED_BY_CREATOR
                         },
                         page,
                         pageSize
@@ -342,7 +446,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<Map<PassRequestStatus, Integer>> getPassRequestsCountByStatusForAdmin(String userId) {
         Map<PassRequestStatus, Integer> requestsCountByStatus = new HashMap<>();
-        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationOGRN(userId);
+        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             for (PassRequestStatus status : PassRequestStatus.values()) {
                 requestsCountByStatus.put(
@@ -368,7 +472,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                       Long pageSize,
                                                                       String search,
                                                                       String userId) {
-        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationOGRN(userId);
+        Optional<String> adminUniversityId = userDetailsService.getAdminOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             switch (status) {
                 case PROCESSED:
@@ -471,7 +575,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 new PassRequestStatus[]{
                         PassRequestStatus.ACCEPTED,
                         PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                        PassRequestStatus.CANCELED_BY_CREATOR
                 },
                 universityId,
                 page,
@@ -548,39 +651,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Отменить заявку
-     * @param dto создателя заявки
-     * @return отменённая заявка или Optional.empty
-     * если заявка не найдена, пользователь не является автором
-     * или заявка уже не находится на рассмотрении (несоответствие статуса)
-     */
-    @Override
-    public Optional<PassRequest> cancelPassRequest(PassRequestUserDTO dto) {
-        Optional<PassRequest> request = getPassRequest(dto);
-
-        if (request.isPresent()) {
-            // Являестя ли пользователь создателем заявки?
-            // если да, получаем статус, нет - null
-            PassRequestStatus status =
-                    isAuthor(request.get(), dto) ? request.get().getStatus() : null;
-            // Если заявку ещё имеет смысл отменять.
-            // (с остальными статусами не актуально)
-            if (status == PassRequestStatus.TARGET_ORGANIZATION_REVIEW) {
-
-                request.get().setStatus(PassRequestStatus.CANCELED_BY_CREATOR);
-                passRequestRepository.save(request.get());
-                log.info("Pass request cancelled by creator");
-                return request;
-            }
-            log.warn("Impossible to cancel pass request! " +
-                    "UserDTO is not author or pass request status invalid.");
-            return Optional.empty();
-        }
-        log.warn("Impossible to cancel pass request! Pass request not found.");
-        return Optional.empty();
-    }
-
-    /**
      * Удаление заявки по id
      * @param id заявки
      * @return в случае, если заявка была найдена и удалена,
@@ -649,10 +719,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
         expiredList
                 .addAll(
-                        passRequestRepository.findAllByStatus(PassRequestStatus.CANCELED_BY_CREATOR)
-                );
-        expiredList
-                .addAll(
                         passRequestRepository.findAllByStatus(PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION)
                 );
 
@@ -686,7 +752,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private boolean isExpired(PassRequestStatus status, LocalDate startDate) {
         return (status != PassRequestStatus.ACCEPTED &&
                 status != PassRequestStatus.EXPIRED &&
-                status != PassRequestStatus.CANCELED_BY_CREATOR &&
                 startDate.isBefore(LocalDate.now()));
     }
 
@@ -731,7 +796,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
         Optional<PassRequestChangeLogEntry> entry;
         PassRequestStatus[] statuses = new PassRequestStatus[]{
                 PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                PassRequestStatus.CANCELED_BY_CREATOR,
                 PassRequestStatus.EXPIRED
         };
 
@@ -746,16 +810,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
         }
 
         return Optional.empty();
-    }
-
-    /**
-     * Является ли пользователь автором заявки?
-     * @param request заявка
-     * @param dto пользователя заявки
-     * @return true - является, false - не является
-     */
-    private boolean isAuthor(PassRequest request, PassRequestUserDTO dto) {
-        return (Objects.equals(request.getAuthorId(), dto.getUserId()));
     }
 
     /**
@@ -828,7 +882,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getTargetUniversityAddress(),
                             targetOrganization.get().getShort_name(),
                             dto.getTargetUniversityId(),
-                            getRequestNumber())
+                            PassRequestUtils.getRequestNumber(passRequestRepository))
                     );
                 }
             }
@@ -880,7 +934,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getTargetUniversityAddress(),
                             targetOrganization.get().getShort_name(),
                             dto.getTargetUniversityId(),
-                            getRequestNumber())
+                            PassRequestUtils.getRequestNumber(passRequestRepository))
                     );
                 }
             }
@@ -934,10 +988,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 filteredRequests.size() % pageSize == 0 ?
                         filteredRequests.size() / pageSize : filteredRequests.size() / pageSize + 1,
                 (long) filteredRequests.size(),
-                paginateRequests(filteredRequests, page, pageSize)
+                PassRequestUtils.paginateRequests(filteredRequests, page, pageSize)
         );
     }
-
 
     /**
      * Получить запросы для университета с поиском и пагинацией по категории
@@ -968,7 +1021,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             requestList = PassRequestUtils.filterRequest(requestList, search, devScosApiClient);
         }
         long requestsCount = requestList.size();
-        requestList = paginateRequests(requestList, page, pageSize);
+        requestList = PassRequestUtils.paginateRequests(requestList, page, pageSize);
 
         return new ResponseDTO<>(
                 page,
@@ -977,18 +1030,5 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 requestsCount,
                 requestList
         );
-    }
-
-    private List<PassRequest> paginateRequests(List<PassRequest> requests, long page, long pageSize) {
-        return requests
-                .stream()
-                .sorted(Comparator.comparing(PassRequest::getCreationDate).reversed())
-                .skip(pageSize * (page - 1))
-                .limit(pageSize)
-                .collect(Collectors.toList());
-    }
-
-    private Long getRequestNumber() {
-        return passRequestRepository.countAllByNumberGreaterThan(0L) + 1;
     }
 }

@@ -2,6 +2,7 @@ package ru.edu.online.entities.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.edu.online.entities.QRUser;
 
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class UserDTO extends QRUser {
 
     private String user_id;
