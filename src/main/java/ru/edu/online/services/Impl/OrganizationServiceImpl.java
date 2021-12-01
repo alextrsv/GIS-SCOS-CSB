@@ -45,7 +45,7 @@ public class OrganizationServiceImpl implements IOrganizationService {
 
     /**
      * Получить список организаций
-     * @return мапа: ОГРН - короткое название организации
+     * @return мапа: global_id - короткое название организации
      */
     @Override
     public Map<String, String> getOrganizations() {
@@ -53,7 +53,9 @@ public class OrganizationServiceImpl implements IOrganizationService {
         Map<String, String> organizationsForUI = new HashMap<>();
 
         for (OrganizationDTO organization : organizations) {
-            organizationsForUI.put(organization.getOgrn(), organization.getShort_name());
+            if (organization.getOrganizationId().isPresent()) {
+                organizationsForUI.put(organization.getOrganizationId().get(), organization.getShort_name());
+            }
         }
 
         return organizationsForUI;

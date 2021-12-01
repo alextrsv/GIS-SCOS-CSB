@@ -24,7 +24,7 @@ public class OrganizationController {
 
     /**
      * Получить список организаций
-     * @return мапа: ОГРН - короткое название организации
+     * @return мапа: global_id - короткое название организации
      */
     @GetMapping("/list")
     public Map<String, String> getOrganizations() {

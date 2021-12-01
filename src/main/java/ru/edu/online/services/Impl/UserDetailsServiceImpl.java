@@ -101,19 +101,29 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     }
 
     /**
-     * Получить ОГРН организации админа
+     * Получить global_id организации админа
      * @param userId идентификатор пользователя
-     * @return ОГРН организации админа
+     * @return global_id организации админа
      */
     @Override
-    public Optional<String> getAdminOrganizationOGRN(String userId) {
+    public Optional<String> getAdminOrganizationGlobalId(String userId) {
         UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, userId);
         Optional<EmploymentDTO> employmentDTO = admin
                 .getEmployments()
                 .stream()
                 .filter(e -> e.getRoles().contains("UNIVERSITY"))
                 .findFirst();
-        return employmentDTO.map(EmploymentDTO::getOgrn);
+        if (employmentDTO.isPresent()) {
+            Optional<OrganizationDTO> adminOrganization =
+                    ScosApiUtils.getOrganization(
+                            devScosApiClient,
+                            employmentDTO.get().getOgrn()
+                    );
+            if (adminOrganization.isPresent()) {
+                return adminOrganization.get().getOrganizationId();
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -311,6 +321,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setOrganizationShortName(organization.get().getShort_name());
                 userProfile.setRole(UserRole.STUDENT);
                 userProfile.setPhotoURL(user.getPhoto_url());
+                userProfile.setEmail(user.getEmail());
 
                 return userProfile;
             }
