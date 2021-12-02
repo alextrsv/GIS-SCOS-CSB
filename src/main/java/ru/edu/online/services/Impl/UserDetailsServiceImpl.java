@@ -202,6 +202,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     @Override
     public Optional<UserProfileDTO> getUserProfile(String userId) {
         switch (getUserRole(userId)) {
+            case ADMIN:
+            case SECURITY:
+            case SUPER_USER:
+                return Optional.of(getEmploymentProfile(userId, getUserRole(userId)));
             case STUDENT:
                 return Optional.ofNullable(getStudentProfile(userId));
             case TEACHER:
@@ -209,6 +213,52 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
             default:
                 return Optional.empty();
         }
+    }
+
+    private UserProfileDTO getEmploymentProfile(String userId, UserRole role) {
+        UserDTO userScosInfo = ScosApiUtils.getUserDetails(devScosApiClient, userId);
+        UserByFIOResponseDTO userByFIO =
+                ScosApiUtils.getUserByFIO(
+                        devScosApiClient,
+                        userScosInfo.getFirst_name(),
+                        userScosInfo.getLast_name()
+                );
+        Optional<UserDTO> userInfo =
+                Arrays.stream(userByFIO.getData())
+                        .filter(user -> user.getUser_id().equals(userId))
+                        .findFirst();
+
+        UserProfileDTO userProfile = new UserProfileDTO();
+
+        if (userInfo.isPresent()) {
+            Optional<EmploymentDTO> employment =
+                    userInfo.get()
+                            .getEmployments()
+                            .stream()
+                            .filter(e -> e.getRoles().contains(role.toString()))
+                            .findFirst();
+            if (employment.isPresent()) {
+                Optional<OrganizationDTO> organization =
+                        ScosApiUtils.getOrganization(
+                                devScosApiClient,
+                                employment.get().getOgrn()
+                        );
+
+                userProfile.setEmail(userInfo.get().getEmail());
+                userProfile.setRole(role);
+                userProfile.setPhotoURL(userInfo.get().getPhoto_url());
+                userProfile.setFirstName(userInfo.get().getFirst_name());
+                userProfile.setLastName(userInfo.get().getLast_name());
+                userProfile.setPatronymicName(userInfo.get().getPatronymic_name());
+
+                if (organization.isPresent()) {
+                    userProfile.setOrganizationFullName(organization.get().getFull_name());
+                    userProfile.setOrganizationShortName(organization.get().getShort_name());
+                }
+            }
+        }
+
+        return userProfile;
     }
 
     /**
