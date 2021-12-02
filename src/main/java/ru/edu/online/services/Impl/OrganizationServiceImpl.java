@@ -63,29 +63,6 @@ public class OrganizationServiceImpl implements IOrganizationService {
 
     @Override
     public Optional<OrganizationProfileDTO> getOrganizationProfile(String id) {
-        OrganizationProfileDTO organizationProfile = new OrganizationProfileDTO();
-        Optional<OrganizationDTO> organizationDTO = ScosApiUtils.getOrganization(scosApiClient, id);
-
-        if (organizationDTO.isPresent()) {
-            organizationProfile.setShortName(organizationDTO.get().getShort_name());
-            organizationProfile.setLongName(organizationDTO.get().getFull_name());
-            organizationProfile.setDescription("Описания ООВО у СЦОСа нету :(");
-            organizationProfile.setLink("www.google.com");
-
-            return Optional.of(organizationProfile);
-        }
-
-        organizationDTO = ScosApiUtils.getOrganizationByGlobalId(scosApiClient, id);
-
-        if (organizationDTO.isPresent()) {
-            organizationProfile.setShortName(organizationDTO.get().getShort_name());
-            organizationProfile.setLongName(organizationDTO.get().getFull_name());
-            organizationProfile.setDescription("Описания ООВО у СЦОСа нету :(");
-            organizationProfile.setLink("www.google.com");
-
-            return Optional.of(organizationProfile);
-        }
-
-        return Optional.empty();
+        return ScosApiUtils.getOrganizationByGlobalId(scosApiClient, id);
     }
 }
