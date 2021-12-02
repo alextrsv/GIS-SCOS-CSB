@@ -56,7 +56,8 @@ public class StudentServiceImpl implements QRUserService {
         permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));  //by organizationId
         permanentStudentQRDTO.setStatus("status");
         permanentStudentQRDTO.setRole("student");
-        permanentStudentQRDTO.setStud_bilet(studentDTO.getId().toString().substring(0, 10));
+//        permanentStudentQRDTO.setStud_bilet(studentDTO.getId().toString().substring(0, 10));
+        permanentStudentQRDTO.setStud_bilet("25643682");
         permanentStudentQRDTO.setEducation_form(getEducationForm(studentDTO.getStudy_plans()));
         permanentStudentQRDTO.setStart_year(getStartYear(studentDTO));
         permanentStudentQRDTO.setStud_bilet_duration(getEndYear(studentDTO));
