@@ -98,7 +98,7 @@ public class GetAllStudentsJob extends QuartzJobBean {
                         PassRequestType.SINGLE,
                         "organizationAddress",
                         organizationDTO.getShort_name(),
-                        organizationDTO.getOgrn(),
+                        orgId.get(),
                         passRequestRepository.countAllByNumberGreaterThan(0L) + 1
                         )
                 );
