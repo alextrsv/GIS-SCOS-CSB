@@ -303,7 +303,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 .filter(s -> s.getStudy_year() != null)
                 .findFirst();
         if (student.isPresent()) {
-            Optional<OrganizationDTO> organization =
+            Optional<OrganizationProfileDTO> organization =
                     ScosApiUtils.getOrganizationByGlobalId(
                             devScosApiClient,
                             student.get().getOrganization_id()
@@ -317,8 +317,8 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setStudyYear(student.get().getStudy_year());
                 userProfile.setStudNumber(String.valueOf(new Random().nextInt(1000000)));
                 userProfile.setEducationForm("Бюджет");
-                userProfile.setOrganizationFullName(organization.get().getFull_name());
-                userProfile.setOrganizationShortName(organization.get().getShort_name());
+                userProfile.setOrganizationFullName(organization.get().getFullName());
+                userProfile.setOrganizationShortName(organization.get().getShortName());
                 userProfile.setRole(UserRole.STUDENT);
                 userProfile.setPhotoURL(user.getPhoto_url());
                 userProfile.setEmail(user.getEmail());

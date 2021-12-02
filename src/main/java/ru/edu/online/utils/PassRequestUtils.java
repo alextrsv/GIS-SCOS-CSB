@@ -2,7 +2,7 @@ package ru.edu.online.utils;
 
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.entities.PassRequest;
-import ru.edu.online.entities.dto.OrganizationDTO;
+import ru.edu.online.entities.dto.OrganizationProfileDTO;
 import ru.edu.online.entities.enums.PassRequestSearchFilter;
 import ru.edu.online.repositories.IPassRequestRepository;
 
@@ -70,12 +70,12 @@ public class PassRequestUtils {
                                                                      String organizationName,
                                                                      WebClient scosApiClient) {
         List<PassRequest> filteredList = new ArrayList<>();
-        Optional<OrganizationDTO> organizationDTO;
+        Optional<OrganizationProfileDTO> organizationDTO;
         for (PassRequest request : requests) {
-            organizationDTO = ScosApiUtils.getOrganization(scosApiClient, request.getAuthorUniversityId());
+            organizationDTO = ScosApiUtils.getOrganizationByGlobalId(scosApiClient, request.getAuthorUniversityId());
             if (organizationDTO.isPresent()) {
                 if (organizationDTO.get()
-                        .getShort_name()
+                        .getShortName()
                         .toLowerCase(Locale.ROOT)
                         .contains(
                                 organizationName.toLowerCase(Locale.ROOT)

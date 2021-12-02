@@ -856,13 +856,13 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         .findFirst();
 
         if (student.isPresent()) {
-            Optional<OrganizationDTO> authorOrganization =
+            Optional<OrganizationProfileDTO> authorOrganization =
                     ScosApiUtils.getOrganizationByGlobalId(
                             devScosApiClient,
                             student.get().getOrganization_id()
                     );
             if (authorOrganization.isPresent()) {
-                Optional<OrganizationDTO> targetOrganization =
+                Optional<OrganizationProfileDTO> targetOrganization =
                         ScosApiUtils.getOrganizationByGlobalId(
                                 devScosApiClient,
                                 dto.getTargetUniversityId()
@@ -875,13 +875,13 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             author.getLast_name(),
                             author.getPatronymic_name(),
                             student.get().getOrganization_id(),
-                            authorOrganization.get().getShort_name(),
+                            authorOrganization.get().getShortName(),
                             dto.getStartDate(),
                             dto.getEndDate(),
                             dto.getStatus(),
                             dto.getType(),
                             dto.getTargetUniversityAddress(),
-                            targetOrganization.get().getShort_name(),
+                            targetOrganization.get().getShortName(),
                             dto.getTargetUniversityId(),
                             PassRequestUtils.getRequestNumber(passRequestRepository))
                     );
@@ -914,7 +914,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
             if (authorOrganization.isPresent()) {
                 Optional<String> authorOrganizationGlobalId = authorOrganization.get().getOrganizationId();
-                Optional<OrganizationDTO> targetOrganization =
+                Optional<OrganizationProfileDTO> targetOrganization =
                         ScosApiUtils.getOrganizationByGlobalId(
                                 devScosApiClient,
                                 dto.getTargetUniversityId()
@@ -933,7 +933,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getStatus(),
                             dto.getType(),
                             dto.getTargetUniversityAddress(),
-                            targetOrganization.get().getShort_name(),
+                            targetOrganization.get().getShortName(),
                             dto.getTargetUniversityId(),
                             PassRequestUtils.getRequestNumber(passRequestRepository))
                     );
