@@ -80,6 +80,7 @@ public class UserServiceImpl implements QRUserService {
         permanentUserQRDTO.setSurname(user.getLast_name());
         permanentUserQRDTO.setName(user.getFirst_name());
         permanentUserQRDTO.setMiddle_name(user.getPatronymic_name());
+        permanentUserQRDTO.setRole(getUserRolesAsString(user));
         organizationDTO.ifPresentOrElse(organization -> permanentUserQRDTO.setOrganization(organization.getShort_name()),
                 () -> permanentUserQRDTO.setOrganization(""));
 
