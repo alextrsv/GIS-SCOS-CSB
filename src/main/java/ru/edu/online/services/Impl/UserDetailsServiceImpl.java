@@ -364,7 +364,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setLastName(student.get().getSurname());
                 userProfile.setPatronymicName(student.get().getMiddle_name());
                 userProfile.setStudyYear(student.get().getStudy_year());
-                userProfile.setStudNumber(String.valueOf(new Random().nextInt(1000000)));
+                userProfile.setStudNumber("25643682");
                 userProfile.setEducationForm("Бюджет");
                 userProfile.setOrganizationFullName(organization.get().getFull_name());
                 userProfile.setOrganizationShortName(organization.get().getShort_name());
