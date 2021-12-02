@@ -232,10 +232,9 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
 
         if (userInfo.isPresent()) {
             Optional<EmploymentDTO> employment =
-                    userInfo.get()
-                            .getEmployments()
+                    userScosInfo.getEmployments()
                             .stream()
-                            .filter(e -> e.getRoles().contains(role.toString()))
+                            .filter(e -> e.getRoles().contains(role.getValue()))
                             .findFirst();
             if (employment.isPresent()) {
                 Optional<OrganizationDTO> organization =
