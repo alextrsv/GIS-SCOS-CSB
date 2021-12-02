@@ -289,6 +289,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 userDetails.setPatronymicName(profile.get().getPatronymicName());
                 userDetails.setEmail(profile.get().getEmail());
                 userDetails.setPhotoURL(profile.get().getPhotoURL());
+                userDetails.setUserOrganizationShortName(profile.get().getOrganizationShortName());
 
                 users.add(userDetails);
             }
