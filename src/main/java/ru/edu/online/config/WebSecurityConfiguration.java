@@ -23,6 +23,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests(authz -> authz
+                        .antMatchers("permanent-qr/payload/anonymous/**").permitAll())
+                .authorizeRequests(authz -> authz
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
         http.cors();
