@@ -33,13 +33,16 @@ public class PassRequestUser {
     private String lastName;
     /** Отчество */
     private String patronymicName;
+    /** Ссылка на фото */
+    private String photoUrl;
 
     public PassRequestUser(UUID passRequestId, String scosId, String firstName,
-                           String lastName, String patronymicName) {
+                           String lastName, String patronymicName, String photoUrl) {
         this.passRequestId = passRequestId;
         this.scosId = scosId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.patronymicName = patronymicName;
+        this.photoUrl = photoUrl;
     }
 }

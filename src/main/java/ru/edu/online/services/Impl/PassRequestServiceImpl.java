@@ -155,7 +155,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                     dto.getUserId(),
                     dto.getFirstName(),
                     dto.getLastName(),
-                    dto.getPatronymicName()
+                    dto.getPatronymicName(),
+                    dto.getPhotoUrl()
             );
             passRequestUserRepository.save(passRequestUser);
             log.info("the user was associated to the pass request successfully");
