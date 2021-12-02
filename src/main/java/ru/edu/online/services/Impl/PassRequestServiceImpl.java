@@ -876,13 +876,13 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             author.getLast_name(),
                             author.getPatronymic_name(),
                             student.get().getOrganization_id(),
-                            authorOrganization.get().getShortName(),
+                            authorOrganization.get().getShort_name(),
                             dto.getStartDate(),
                             dto.getEndDate(),
                             dto.getStatus(),
                             dto.getType(),
                             dto.getTargetUniversityAddress(),
-                            targetOrganization.get().getShortName(),
+                            targetOrganization.get().getShort_name(),
                             dto.getTargetUniversityId(),
                             PassRequestUtils.getRequestNumber(passRequestRepository))
                     );
@@ -934,7 +934,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getStatus(),
                             dto.getType(),
                             dto.getTargetUniversityAddress(),
-                            targetOrganization.get().getShortName(),
+                            targetOrganization.get().getShort_name(),
                             dto.getTargetUniversityId(),
                             PassRequestUtils.getRequestNumber(passRequestRepository))
                     );

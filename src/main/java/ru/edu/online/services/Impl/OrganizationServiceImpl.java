@@ -62,7 +62,7 @@ public class OrganizationServiceImpl implements IOrganizationService {
     }
 
     @Override
-    public Optional<OrganizationProfileDTO> getOrganizationProfile(String id) {
-        return ScosApiUtils.getOrganizationByGlobalId(scosApiClient, id);
+    public Optional<OrganizationProfileDTO> getOrganizationProfile(String globalId) {
+        return ScosApiUtils.getOrganizationByGlobalId(scosApiClient, globalId);
     }
 }

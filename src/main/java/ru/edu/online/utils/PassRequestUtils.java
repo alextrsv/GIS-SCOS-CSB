@@ -75,7 +75,7 @@ public class PassRequestUtils {
             organizationDTO = ScosApiUtils.getOrganizationByGlobalId(scosApiClient, request.getAuthorUniversityId());
             if (organizationDTO.isPresent()) {
                 if (organizationDTO.get()
-                        .getShortName()
+                        .getShort_name()
                         .toLowerCase(Locale.ROOT)
                         .contains(
                                 organizationName.toLowerCase(Locale.ROOT)
