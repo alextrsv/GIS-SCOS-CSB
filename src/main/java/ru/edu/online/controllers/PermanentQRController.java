@@ -20,7 +20,7 @@ import java.util.Optional;
  * контроллер для работы со статическими QR-кодами
  */
 @RestController
-@RequestMapping("permanent-qr/")
+@RequestMapping("/permanent-qr")
 public class PermanentQRController {
 
     private final IPermanentQRService permanentQRService;
@@ -32,14 +32,14 @@ public class PermanentQRController {
         this.userDetailsService = userDetailsService;
     }
 
-    @PostMapping("hash")
+    @GetMapping("/hash")
     public ResponseEntity<QRDataVerifyStatus> verifyData(@RequestParam String userId,
                                                          @RequestParam String dataHash){
         return permanentQRService.verifyData(userId, dataHash).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping("download/{id}")
+    @GetMapping("/download/{id}")
     public ResponseEntity<Resource> downloadQrAsFile(@PathVariable String id){
         return permanentQRService.downloadQRAsFile(id).map(resource ->
                         ResponseEntity.ok()
@@ -50,7 +50,7 @@ public class PermanentQRController {
     }
 
 
-    @GetMapping("payload/{id}")
+    @GetMapping("/payload/{id}")
     public ResponseEntity<PermanentUserQRDTO> getScanningUserInfo(@PathVariable String id,
                                                                   Principal principal){
 
@@ -66,7 +66,7 @@ public class PermanentQRController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @GetMapping("payload/anonymous/{id}")
+    @GetMapping("/payload/anonymous/{id}")
     public ResponseEntity<PermanentUserQRDTO> getScanningUserInfoAnonymous(@PathVariable String id){
         Optional<PermanentUserQRDTO> result;
 
