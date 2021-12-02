@@ -66,4 +66,13 @@ public class PermanentQRController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @GetMapping("payload/anonymous/{id}")
+    public ResponseEntity<PermanentUserQRDTO> getScanningUserInfoAnonymous(@PathVariable String id){
+        Optional<PermanentUserQRDTO> result;
+
+        result = permanentQRService.getAbbreviatedStaticQRPayload(id);
+
+        return result.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
 }

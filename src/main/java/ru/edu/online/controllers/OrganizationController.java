@@ -33,11 +33,11 @@ public class OrganizationController {
 
     /**
      * Получить профиль организации для фронта
-     * @param id идентификатор организации
+     * @param globalId идентификатор организации
      * @return профиль организации
      */
     @GetMapping("/profile")
-    public ResponseEntity<OrganizationProfileDTO> getOrganizationProfile(@RequestParam String id) {
-        return ResponseEntity.of(organizationService.getOrganizationProfile(id));
+    public ResponseEntity<OrganizationProfileDTO> getOrganizationProfile(@RequestParam String globalId) {
+        return ResponseEntity.of(organizationService.getOrganizationProfile(globalId));
     }
 }

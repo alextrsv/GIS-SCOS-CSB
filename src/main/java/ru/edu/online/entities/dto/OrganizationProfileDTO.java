@@ -8,8 +8,9 @@ import lombok.Data;
 @Data
 public class OrganizationProfileDTO {
 
-    private String shortName;
-    private String longName;
-    private String link;
+    private String global_id;
+    private String short_name;
+    private String full_name;
+    private String site_url;
     private String description;
 }

@@ -16,4 +16,5 @@ public class UserDetailsDTO {
     private String patronymicName;
     private String[] roles;
     private String photoURL;
+    private String userOrganizationShortName;
 }

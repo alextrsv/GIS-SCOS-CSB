@@ -15,4 +15,5 @@ public class PassRequestUserDTO {
     private String firstName;
     private String lastName;
     private String patronymicName;
+    private String photoUrl;
 }

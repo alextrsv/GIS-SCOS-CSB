@@ -202,6 +202,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     @Override
     public Optional<UserProfileDTO> getUserProfile(String userId) {
         switch (getUserRole(userId)) {
+            case ADMIN:
+            case SECURITY:
+            case SUPER_USER:
+                return Optional.of(getEmploymentProfile(userId, getUserRole(userId)));
             case STUDENT:
                 return Optional.ofNullable(getStudentProfile(userId));
             case TEACHER:
@@ -209,6 +213,51 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
             default:
                 return Optional.empty();
         }
+    }
+
+    private UserProfileDTO getEmploymentProfile(String userId, UserRole role) {
+        UserDTO userScosInfo = ScosApiUtils.getUserDetails(devScosApiClient, userId);
+        UserByFIOResponseDTO userByFIO =
+                ScosApiUtils.getUserByFIO(
+                        devScosApiClient,
+                        userScosInfo.getFirst_name(),
+                        userScosInfo.getLast_name()
+                );
+        Optional<UserDTO> userInfo =
+                Arrays.stream(userByFIO.getData())
+                        .filter(user -> user.getUser_id().equals(userId))
+                        .findFirst();
+
+        UserProfileDTO userProfile = new UserProfileDTO();
+
+        if (userInfo.isPresent()) {
+            Optional<EmploymentDTO> employment =
+                    userScosInfo.getEmployments()
+                            .stream()
+                            .filter(e -> e.getRoles().contains(role.getValue()))
+                            .findFirst();
+            if (employment.isPresent()) {
+                Optional<OrganizationDTO> organization =
+                        ScosApiUtils.getOrganization(
+                                devScosApiClient,
+                                employment.get().getOgrn()
+                        );
+
+                userProfile.setEmail(userInfo.get().getEmail());
+                userProfile.setRole(role);
+                userProfile.setPhotoURL(userInfo.get().getPhoto_url());
+                userProfile.setFirstName(userInfo.get().getFirst_name());
+                userProfile.setLastName(userInfo.get().getLast_name());
+                userProfile.setPatronymicName(userInfo.get().getPatronymic_name());
+
+                if (organization.isPresent()) {
+                    userProfile.setOrganizationFullName(organization.get().getFull_name());
+                    userProfile.setOrganizationShortName(organization.get().getShort_name());
+                }
+            }
+        }
+
+        return userProfile;
     }
 
     /**
@@ -303,7 +352,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 .filter(s -> s.getStudy_year() != null)
                 .findFirst();
         if (student.isPresent()) {
-            Optional<OrganizationDTO> organization =
+            Optional<OrganizationProfileDTO> organization =
                     ScosApiUtils.getOrganizationByGlobalId(
                             devScosApiClient,
                             student.get().getOrganization_id()
@@ -315,7 +364,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setLastName(student.get().getSurname());
                 userProfile.setPatronymicName(student.get().getMiddle_name());
                 userProfile.setStudyYear(student.get().getStudy_year());
-                userProfile.setStudNumber(String.valueOf(new Random().nextInt(1000000)));
+                userProfile.setStudNumber("25643682");
                 userProfile.setEducationForm("Бюджет");
                 userProfile.setOrganizationFullName(organization.get().getFull_name());
                 userProfile.setOrganizationShortName(organization.get().getShort_name());

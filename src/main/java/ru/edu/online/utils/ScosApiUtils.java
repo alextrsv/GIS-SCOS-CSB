@@ -6,6 +6,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import ru.edu.online.entities.dto.OrganizationDTO;
+import ru.edu.online.entities.dto.OrganizationProfileDTO;
 import ru.edu.online.entities.dto.UserByFIOResponseDTO;
 import ru.edu.online.entities.dto.UserDTO;
 
@@ -36,11 +37,11 @@ public class ScosApiUtils {
      * @param globalId идентификатор организации
      * @return организация
      */
-    public static Optional<OrganizationDTO> getOrganizationByGlobalId(WebClient scosApiClient, String globalId) {
+    public static Optional<OrganizationProfileDTO> getOrganizationByGlobalId(WebClient scosApiClient, String globalId) {
         return Optional.ofNullable(scosApiClient.get()
-                .uri(String.join("", "/organizations/?global_id=", globalId))
+                .uri(String.join("", "/organizations/university/", globalId))
                 .retrieve()
-                .bodyToMono(OrganizationDTO.class)
+                .bodyToMono(OrganizationProfileDTO.class)
                 .onErrorResume(WebClientResponseException.class,
                         ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
                 .onErrorResume(WebClientResponseException.class,

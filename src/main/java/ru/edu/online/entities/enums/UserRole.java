@@ -10,10 +10,20 @@ package ru.edu.online.entities.enums;
  * UNDEFINED  - роль не определена
  */
 public enum UserRole {
-    ADMIN,
-    SECURITY,
-    STUDENT,
-    TEACHER,
-    SUPER_USER,
-    UNDEFINED
+    ADMIN("UNIVERSITY"),
+    SECURITY("SECURITY_OFFICER"),
+    STUDENT("STUDENT"),
+    TEACHER("TEACHER"),
+    SUPER_USER("SUPER_USER"),
+    UNDEFINED("UNDEFINED")
+    ;
+    private final String value;
+
+    UserRole(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return this.value;
+    }
 }

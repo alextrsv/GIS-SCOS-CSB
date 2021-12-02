@@ -339,12 +339,11 @@ public class PassRequestController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<PassRequest> deletePassRequestById(@PathVariable UUID id,
                                                              Principal principal) {
-        if (userDetailsService.isUniversity(principal.getName())
-                || userDetailsService.isSuperUser(principal.getName())) {
-            return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        if (userDetailsService.isSecurityOfficer(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     /**
