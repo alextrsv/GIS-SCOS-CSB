@@ -75,7 +75,9 @@ public class QRMessage extends MimeMessage {
         this.setSubject("Ваш QR-код для прохода в организацию");
         textBodyPart.setText("Здравствуйте, " + studentDTO.getName()
                 + "!\n Ваш персональный QR-код для прохода в организацию "
-                + organizationDTO.getShort_name());
+                + organizationDTO.getShort_name()
+                + "\nСрок действия: "
+                + dynamicQR.getCreationDate().toString() + "  -  " + dynamicQR.getEndDate().toString());
         return textBodyPart;
     }
 
