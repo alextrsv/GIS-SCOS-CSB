@@ -352,7 +352,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Получить список заявок по статусу для пользователя
-     * @param authorId заявки
+     * @param authorId идентификатор автора заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @return список заявок с определенным статусом
@@ -371,6 +371,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 .map(this::getPassRequestById)
                 .map(Optional::get)
                 .collect(Collectors.toList()));
+        requests.removeIf(request ->
+                request.getStatus() == PassRequestStatus.ACCEPTED && request.getChangeLog().isEmpty()
+        );
         log.info("Getting passRequests by status");
         switch (status) {
             case "accepted":
@@ -418,6 +421,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
      */
     @Override
     public Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId) {
+        log.info("Getting passRequests count by status for user");
         List<PassRequest> requests =
                 passRequestRepository.findAllByAuthorId(authorId);
         requests.addAll(passRequestUserRepository.getByScosId(authorId)
@@ -426,7 +430,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 .map(this::getPassRequestById)
                 .map(Optional::get)
                 .collect(Collectors.toList()));
-        log.info("Getting passRequests count by status for user");
+        requests.removeIf(request ->
+                request.getStatus() == PassRequestStatus.ACCEPTED && request.getChangeLog().isEmpty()
+        );
         Map<PassRequestStatus, Long> statusesCount = new HashMap<>();
         for (PassRequestStatus status : PassRequestStatus.values()) {
             statusesCount.put(
@@ -502,15 +508,21 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                                                       String userId) {
         Optional<String> adminUniversityId = userDetailsService.getUserOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
+            List<PassRequest> allUniversityRequests =
+                    passRequestRepository.findAllByTargetUniversityId(adminUniversityId.get());
+            allUniversityRequests.removeIf(request ->
+                    request.getStatus() == PassRequestStatus.ACCEPTED && request.getChangeLog().isEmpty()
+            );
+
             switch (status) {
                 case PROCESSED:
-                    return Optional.of(getProcessedPassRequests(adminUniversityId.get(), page, pageSize, search));
+                    return Optional.of(getProcessedPassRequests(allUniversityRequests, page, pageSize, search));
                 case IN_PROCESSING:
-                    return Optional.of(getPassRequestsInProcessing(adminUniversityId.get(), page, pageSize, search));
+                    return Optional.of(getPassRequestsInProcessing(allUniversityRequests, page, pageSize, search));
                 case FOR_PROCESSING:
-                    return Optional.of(getPassRequestsForProcessing(adminUniversityId.get(), page, pageSize, search));
+                    return Optional.of(getPassRequestsForProcessing(allUniversityRequests, page, pageSize, search));
                 case EXPIRED:
-                    return Optional.of(getExpiredPassRequests(adminUniversityId.get(), page, pageSize, search));
+                    return Optional.of(getExpiredPassRequests(allUniversityRequests, page, pageSize, search));
             }
         }
         return Optional.empty();
@@ -518,21 +530,21 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Получение заявок для обработки.
-     * @param universityId идентификатор ООВО
+     * @param requests заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @param search поиск
      * @return список заявок в обработке
      */
     public ResponseDTO<PassRequest> getPassRequestsForProcessing(
-            String universityId,
+            List<PassRequest> requests,
             Long page,
             Long pageSize,
             String search) {
         log.info("collect requests sent for consideration to the target OOVO");
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
                 new PassRequestStatus[]{PassRequestStatus.TARGET_ORGANIZATION_REVIEW},
-                universityId,
+                requests,
                 page,
                 pageSize,
                 search
@@ -541,14 +553,14 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Получение заявок в обработке.
-     * @param universityId идентификатор ООВО
+     * @param requests заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @param search поиск
      * @return список заявок в обработке
      */
     public ResponseDTO<PassRequest> getPassRequestsInProcessing(
-            String universityId,
+            List<PassRequest> requests,
             Long page,
             Long pageSize,
             String search) {
@@ -556,7 +568,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
                 new PassRequestStatus[]{PassRequestStatus.PROCESSED_IN_TARGET_ORGANIZATION},
-                universityId,
+                requests,
                 page,
                 pageSize,
                 search
@@ -565,20 +577,21 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Получение просроченных заявок.
-     * @param universityId идентификатор ООВО
+     * @param requests заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @param search поиск
      * @return список обработанных заявок
      */
-    public ResponseDTO<PassRequest> getExpiredPassRequests(String universityId,
-                                              Long page,
-                                              Long pageSize,
-                                              String search) {
+    public ResponseDTO<PassRequest> getExpiredPassRequests(
+            List<PassRequest> requests,
+            Long page,
+            Long pageSize,
+            String search) {
         log.info("collect expired requests sent for to the OOVO");
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
                 new PassRequestStatus[]{PassRequestStatus.EXPIRED},
-                universityId,
+                requests,
                 page,
                 pageSize,
                 search
@@ -587,16 +600,17 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
     /**
      * Получение обработанных заявок.
-     * @param universityId идентификатор ООВО
+     * @param requests заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @param search поиск
      * @return список обработанных заявок
      */
-    public ResponseDTO<PassRequest> getProcessedPassRequests(String universityId,
-                                                Long page,
-                                                Long pageSize,
-                                                String search) {
+    public ResponseDTO<PassRequest> getProcessedPassRequests(
+            List<PassRequest> requests,
+            Long page,
+            Long pageSize,
+            String search) {
 
         log.info("collect considered requests sent for to the OOVO");
         return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
@@ -604,7 +618,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
                         PassRequestStatus.ACCEPTED,
                         PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
                 },
-                universityId,
+                requests,
                 page,
                 pageSize,
                 search
@@ -1023,7 +1037,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     /**
      * Получить запросы для университета с поиском и пагинацией по категории
      * @param statuses массив статусов заявок
-     * @param universityId идентификатор университета
+     * @param requests список заявок, которые пришли в университет
      * @param page номер страницы
      * @param pageSize размер страницы
      * @param search поиск (опционально)
@@ -1031,17 +1045,16 @@ public class PassRequestServiceImpl implements IPassRequestService {
      */
     private ResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
             PassRequestStatus[] statuses,
-            String universityId,
+            List<PassRequest> requests,
             Long page,
             Long pageSize,
             String search) {
         List<PassRequest> requestList = new LinkedList<>();
         for (PassRequestStatus status : statuses) {
             requestList.addAll(
-                    getPassRequestByStatusForUniversity(
-                            status,
-                            universityId
-                    )
+                    requests.stream()
+                            .filter(request -> request.getStatus() == status)
+                            .collect(Collectors.toList())
             );
         }
 
