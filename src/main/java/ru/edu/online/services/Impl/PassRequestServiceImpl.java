@@ -889,6 +889,18 @@ public class PassRequestServiceImpl implements IPassRequestService {
      */
     private Optional<PassRequest> createSinglePassRequest(PassRequestDTO dto, String userId) {
         UserDTO author = getUserInfo(userId);
+        author.setPhoto_url(
+                Arrays.stream(
+                                ScosApiUtils.getUserByFIO(
+                                        devScosApiClient,
+                                        author.getFirst_name(),
+                                        author.getLast_name()
+                                ).getData()
+                        )
+                        .filter(user -> user.getUser_id().equals(author.getUser_id()))
+                        .findFirst()
+                        .get()
+                        .getPhoto_url());
         Optional<StudentDTO> student =
                 VamApiUtils.getStudents("email", author.getEmail(), devVamApiClient)
                         .getResults()
@@ -924,7 +936,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getTargetUniversityAddress(),
                             targetOrganization.get().getShort_name(),
                             dto.getTargetUniversityId(),
-                            PassRequestUtils.getRequestNumber(passRequestRepository))
+                            PassRequestUtils.getRequestNumber(passRequestRepository),
+                            author.getPhoto_url())
                     );
                 }
             }
@@ -945,6 +958,18 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 .stream()
                 .filter(e -> e.getRoles().contains("UNIVERSITY"))
                 .findFirst();
+        author.setPhoto_url(
+                Arrays.stream(
+                                ScosApiUtils.getUserByFIO(
+                                        devScosApiClient,
+                                        author.getFirst_name(),
+                                        author.getLast_name()
+                                ).getData()
+                        )
+                        .filter(user -> user.getUser_id().equals(author.getUser_id()))
+                        .findFirst()
+                        .get()
+                        .getPhoto_url());
         if (employment.isPresent()) {
             Optional<OrganizationDTO> authorOrganization =
                     ScosApiUtils.getOrganization(
@@ -976,7 +1001,8 @@ public class PassRequestServiceImpl implements IPassRequestService {
                             dto.getTargetUniversityAddress(),
                             targetOrganization.get().getShort_name(),
                             dto.getTargetUniversityId(),
-                            PassRequestUtils.getRequestNumber(passRequestRepository))
+                            PassRequestUtils.getRequestNumber(passRequestRepository),
+                            author.getPhoto_url())
                     );
                 }
             }

@@ -35,8 +35,12 @@ public class PassRequest {
     private String authorLastName;
     /** Отчество автора */
     private String authorPatronymicName;
+    /** идентификатор университета автора */
     private String authorUniversityId;
+    /** название университета автора */
     private String authorUniversityName;
+    /** ссылка на фото автора */
+    private String authorPhotoURL;
     /** Id организации, в которую необходим доступ (целевая ООВО) */
     private String targetUniversityId;
     /** Название целевой ООВО */
@@ -100,7 +104,7 @@ public class PassRequest {
                        LocalDate startDate, LocalDate endDate, PassRequestStatus status,
                        PassRequestType type, String targetUniversityAddress,
                        String targetUniversityName, String targetUniversityId,
-                       Long number) {
+                       Long number, String authorPhotoURL) {
         this.creationDate = LocalDateTime.now();
         this.authorId = authorId;
         this.targetUniversityId = targetUniversityId;
@@ -116,5 +120,6 @@ public class PassRequest {
         this.authorPatronymicName = authorPatronymicName;
         this.authorUniversityId = authorUniversityId;
         this.authorUniversityName = authorUniversityName;
+        this.authorPhotoURL = authorPhotoURL;
     }
 }
