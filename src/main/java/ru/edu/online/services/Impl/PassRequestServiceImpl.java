@@ -325,6 +325,32 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
+     * Получение всех одобренных заявок пользователя
+     * @param authorId идентификатор пользователя
+     * @return список одобренных заявок
+     */
+    @Override
+    public Optional<ResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId) {
+        log.info("getting accepted passRequests for user with id {}", authorId);
+        List<PassRequest> requests =
+                passRequestRepository.findAllByAuthorId(authorId);
+        // Добавление всех групповых заявок, в которых фигурирует пользователь
+        requests.addAll(passRequestUserRepository.getByScosId(authorId)
+                .stream()
+                .map(PassRequestUser::getPassRequestId)
+                .map(this::getPassRequestById)
+                .map(Optional::get)
+                .collect(Collectors.toList()));
+
+        return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
+                requests,
+                new PassRequestStatus[]{PassRequestStatus.ACCEPTED},
+                (long) 1,
+                (long) requests.size()
+        ));
+    }
+
+    /**
      * Получить список заявок по статусу для пользователя
      * @param authorId заявки
      * @param page номер страницы
