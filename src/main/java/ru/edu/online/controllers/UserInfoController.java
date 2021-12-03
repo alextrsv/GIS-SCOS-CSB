@@ -61,6 +61,10 @@ public class UserInfoController {
 
     @GetMapping("/access")
     public ResponseEntity<ResponseDTO<PassRequest>> getUserAccesses(Principal principal) {
+        if (userDetailsService.isSecurityOfficer(principal.getName())
+                || userDetailsService.isUniversity(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return passRequestService.getAcceptedPassRequests(principal.getName()).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
