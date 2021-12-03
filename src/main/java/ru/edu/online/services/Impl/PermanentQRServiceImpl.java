@@ -3,6 +3,7 @@ package ru.edu.online.services.Impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.QRUser;
@@ -13,9 +14,11 @@ import ru.edu.online.entities.enums.QRDataVerifyStatus;
 import ru.edu.online.services.IPermanentQRService;
 import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
+import ru.edu.online.utils.ScosApiUtils;
 
 import java.awt.image.BufferedImage;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -23,6 +26,8 @@ import java.util.Optional;
  */
 @Service
 public class PermanentQRServiceImpl implements IPermanentQRService {
+
+    private final WebClient devScosApiClient;
 
     private final VamRestClient vamRestClient;
 
@@ -37,7 +42,11 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
 
     @Autowired
-    public PermanentQRServiceImpl(VamRestClient vamRestClient, GisScosApiRestClient gisScosApiRestClient, StudentServiceImpl studentServiceImpl, UserServiceImpl userServiceImpl) {
+    public PermanentQRServiceImpl(WebClient devScosApiClient, VamRestClient vamRestClient,
+                                  GisScosApiRestClient gisScosApiRestClient,
+                                  StudentServiceImpl studentServiceImpl,
+                                  UserServiceImpl userServiceImpl) {
+        this.devScosApiClient = devScosApiClient;
         this.vamRestClient = vamRestClient;
         this.gisScosApiRestClient = gisScosApiRestClient;
 
@@ -60,6 +69,18 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         if (scosUser.isEmpty()) return Optional.empty();
 
         if (scosUser.get().getEmail() != null) {
+            scosUser.get().setPhoto_url(
+                    Arrays.stream(
+                            ScosApiUtils.getUserByFIO(
+                                    devScosApiClient,
+                                    scosUser.get().getFirst_name(),
+                                    scosUser.get().getLast_name()
+                                    ).getData()
+                    )
+                            .filter(user -> user.getUser_id().equals(scosUser.get().getUser_id()))
+                            .findFirst()
+                            .get()
+                            .getPhoto_url());
             String userEmail = scosUser.get().getEmail();
             Optional<StudentDTO> vamStudent;
             if (userEmail.equals("stud_bilet_01@dev.online.edu.ru"))
