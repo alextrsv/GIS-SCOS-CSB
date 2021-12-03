@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
@@ -56,6 +57,16 @@ public class UserInfoController {
             return ResponseEntity.of(userDetailsService.getUserProfile(userId));
         }
         return ResponseEntity.of(userDetailsService.getUserProfile(principal.getName()));
+    }
+
+    @GetMapping("/access")
+    public ResponseEntity<ResponseDTO<PassRequest>> getUserAccesses(Principal principal) {
+        if (userDetailsService.isSecurityOfficer(principal.getName())
+                || userDetailsService.isUniversity(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return passRequestService.getAcceptedPassRequests(principal.getName()).map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping("/list")

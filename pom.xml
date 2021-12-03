@@ -10,7 +10,7 @@
     </parent>
     <groupId>csb</groupId>
     <artifactId>student-card</artifactId>
-    <version>0.1.10-SNAPSHOT</version>
+    <version>0.1.11-SNAPSHOT</version>
     <name>student-card</name>
     <description>Digital student card for online.edu.ru</description>
     <properties>

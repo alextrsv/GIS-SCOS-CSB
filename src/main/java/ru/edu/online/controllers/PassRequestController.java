@@ -126,24 +126,24 @@ public class PassRequestController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /**
+    /*
      * Получение заявок по id пользователя
      * @param principal пользователь, создавший заявку
      * @return заявка
-     */
+
     @GetMapping("/user/get")
     public ResponseEntity<List<PassRequest>> getPassRequestByUserId(Principal principal) {
         return passRequestService.getPassRequestsByUserId(principal.getName()).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
-    /**
+     */
+    /*
      * Получение заявок по статусу для университета
      * @param dto заявки
      * @param page номер страницы
      * @param pageSize размер страницы
      * @return заявки
-     */
+
     @GetMapping("/get/university/status/{page}/{pageSize}")
     public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto,
                                                                     @PathVariable Long page,
@@ -151,7 +151,7 @@ public class PassRequestController {
         return passRequestService.getPassRequestByStatusForUniversity(dto, page, pageSize).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-
+    */
     /**
      * Получение заявок по статусу для пользователя
      * @param status заявки
@@ -267,11 +267,11 @@ public class PassRequestController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /**
+    /*
      * Редактирование заявки
      * @param dto DTO заявки
      * @return отредактированная заявка
-     */
+
     @PutMapping("/edit")
     public ResponseEntity<PassRequest> editPassRequest(@RequestBody PassRequestDTO dto,
                                                        Principal principal) {
@@ -282,6 +282,7 @@ public class PassRequestController {
         return passRequestService.updatePassRequest(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+     */
 
     /**
      * Редактирование статуса заявки
