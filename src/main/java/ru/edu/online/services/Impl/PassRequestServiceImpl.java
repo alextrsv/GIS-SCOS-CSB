@@ -2,6 +2,8 @@ package ru.edu.online.services.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.entities.DynamicQRUser;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@EnableScheduling
 public class PassRequestServiceImpl implements IPassRequestService {
 
     private final IPassRequestRepository passRequestRepository;
@@ -778,7 +781,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
     /**
      * Проверка всех заявок на наличие просроченных
      */
+    @Scheduled(fixedDelay = 1000*10)
     private void checkExpiredPassRequests() {
+        log.info("checkExpiredPassRequests");
+        //System.out.println("checkExpiredPassRequests");
         List<PassRequest> requests = passRequestRepository.findAll();
         requests.stream()
                 .filter(request -> isExpired(request.getStatus(), request.getStartDate()))
