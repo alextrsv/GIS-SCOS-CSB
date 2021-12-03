@@ -309,6 +309,11 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userDetails.setEmail(student.getEmail());
                 userDetails.setRoles(new String[]{"STUDENT"});
                 userDetails.setPhotoURL(user.get().getPhoto_url());
+                userDetails.setUserOrganizationShortName(
+                        ScosApiUtils.getOrganizationByGlobalId(
+                                devScosApiClient,
+                                student.getOrganization_id()
+                        ).get().getShort_name());
                 users.add(userDetails);
             }
         }
