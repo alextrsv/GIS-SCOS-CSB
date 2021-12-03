@@ -13,4 +13,5 @@ public class OrganizationProfileDTO {
     private String full_name;
     private String site_url;
     private String description;
+    private String image_url;
 }
