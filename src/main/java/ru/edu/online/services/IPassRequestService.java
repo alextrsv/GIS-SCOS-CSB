@@ -41,6 +41,8 @@ public interface IPassRequestService {
 
     Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto, Long page, Long pageSize);
 
+    Optional<ResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId);
+
     Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId, String status, Long page, Long pageSize);
 
     Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId);

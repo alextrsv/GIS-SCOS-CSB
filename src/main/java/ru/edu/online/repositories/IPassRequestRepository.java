@@ -17,6 +17,8 @@ public interface IPassRequestRepository extends JpaRepository<PassRequest, UUID>
 
     List<PassRequest> findAllByTargetUniversityIdAndStatus(String targetUniversityId, PassRequestStatus status);
 
+    List<PassRequest> findAllByTargetUniversityId(String targetUniversityId);
+
     List<PassRequest> findAllByStatus(PassRequestStatus status);
 
     Long countAllByNumberGreaterThan(Long number);
