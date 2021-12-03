@@ -34,10 +34,11 @@ public class ScanHistoryServiceImpl implements IScanHistoryService {
                         securityId,
                         new Timestamp(new Date().getTime()),
                         scanHistoryDTO.getRole(),
-                        scanHistoryDTO.getFullName().toLowerCase(Locale.ROOT)
+                        scanHistoryDTO.getFullName().toLowerCase(Locale.ROOT),
+                        scanHistoryDTO.getPhotoURL()
                 ));
 
-        return sh == null? Optional.empty() : Optional.of(sh);
+        return Optional.of(sh);
     }
 
     @Override

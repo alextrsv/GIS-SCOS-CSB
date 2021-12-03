@@ -14,4 +14,5 @@ public class ScanHistoryDTO {
     private UUID userId;
     private UserRole role;
     private String fullName;
+    private String photoURL;
 }

@@ -31,16 +31,20 @@ public class ScanHistory {
     private UUID userId;
     /** дата сканирования  */
     private Timestamp creationDate;
-    /**роль пользователя */
+    /** роль пользователя */
     private UserRole role;
-    /**ФИО пользователя */
+    /** ФИО пользователя */
     private String fullName;
+    /** ссылка на фото */
+    private String photoURL;
 
-    public ScanHistory(UUID userId, UUID securityId, Timestamp creationDate, UserRole role, String fullName){
+    public ScanHistory(UUID userId, UUID securityId, Timestamp creationDate,
+                       UserRole role, String fullName, String photoURL){
         this.userId = userId;
         this.securityId = securityId;
         this.creationDate = creationDate;
         this.role = role;
         this.fullName = fullName;
+        this.photoURL = photoURL;
     }
 }
