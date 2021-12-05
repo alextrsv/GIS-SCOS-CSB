@@ -10,6 +10,7 @@ import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.enums.QRStatus;
 import ru.edu.online.repositories.IDynamicQRRepository;
+import ru.edu.online.scheduler.CodesGenerator;
 import ru.edu.online.services.IDynamicQRService;
 import ru.edu.online.utils.mail.MailUtil;
 import ru.edu.online.utils.mail.QRMessage;
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+//TODO добавить нормальный ExceptionHandler, добавить исключения.
 
 @Service
 public class DynamicQRServiceImpl implements IDynamicQRService {
@@ -106,51 +109,46 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
 
         if (studentDTO.isPresent()) {
             studentDTO.get().setScos_id(scosUser.get().getUser_id());
-            sendToStudent(studentDTO.get(), organizationId);
+            return sendToStudent(studentDTO.get(), organizationId);
         }
-        else sendToUser(scosUser.get(), organizationId);
-
-        return Optional.of(1);
+        else return sendToUser(scosUser.get(), organizationId);
     }
 
 
-    private Integer sendToStudent(StudentDTO studentDTO, String organizationId){
-//        studentDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
+    private Optional<Integer> sendToStudent(StudentDTO studentDTO, String organizationId){
 
         Optional<OrganizationDTO> organizationDTO;
         if (organizationId.equals("2a0fc6e23c7744478ab6114add556f3e_535158318") || organizationId.equals("1027806868154"))
             organizationDTO = gisScosApiRestClient.makeGetOrganizationByOrgnRequest(organizationId);
         else organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
-        if (organizationDTO.isEmpty()) return -1;
+        if (organizationDTO.isEmpty()) return Optional.empty();
 
         Optional<DynamicQR> qr = getActiveQRByOrganization(studentDTO.getScos_id(), organizationId);
-        if (qr.isEmpty()) return -1;
+        if (qr.isEmpty()) return Optional.empty();
 
         QRMessage qrMessage = new QRMessage(studentDTO, qr.get(), organizationDTO.get());
 
         mailUtil.sendQRImage(qrMessage);
 
-        return 1;
+        return Optional.of(1);
     }
 
-    private Integer sendToUser(UserDTO userDTO, String organizationId){
-//        userDTO.setEmail("sasha2.tara2000@yandex.ru"); // пока что
-
+    private Optional<Integer> sendToUser(UserDTO userDTO, String organizationId){
 
         Optional<OrganizationDTO> organizationDTO;
         if (organizationId.equals("2a0fc6e23c7744478ab6114add556f3e_535158318") || organizationId.equals("1027806868154"))
             organizationDTO = gisScosApiRestClient.makeGetOrganizationByOrgnRequest(organizationId);
         else organizationDTO = gisScosApiRestClient.makeGetOrganizationRequest(organizationId);
-        if (organizationDTO.isEmpty()) return -1;
+        if (organizationDTO.isEmpty()) return Optional.empty();
 
         Optional<DynamicQR> qr = getActiveQRByOrganization(userDTO.getUser_id(), organizationId);
-        if (qr.isEmpty()) return -1;
+        if (qr.isEmpty()) return Optional.empty();
 
         QRMessage qrMessage = new QRMessage(userDTO, qr.get(), organizationDTO.get());
 
         mailUtil.sendQRImage(qrMessage);
 
-        return 1;
+        return Optional.of(1);
 
     }
 
@@ -160,4 +158,16 @@ public class DynamicQRServiceImpl implements IDynamicQRService {
                 .map(DynamicQR::getContent)
                 .collect(Collectors.toList()));
     }
+
+    @Override
+    public Optional<Resource> makeRandQR(String userId, String organizationId) {
+
+        Optional<DynamicQR> activeQR = getActiveQRByOrganization(userId, organizationId);
+        activeQR.get().setContent(CodesGenerator.getWiegand34CodesFromInteger(1)[0]);
+        dynamicQRRepository.save(activeQR.get());
+
+        BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(activeQR.get().getContent());
+        return Converter.getResource(qrCodeImage);
+    }
+
 }

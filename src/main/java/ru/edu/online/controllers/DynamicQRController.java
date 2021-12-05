@@ -18,6 +18,8 @@ public class DynamicQRController {
 
     private final IDynamicQRService dynamicQRService;
 
+    //TODO привести роутиинг в порядок
+
     @Autowired
     public DynamicQRController(IDynamicQRService dynamicQRService) {
         this.dynamicQRService = dynamicQRService;
@@ -36,6 +38,17 @@ public class DynamicQRController {
                                                      @RequestParam(name = "organizationId") String organizationId){
 
         return dynamicQRService.downloadQRAsFile(userId, organizationId).map(resource ->
+                ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_PNG)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "got dynamic QR code")
+                        .body(resource))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("new/download/{userId}")
+    public ResponseEntity<Resource> downloadQRByRequest(@PathVariable("userId") String userId,
+                                                        @RequestParam("organizationId") String organizationId){
+        return dynamicQRService.makeRandQR(userId, organizationId).map(resource ->
                 ResponseEntity.ok()
                         .contentType(MediaType.IMAGE_PNG)
                         .header(HttpHeaders.CONTENT_DISPOSITION, "got dynamic QR code")
@@ -64,5 +77,7 @@ public class DynamicQRController {
         return dynamicQRService.getQRsContentByOrganization(organizationId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+
 
 }
