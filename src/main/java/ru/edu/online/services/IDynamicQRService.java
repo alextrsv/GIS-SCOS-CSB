@@ -17,4 +17,6 @@ public interface IDynamicQRService {
     Optional<Integer> sendQRViaEmail(String userId, String organizationId);
 
     Optional<List<String>> getQRsContentByOrganization(String organizationId);
+
+    Optional<Resource> makeRandQR(String userId, String organizationId);
 }
