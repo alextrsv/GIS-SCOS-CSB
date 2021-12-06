@@ -126,7 +126,7 @@ public class PassRequestController {
                                                           Principal principal) {
 
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
-            userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
+                userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestService.getPassRequestById(passRequestId).map(ResponseEntity::ok)
@@ -248,7 +248,7 @@ public class PassRequestController {
     public ResponseEntity<List<PassRequestComment>> getCommentsByPassRequest(@PathVariable UUID passRequestId,
                                                                              Principal principal) {
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
-            userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
+                userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestCommentsService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
@@ -296,7 +296,7 @@ public class PassRequestController {
     public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PassRequestCommentDTO dto,
                                                                      Principal principal) {
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
-            userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
+                userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return passRequestCommentsService.updateComment(dto).map(ResponseEntity::ok)
