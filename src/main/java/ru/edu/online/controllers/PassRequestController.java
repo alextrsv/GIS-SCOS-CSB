@@ -32,16 +32,20 @@ import java.util.UUID;
 @RequestMapping("/pass_requests")
 public class PassRequestController {
 
-    private final IPassRequestService passRequestService;
+    /** Сервис комментариев заявок */
     private final IPassRequestCommentsService passRequestCommentsService;
+    /** Сервис заявок */
+    private final IPassRequestService passRequestService;
+    /** Сервис данных о пользователях */
     private final IUserDetailsService userDetailsService;
 
     @Autowired
-    public PassRequestController(IPassRequestService passRequestService,
-                                 IPassRequestCommentsService passRequestCommentsService,
+    public PassRequestController(IPassRequestCommentsService passRequestCommentsService,
+                                 IPassRequestService passRequestService,
                                  IUserDetailsService userDetailsService) {
-        this.passRequestService = passRequestService;
+
         this.passRequestCommentsService = passRequestCommentsService;
+        this.passRequestService = passRequestService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -100,8 +104,10 @@ public class PassRequestController {
      * @return добавленный комментарий
      */
     @PostMapping("/comments/add")
-    public ResponseEntity<PassRequestComment> addCommentToPassRequest(@RequestBody PassRequestCommentDTO dto,
-                                                                      Principal principal) {
+    public ResponseEntity<PassRequestComment> addCommentToPassRequest(
+            @RequestBody PassRequestCommentDTO dto,
+            Principal principal) {
+
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -118,6 +124,7 @@ public class PassRequestController {
     @GetMapping("/get/{passRequestId}")
     public ResponseEntity<PassRequest> getPassRequestById(@PathVariable UUID passRequestId,
                                                           Principal principal) {
+
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
             userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -126,32 +133,19 @@ public class PassRequestController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /*
-     * Получение заявок по id пользователя
-     * @param principal пользователь, создавший заявку
-     * @return заявка
-
-    @GetMapping("/user/get")
-    public ResponseEntity<List<PassRequest>> getPassRequestByUserId(Principal principal) {
-        return passRequestService.getPassRequestsByUserId(principal.getName()).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-     */
-    /*
-     * Получение заявок по статусу для университета
-     * @param dto заявки
-     * @param page номер страницы
-     * @param pageSize размер страницы
+    /**
+     * Получение количества заявок по статусу для пользователя
+     * @param principal авторизация пользователя
      * @return заявки
+     */
+    @GetMapping("/count/get/user/status")
+    public ResponseEntity<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(
+            Principal principal) {
 
-    @GetMapping("/get/university/status/{page}/{pageSize}")
-    public ResponseEntity<List<PassRequest>> getPassRequestByStatus(@RequestBody PassRequestDTO dto,
-                                                                    @PathVariable Long page,
-                                                                    @PathVariable Long pageSize) {
-        return passRequestService.getPassRequestByStatusForUniversity(dto, page, pageSize).map(ResponseEntity::ok)
+        return passRequestService.getPassRequestCountByStatusForUser(principal.getName()).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-    */
+
     /**
      * Получение заявок по статусу для пользователя
      * @param status заявки
@@ -162,11 +156,13 @@ public class PassRequestController {
      * @return заявки
      */
     @GetMapping("/get/user/status")
-    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(@RequestParam Long page,
-                                                                                  @RequestParam Long itemsPerPage,
-                                                                                  @RequestParam String status,
-                                                                                  @RequestParam(required = false) String userId,
-                                                                                  Principal principal) {
+    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(
+            @RequestParam Long page,
+            @RequestParam Long itemsPerPage,
+            @RequestParam String status,
+            @RequestParam(required = false) String userId,
+            Principal principal) {
+
         if (Optional.ofNullable(userId).isPresent()) {
             return passRequestService.getPassRequestByStatusForUser(userId, status, page, itemsPerPage).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -176,23 +172,14 @@ public class PassRequestController {
     }
 
     /**
-     * Получение количества заявок по статусу для пользователя
-     * @param principal авторизация пользователя
-     * @return заявки
-     */
-    @GetMapping("/count/get/user/status")
-    public ResponseEntity<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(Principal principal) {
-        return passRequestService.getPassRequestCountByStatusForUser(principal.getName()).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
-    /**
      * Получение количества заявок по статусу для админа ООВО
      * @param principal авторизация админа ООВО
      * @return мапа: статус - количество
      */
     @GetMapping("/count/get/admin/status")
-    public ResponseEntity<Map<PassRequestStatus, Integer>> getPassRequestCountByStatusForAdmin(Principal principal) {
+    public ResponseEntity<Map<PassRequestStatus, Integer>> getPassRequestCountByStatusForAdmin(
+            Principal principal) {
+
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
             return passRequestService.getPassRequestsCountByStatusForAdmin(principal.getName()).map(ResponseEntity::ok)
@@ -218,6 +205,7 @@ public class PassRequestController {
             @RequestParam(value = "status") String status,
             @RequestParam(value = "search", required = false) String search,
             Principal principal) {
+
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
             return passRequestService.getPassRequestsForAdmin(
@@ -266,23 +254,6 @@ public class PassRequestController {
         return passRequestCommentsService.getPassRequestComments(passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-
-    /*
-     * Редактирование заявки
-     * @param dto DTO заявки
-     * @return отредактированная заявка
-
-    @PutMapping("/edit")
-    public ResponseEntity<PassRequest> editPassRequest(@RequestBody PassRequestDTO dto,
-                                                       Principal principal) {
-        if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
-            userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        return passRequestService.updatePassRequest(dto).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-     */
 
     /**
      * Редактирование статуса заявки
