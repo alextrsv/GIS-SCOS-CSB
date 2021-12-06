@@ -3,7 +3,6 @@ package ru.edu.online.services.Impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.clients.GisScosApiRestClient;
 import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.QRUser;
@@ -12,9 +11,9 @@ import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.enums.QRDataVerifyStatus;
 import ru.edu.online.services.IPermanentQRService;
+import ru.edu.online.services.IScosAPIService;
 import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
-import ru.edu.online.utils.ScosApiUtils;
 
 import java.awt.image.BufferedImage;
 import java.security.NoSuchAlgorithmException;
@@ -27,7 +26,8 @@ import java.util.Optional;
 @Service
 public class PermanentQRServiceImpl implements IPermanentQRService {
 
-    private final WebClient devScosApiClient;
+    /** Сервис для работы с АПИ СЦОСа */
+    private final IScosAPIService scosAPIService;
 
     private final VamRestClient vamRestClient;
 
@@ -42,16 +42,17 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
 
     @Autowired
-    public PermanentQRServiceImpl(WebClient devScosApiClient, VamRestClient vamRestClient,
-                                  GisScosApiRestClient gisScosApiRestClient,
+    public PermanentQRServiceImpl(GisScosApiRestClient gisScosApiRestClient,
                                   StudentServiceImpl studentServiceImpl,
-                                  UserServiceImpl userServiceImpl) {
-        this.devScosApiClient = devScosApiClient;
-        this.vamRestClient = vamRestClient;
-        this.gisScosApiRestClient = gisScosApiRestClient;
+                                  UserServiceImpl userServiceImpl,
+                                  IScosAPIService scosAPIService,
+                                  VamRestClient vamRestClient) {
 
+        this.gisScosApiRestClient = gisScosApiRestClient;
         this.studentServiceImpl = studentServiceImpl;
         this.userServiceImpl = userServiceImpl;
+        this.scosAPIService = scosAPIService;
+        this.vamRestClient = vamRestClient;
     }
 
 
@@ -71,15 +72,14 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
         if (scosUser.get().getEmail() != null) {
             scosUser.get().setPhoto_url(
                     Arrays.stream(
-                            ScosApiUtils.getUserByFIO(
-                                    devScosApiClient,
-                                    scosUser.get().getFirst_name(),
-                                    scosUser.get().getLast_name()
-                                    ).getData()
-                    )
+                                    scosAPIService.getUserByFIO(
+                                            scosUser.get().getFirst_name(),
+                                            scosUser.get().getLast_name()
+                                    ).orElseThrow().getData()
+                            )
                             .filter(user -> user.getUser_id().equals(scosUser.get().getUser_id()))
                             .findFirst()
-                            .get()
+                            .orElseThrow()
                             .getPhoto_url());
             String userEmail = scosUser.get().getEmail();
             Optional<StudentDTO> vamStudent;
@@ -109,7 +109,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     public Optional<Resource> downloadQRAsFile(String userId) {
         Optional<QRUser> qrUser =  getDefinedRole(userId);
 //        String content = qrUserServiceImps.getContentWithHash(qrUser.get());
-        String content = String.format("{\"id\":\"%s\", \"hash\":\"%s\"}", userId, qrUserServiceImps.getHash(qrUser.get()));
+        String content = String.format("{\"id\":\"%s\", \"hash\":\"%s\"}", userId, qrUserServiceImps.getHash(qrUser.orElseThrow()));
         BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
         return Converter.getResource(qrCodeImage);
     }
@@ -118,7 +118,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     public Optional<QRDataVerifyStatus> verifyData(String userId, String dataHash) {
         Optional<QRUser> qrUser =  getDefinedRole(userId);
         try {
-            String newHash = HashingUtil.getHash(qrUserServiceImps.getFullStaticQRPayload(qrUser.get()).toString());
+            String newHash = HashingUtil.getHash(qrUserServiceImps.getFullStaticQRPayload(qrUser.orElseThrow()).toString());
             if (newHash.equals(dataHash)) return Optional.of(QRDataVerifyStatus.OK);
             else return Optional.of(QRDataVerifyStatus.INVALID);
         } catch (NoSuchAlgorithmException e) {
@@ -130,12 +130,12 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     @Override
     public Optional<PermanentUserQRDTO> getFullUserInfo(String userId) {
         Optional<QRUser> qrUser = getDefinedRole(userId);
-        return Optional.ofNullable(qrUserServiceImps.getFullStaticQRPayload(qrUser.get()));
+        return Optional.ofNullable(qrUserServiceImps.getFullStaticQRPayload(qrUser.orElseThrow()));
     }
 
     @Override
     public Optional<PermanentUserQRDTO> getAbbreviatedStaticQRPayload(String userId) {
         Optional<QRUser> qrUser = getDefinedRole(userId);
-        return Optional.ofNullable(qrUserServiceImps.getAbbreviatedStaticQRPayload(qrUser.get()));
+        return Optional.ofNullable(qrUserServiceImps.getAbbreviatedStaticQRPayload(qrUser.orElseThrow()));
     }
 }
