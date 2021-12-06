@@ -3,19 +3,15 @@ package ru.edu.online.services.Impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.util.retry.Retry;
-import ru.edu.online.entities.CacheStudent;
 import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.ScosUserRole;
 import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.repositories.IValidateStudentCacheRepository;
+import ru.edu.online.services.IScosAPIService;
 import ru.edu.online.services.IUserDetailsService;
-import ru.edu.online.utils.ScosApiUtils;
+import ru.edu.online.services.IVamAPIService;
 import ru.edu.online.utils.UserUtils;
-import ru.edu.online.utils.VamApiUtils;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,21 +26,21 @@ import java.util.stream.Collectors;
 @Service
 public class UserDetailsServiceImpl implements IUserDetailsService {
 
+    /** Репозиторий кэша студентов */
     private final IValidateStudentCacheRepository studentCashRepository;
 
-    /** Время ожидания в случае отсутствия ответа */
-    private static final int REQUEST_TIMEOUT = 1000;
-    /** Веб клиент для доступа к DEV АПИ ГИС СЦОСа */
-    private final WebClient devScosApiClient;
-    /** Веб клиент для доступа к DEV АПИ ВАМа */
-    private final WebClient devVamApiClient;
+    /** Сервис для работы с АПИ СЦОСа */
+    private final IScosAPIService scosAPIService;
+    /** Сервис для работы с АПИ ВАМа */
+    private final IVamAPIService vamAPIService;
 
     @Autowired
-    public UserDetailsServiceImpl(WebClient devScosApiClient, WebClient devVamApiClient,
-                                  IValidateStudentCacheRepository studentCashRepository) {
-        this.devScosApiClient = devScosApiClient;
-        this.devVamApiClient = devVamApiClient;
+    public UserDetailsServiceImpl(IValidateStudentCacheRepository studentCashRepository,
+                                  IVamAPIService vamAPIService,
+                                  IScosAPIService scosAPIService) {
         this.studentCashRepository = studentCashRepository;
+        this.scosAPIService = scosAPIService;
+        this.vamAPIService = vamAPIService;
     }
 
     /**
@@ -110,22 +106,22 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public Optional<String> getUserOrganizationGlobalId(String userId) {
-        UserDTO admin = ScosApiUtils.getUserDetails(devScosApiClient, userId);
-        Optional<EmploymentDTO> employmentDTO = admin
-                .getEmployments()
-                .stream()
-                .filter(e -> e.getRoles().contains("UNIVERSITY"))
-                .findFirst();
-        if (employmentDTO.isPresent()) {
-            Optional<OrganizationDTO> adminOrganization =
-                    ScosApiUtils.getOrganization(
-                            devScosApiClient,
-                            employmentDTO.get().getOgrn()
-                    );
-            if (adminOrganization.isPresent()) {
-                return adminOrganization.get().getOrganizationId();
+        Optional<UserDTO> admin = scosAPIService.getUserDetails(userId);
+        if (admin.isPresent()) {
+            Optional<EmploymentDTO> employmentDTO = admin.get()
+                    .getEmployments()
+                    .stream()
+                    .filter(e -> e.getRoles().contains("UNIVERSITY"))
+                    .findFirst();
+            if (employmentDTO.isPresent()) {
+                Optional<OrganizationDTO> adminOrganization =
+                        scosAPIService.getOrganization(employmentDTO.get().getOgrn());
+                if (adminOrganization.isPresent()) {
+                    return adminOrganization.get().getOrganizationId();
+                }
             }
         }
+
         return Optional.empty();
     }
 
@@ -136,21 +132,13 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public boolean isStudent(String userId) {
-        //Optional<CacheStudent> student;
 
-        Optional<StudentDTO> studentDTO = getStudentByEmail(userId);
-        if (studentDTO.isPresent()) {
-            /*student = getStudentFromCacheByEmail(studentDTO.get());
-            if (student.isPresent()) {
-                return true;
-            }
-            if (saveStudentInCashByEmail(studentDTO.get())) {
-                return true;
-            }
-
-             */
-            return true;
+        Optional<UserDTO> userDTO = scosAPIService.getUserDetails(userId);
+        if (userDTO.isPresent()) {
+            Optional<StudentDTO> studentDTO = vamAPIService.getStudentByEmail(userDTO.get());
+            return studentDTO.isPresent();
         }
+
         return false;
     }
 
@@ -161,42 +149,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      * @return true - имеет, false - не имеет
      */
     private boolean hasRole(String userId, ScosUserRole role) {
-        return Arrays
-                .asList(
-                        loadUserInfoByIdSync(userId)
-                                .getRoles()
+        return scosAPIService.getUserDetails(userId).map(
+                        userDTO -> userDTO.getRoles().contains(role.getValue())
                 )
-                .contains(role.toString());
-    }
-
-    /**
-     * Синхронный запрос к АПИ ГИС СЦОС на загрузку
-     * информации о пользователе по id из principal
-     * @param userId идентификатор пользователя
-     * @return dto пользователя из ответа на запрос
-     */
-    private UserDetailsDTO loadUserInfoByIdSync(String userId) {
-        return devScosApiClient
-                .get()
-                .uri(String.join("", "/users/", userId))
-                .retrieve()
-                .bodyToMono(UserDetailsDTO.class)
-                .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
-                .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
-                .block();
-    }
-
-    private Optional<StudentDTO> getStudentByEmail(String userId) {
-        UserDetailsDTO userDetails = loadUserInfoByIdSync(userId);
-        StudentsDTO students = VamApiUtils.getStudents("email", userDetails.getEmail(), devVamApiClient);
-        return students
-                .getResults()
-                .stream()
-                .filter(
-                        student ->
-                                student.getEmail().equals(userDetails.getEmail())
-                )
-                .findFirst();
+                .orElse(false);
     }
 
     /**
@@ -210,7 +166,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
             case ADMIN:
             case SECURITY:
             case SUPER_USER:
-                return Optional.of(getEmploymentProfile(userId, getUserRole(userId)));
+                return getEmploymentProfile(userId, getUserRole(userId));
             case STUDENT:
                 return Optional.ofNullable(getStudentProfile(userId));
             case TEACHER:
@@ -220,49 +176,53 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         }
     }
 
-    private UserProfileDTO getEmploymentProfile(String userId, UserRole role) {
-        UserDTO userScosInfo = ScosApiUtils.getUserDetails(devScosApiClient, userId);
-        UserByFIOResponseDTO userByFIO =
-                ScosApiUtils.getUserByFIO(
-                        devScosApiClient,
-                        userScosInfo.getFirst_name(),
-                        userScosInfo.getLast_name()
-                );
-        Optional<UserDTO> userInfo =
-                Arrays.stream(userByFIO.getData())
-                        .filter(user -> user.getUser_id().equals(userId))
-                        .findFirst();
+    private Optional<UserProfileDTO> getEmploymentProfile(String userId, UserRole role) {
+        Optional<UserDTO> userScosInfo = scosAPIService.getUserDetails(userId);
+        if (userScosInfo.isPresent()) {
+            Optional<UserByFIOResponseDTO> userByFIO =
+                    scosAPIService.getUserByFIO(
+                            userScosInfo.get().getFirst_name(),
+                            userScosInfo.get().getLast_name()
+                    );
+            if (userByFIO.isPresent()) {
+                Optional<UserDTO> userInfo =
+                        Arrays.stream(userByFIO.get().getData())
+                                .filter(user -> user.getUser_id().equals(userId))
+                                .findFirst();
 
-        UserProfileDTO userProfile = new UserProfileDTO();
+                UserProfileDTO userProfile = new UserProfileDTO();
 
-        if (userInfo.isPresent()) {
-            Optional<EmploymentDTO> employment =
-                    userScosInfo.getEmployments()
-                            .stream()
-                            .filter(e -> e.getRoles().contains(role.getValue()))
-                            .findFirst();
-            if (employment.isPresent()) {
-                Optional<OrganizationDTO> organization =
-                        ScosApiUtils.getOrganization(
-                                devScosApiClient,
-                                employment.get().getOgrn()
-                        );
+                if (userInfo.isPresent()) {
+                    Optional<EmploymentDTO> employment =
+                            userScosInfo.get().getEmployments()
+                                    .stream()
+                                    .filter(e -> e.getRoles().contains(role.getValue()))
+                                    .findFirst();
+                    if (employment.isPresent()) {
+                        Optional<OrganizationDTO> organization =
+                                scosAPIService.getOrganization(
+                                        employment.get().getOgrn()
+                                );
 
-                userProfile.setEmail(userInfo.get().getEmail());
-                userProfile.setRole(role);
-                userProfile.setPhotoURL(userInfo.get().getPhoto_url());
-                userProfile.setFirstName(userInfo.get().getFirst_name());
-                userProfile.setLastName(userInfo.get().getLast_name());
-                userProfile.setPatronymicName(userInfo.get().getPatronymic_name());
+                        userProfile.setEmail(userInfo.get().getEmail());
+                        userProfile.setRole(role);
+                        userProfile.setPhotoURL(userInfo.get().getPhoto_url());
+                        userProfile.setFirstName(userInfo.get().getFirst_name());
+                        userProfile.setLastName(userInfo.get().getLast_name());
+                        userProfile.setPatronymicName(userInfo.get().getPatronymic_name());
 
-                if (organization.isPresent()) {
-                    userProfile.setOrganizationFullName(organization.get().getFull_name());
-                    userProfile.setOrganizationShortName(organization.get().getShort_name());
+                        if (organization.isPresent()) {
+                            userProfile.setOrganizationFullName(organization.get().getFull_name());
+                            userProfile.setOrganizationShortName(organization.get().getShort_name());
+                        }
+                    }
                 }
+
+                return Optional.of(userProfile);
             }
         }
 
-        return userProfile;
+        return Optional.empty();
     }
 
     /**
@@ -275,96 +235,96 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                                                                         Long page,
                                                                         Long pageSize,
                                                                         String search) {
-        Optional<UserDTO> user = Optional.of(ScosApiUtils.getUserDetails(devScosApiClient, userId));
-        StudentsDTO students = VamApiUtils.getStudents(
+        Optional<UserDTO> user = scosAPIService.getUserDetails(userId);
+        Optional<EmploymentDTO> employmentDTO = user.orElseThrow().getEmployments()
+                .stream()
+                .findFirst();
+        Optional<StudentsDTO> students = vamAPIService.getStudents(
                 "organization_id",
-                user.get().getEmployments()
-                        .stream()
-                        .findFirst()
-                        .get()
-                        .getOgrn(),
-                devVamApiClient
+                employmentDTO.orElseThrow().getOgrn()
         );
+        if (students.isPresent()) {
+            List<UserDetailsDTO> users = new ArrayList<>();
 
-        List<UserDetailsDTO> users = new ArrayList<>();
-
-        for (StudentDTO student : students.getResults()) {
-            UserDetailsDTO userDetails = new UserDetailsDTO();
-            user = Arrays.stream(
-                            ScosApiUtils.getUserByFIO(
-                                            devScosApiClient,
-                                            student.getName(),
-                                            student.getSurname())
-                                    .getData())
-                    .filter(u -> u.getUser_id().equals(
-                            ScosApiUtils.getUserByEmail(
-                                    devScosApiClient,
-                                    student.getEmail()
-                            ).getUser_id())
-                    )
-                    .findFirst();
-            if (user.isPresent()) {
-                userDetails.setUserId(user.get().getUser_id());
-                userDetails.setFirstName(student.getName());
-                userDetails.setLastName(student.getSurname());
-                userDetails.setPatronymicName(student.getMiddle_name());
-                userDetails.setEmail(student.getEmail());
-                userDetails.setRoles(new String[]{"STUDENT"});
-                userDetails.setPhotoURL(user.get().getPhoto_url());
-                userDetails.setUserOrganizationShortName(
-                        ScosApiUtils.getOrganizationByGlobalId(
-                                devScosApiClient,
-                                student.getOrganization_id()
-                        ).get().getShort_name());
-                users.add(userDetails);
+            for (StudentDTO student : students.get().getResults()) {
+                UserDetailsDTO userDetails = new UserDetailsDTO();
+                user = Arrays.stream(
+                                scosAPIService.getUserByFIO(
+                                        student.getName(),
+                                        student.getSurname()).orElseThrow().getData()
+                        )
+                        .filter(u -> u.getUser_id().equals(
+                                scosAPIService.getUserByEmail(
+                                        student.getEmail()
+                                ).orElseThrow().getUser_id())
+                        )
+                        .findFirst();
+                if (user.isPresent()) {
+                    userDetails.setUserId(user.get().getUser_id());
+                    userDetails.setFirstName(student.getName());
+                    userDetails.setLastName(student.getSurname());
+                    userDetails.setPatronymicName(student.getMiddle_name());
+                    userDetails.setEmail(student.getEmail());
+                    userDetails.setRoles(new String[]{"STUDENT"});
+                    userDetails.setPhotoURL(user.get().getPhoto_url());
+                    userDetails.setUserOrganizationShortName(
+                            scosAPIService.getOrganizationByGlobalId(
+                                    student.getOrganization_id()
+                            ).orElseThrow().getShort_name());
+                    users.add(userDetails);
+                }
             }
+
+            if (Optional.ofNullable(search).isPresent()) {
+                users = UserUtils.searchByEmail(users, search);
+            }
+            long usersCount = users.size();
+            users = users.stream()
+                    .skip(pageSize * (page - 1))
+                    .limit(pageSize)
+                    .collect(Collectors.toList());
+
+            return Optional.of(new ResponseDTO<>(
+                    page,
+                    pageSize,
+                    usersCount % pageSize == 0 ? usersCount / pageSize : usersCount / pageSize + 1,
+                    usersCount,
+                    users
+            ));
+
         }
 
-        if (Optional.ofNullable(search).isPresent()) {
-            users = UserUtils.searchByEmail(users, search);
-        }
-        long usersCount = users.size();
-        users = users.stream()
-                .skip(pageSize * (page - 1))
-                .limit(pageSize)
-                .collect(Collectors.toList());
-
-        return Optional.of(new ResponseDTO<>(
-                page,
-                pageSize,
-                usersCount % pageSize == 0 ? usersCount / pageSize : usersCount / pageSize + 1,
-                usersCount,
-                users
-        ));
+        return Optional.empty();
     }
 
     private UserProfileDTO getStudentProfile(String userId) {
-        UserDTO user = ScosApiUtils.getUserDetails(devScosApiClient, userId);
+        Optional<UserDTO> user = scosAPIService.getUserDetails(userId);
 
         user = Arrays.stream(
-                ScosApiUtils.getUserByFIO(
-                        devScosApiClient,
-                        user.getFirst_name(),
-                        user.getLast_name())
-                        .getData())
+                scosAPIService.getUserByFIO(
+                        user.orElseThrow().getFirst_name(),
+                        user.orElseThrow().getLast_name())
+                        .orElseThrow().getData())
                 .filter(u -> u.getUser_id().equals(userId))
-                .findFirst()
-                .get();
+                .findFirst();
 
-        StudentsDTO students = VamApiUtils.getStudents("email", user.getEmail(), devVamApiClient);
-        UserDTO finalUser = user;
-        Optional<StudentDTO> student = students.getResults()
+        Optional<StudentsDTO> students =
+                vamAPIService.getStudents(
+                        "email",
+                        user.orElseThrow().getEmail()
+                );
+        Optional<UserDTO> finalUser = user;
+        Optional<StudentDTO> student = students.orElseThrow().getResults()
                 .stream()
                 .filter(
                         s ->
-                                s.getEmail().equals(finalUser.getEmail())
+                                s.getEmail().equals(finalUser.orElseThrow().getEmail())
                 )
                 .filter(s -> s.getStudy_year() != null)
                 .findFirst();
         if (student.isPresent()) {
             Optional<OrganizationProfileDTO> organization =
-                    ScosApiUtils.getOrganizationByGlobalId(
-                            devScosApiClient,
+                    scosAPIService.getOrganizationByGlobalId(
                             student.get().getOrganization_id()
                     );
 
@@ -379,8 +339,8 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setOrganizationFullName(organization.get().getFull_name());
                 userProfile.setOrganizationShortName(organization.get().getShort_name());
                 userProfile.setRole(UserRole.STUDENT);
-                userProfile.setPhotoURL(user.getPhoto_url());
-                userProfile.setEmail(user.getEmail());
+                userProfile.setPhotoURL(user.orElseThrow().getPhoto_url());
+                userProfile.setEmail(user.orElseThrow().getEmail());
 
                 return userProfile;
             }
@@ -399,29 +359,6 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         userProfileDTO.setRole(UserRole.TEACHER);
 
         return userProfileDTO;
-    }
-
-    /**
-     * Получить студента из кэша по почте
-     * @param student dto студента
-     * @return студент, если не найден - Optional.empty()
-     */
-    private Optional<CacheStudent> getStudentFromCacheByEmail(StudentDTO student) {
-        return studentCashRepository.findByEmail(student.getEmail());
-    }
-
-    /**
-     * Сохранить студента в кэш по почте студента
-     * @param studentDTO студента из ВАМа
-     */
-    private boolean saveStudentInCashByEmail(StudentDTO studentDTO) {
-        if (studentDTO.getEmail() != null) {
-            studentCashRepository.save(
-                    new CacheStudent(studentDTO.getEmail())
-            );
-            return true;
-        }
-        return false;
     }
 
     /**
