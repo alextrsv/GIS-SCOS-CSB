@@ -136,17 +136,19 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public boolean isStudent(String userId) {
-        Optional<CacheStudent> student;
+        //Optional<CacheStudent> student;
 
         Optional<StudentDTO> studentDTO = getStudentByEmail(userId);
         if (studentDTO.isPresent()) {
-            student = getStudentFromCacheByEmail(studentDTO.get());
+            /*student = getStudentFromCacheByEmail(studentDTO.get());
             if (student.isPresent()) {
                 return true;
             }
             if (saveStudentInCashByEmail(studentDTO.get())) {
                 return true;
             }
+
+             */
             return true;
         }
         return false;
