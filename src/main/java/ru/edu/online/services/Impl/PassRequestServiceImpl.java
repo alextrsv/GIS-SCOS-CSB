@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestChangeLogEntry;
@@ -18,13 +17,9 @@ import ru.edu.online.repositories.IDynamicQRUserRepository;
 import ru.edu.online.repositories.IPassRequestChangeLogRepository;
 import ru.edu.online.repositories.IPassRequestRepository;
 import ru.edu.online.repositories.IPassRequestUserRepository;
-import ru.edu.online.services.IPassRequestCommentsService;
-import ru.edu.online.services.IPassRequestService;
-import ru.edu.online.services.IUserDetailsService;
+import ru.edu.online.services.*;
 import ru.edu.online.utils.PassRequestUtils;
-import ru.edu.online.utils.ScosApiUtils;
 import ru.edu.online.utils.UserUtils;
-import ru.edu.online.utils.VamApiUtils;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -51,11 +46,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
     private final IPassRequestCommentsService passRequestCommentsService;
     /** Сервис информации о пользователях */
     private final IUserDetailsService userDetailsService;
-
-    /** Веб клиент для СЦОСа */
-    private final WebClient devScosApiClient;
-    /** Веб клиент для ВАМа */
-    private final WebClient devVamApiClient;
+    /** Сервис для работы с АПИ СЦОСа */
+    private final IScosAPIService scosAPIService;
+    /** Сервис для работы с АПИ ВАМа */
+    private final IVamAPIService vamAPIService;
 
     @Autowired
     public PassRequestServiceImpl(IPassRequestChangeLogRepository passRequestChangeLogRepository,
@@ -64,16 +58,16 @@ public class PassRequestServiceImpl implements IPassRequestService {
                                   IDynamicQRUserRepository dynamicQRUserRepository,
                                   IPassRequestRepository passRequestRepository,
                                   IUserDetailsService userDetailsService,
-                                  WebClient devScosApiClient,
-                                  WebClient devVamApiClient) {
+                                  IScosAPIService scosAPIService,
+                                  IVamAPIService vamAPIService) {
         this.passRequestChangeLogRepository = passRequestChangeLogRepository;
         this.passRequestCommentsService = passRequestCommentsService;
         this.passRequestUserRepository = passRequestUserRepository;
         this.dynamicQRUserRepository = dynamicQRUserRepository;
         this.passRequestRepository = passRequestRepository;
         this.userDetailsService = userDetailsService;
-        this.devScosApiClient = devScosApiClient;
-        this.devVamApiClient = devVamApiClient;
+        this.scosAPIService = scosAPIService;
+        this.vamAPIService = vamAPIService;
     }
 
     /**
@@ -220,10 +214,11 @@ public class PassRequestServiceImpl implements IPassRequestService {
         Optional<String> adminOrganizationGlobalId = userDetailsService.getUserOrganizationGlobalId(userId);
         if (adminOrganizationGlobalId.isPresent()) {
             List<PassRequest> acceptedRequestsForUniversity =
-                    getPassRequestByStatusForUniversity(
-                            PassRequestStatus.ACCEPTED,
-                            adminOrganizationGlobalId.get()
-                    );
+                    passRequestRepository
+                            .findAllByTargetUniversityIdAndStatus(
+                                    adminOrganizationGlobalId.get(),
+                                    PassRequestStatus.ACCEPTED
+                            );
             List<UserDetailsDTO> users =
                     getUsersFromSinglePassRequests(
                             acceptedRequestsForUniversity.stream()
@@ -755,46 +750,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Удаление одобренных заявок, срок действия которых истёк более чем на 7 дней
-     */
-    private void deleteOldAcceptedRequests() {
-        List<PassRequest> acceptedRequests =
-                passRequestRepository.findAllByStatus(PassRequestStatus.ACCEPTED);
-
-        for (PassRequest request : acceptedRequests) {
-            if (request.getEndDate().isBefore(LocalDate.now().minusDays(7))) {
-                log.info("delete old accepted pass request with id {}", request.getId());
-                passRequestRepository.deleteById(request.getId());
-            }
-        }
-    }
-
-    /**
-     * Проверка по истории изменений заявки на бесполезность
-     * @param passRequest заявка
-     * @return либо запись из списка изменений о негодности, либо empty()
-     */
-    private Optional<PassRequestChangeLogEntry> findInvalidRequests(PassRequest passRequest) {
-        Optional<PassRequestChangeLogEntry> entry;
-        PassRequestStatus[] statuses = new PassRequestStatus[]{
-                PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                PassRequestStatus.EXPIRED
-        };
-
-        for (PassRequestStatus status : statuses) {
-            entry = passRequest.getChangeLog()
-                    .stream()
-                    .filter(log -> log.getNewValue().equals(status.toString()))
-                    .findFirst();
-            if (entry.isPresent()) {
-                return entry;
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    /**
      * Получить заявку по id
      * @param dto заявки
      * @return заявка
@@ -831,18 +786,18 @@ public class PassRequestServiceImpl implements IPassRequestService {
         UserDTO author = getUserInfo(userId);
         author.setPhoto_url(
                 Arrays.stream(
-                                ScosApiUtils.getUserByFIO(
-                                        devScosApiClient,
+                                scosAPIService.getUserByFIO(
                                         author.getFirst_name(),
                                         author.getLast_name()
-                                ).getData()
+                                ).orElseThrow().getData()
                         )
                         .filter(user -> user.getUser_id().equals(author.getUser_id()))
                         .findFirst()
-                        .get()
+                        .orElseThrow()
                         .getPhoto_url());
         Optional<StudentDTO> student =
-                VamApiUtils.getStudents("email", author.getEmail(), devVamApiClient)
+                vamAPIService.getStudents("email", author.getEmail())
+                        .orElseThrow()
                         .getResults()
                         .stream()
                         .filter(s -> s.getStudy_year() != null)
@@ -850,14 +805,12 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
         if (student.isPresent()) {
             Optional<OrganizationProfileDTO> authorOrganization =
-                    ScosApiUtils.getOrganizationByGlobalId(
-                            devScosApiClient,
+                    scosAPIService.getOrganizationByGlobalId(
                             student.get().getOrganization_id()
                     );
             if (authorOrganization.isPresent()) {
                 Optional<OrganizationProfileDTO> targetOrganization =
-                        ScosApiUtils.getOrganizationByGlobalId(
-                                devScosApiClient,
+                        scosAPIService.getOrganizationByGlobalId(
                                 dto.getTargetUniversityId()
                         );
 
@@ -900,20 +853,18 @@ public class PassRequestServiceImpl implements IPassRequestService {
                 .findFirst();
         author.setPhoto_url(
                 Arrays.stream(
-                                ScosApiUtils.getUserByFIO(
-                                        devScosApiClient,
+                                scosAPIService.getUserByFIO(
                                         author.getFirst_name(),
                                         author.getLast_name()
-                                ).getData()
+                                ).orElseThrow().getData()
                         )
                         .filter(user -> user.getUser_id().equals(author.getUser_id()))
                         .findFirst()
-                        .get()
+                        .orElseThrow()
                         .getPhoto_url());
         if (employment.isPresent()) {
             Optional<OrganizationDTO> authorOrganization =
-                    ScosApiUtils.getOrganization(
-                            devScosApiClient,
+                    scosAPIService.getOrganization(
                             employment.get().getOgrn()
                     );
 
@@ -921,8 +872,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             if (authorOrganization.isPresent()) {
                 Optional<String> authorOrganizationGlobalId = authorOrganization.get().getOrganizationId();
                 Optional<OrganizationProfileDTO> targetOrganization =
-                        ScosApiUtils.getOrganizationByGlobalId(
-                                devScosApiClient,
+                        scosAPIService.getOrganizationByGlobalId(
                                 dto.getTargetUniversityId()
                         );
 
@@ -952,22 +902,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     private UserDTO getUserInfo(String userId) {
-        return ScosApiUtils.getUserDetails(devScosApiClient, userId);
-    }
-
-    /**
-     * Получить список заявок для университета по статусу
-     * @param status статус заявки
-     * @param universityId идентификатор университета
-     * @return список заявок
-     */
-    private List<PassRequest> getPassRequestByStatusForUniversity(PassRequestStatus status,
-                                                                  String universityId) {
-        return passRequestRepository
-                .findAllByTargetUniversityIdAndStatus(
-                        universityId,
-                        status
-                );
+        return scosAPIService.getUserDetails(userId).orElseThrow();
     }
 
     /**
@@ -1025,7 +960,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         }
 
         if (Optional.ofNullable(search).isPresent()) {
-            requestList = PassRequestUtils.filterRequest(requestList, search, devScosApiClient);
+            requestList = PassRequestUtils.filterRequest(requestList, search, scosAPIService);
         }
         long requestsCount = requestList.size();
         requestList = PassRequestUtils.paginateRequests(requestList, page, pageSize);
