@@ -27,7 +27,6 @@ import ru.edu.online.utils.UserUtils;
 import ru.edu.online.utils.VamApiUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,31 +38,39 @@ import java.util.stream.Collectors;
 @EnableScheduling
 public class PassRequestServiceImpl implements IPassRequestService {
 
-    private final IPassRequestRepository passRequestRepository;
-    private final IPassRequestUserRepository passRequestUserRepository;
+    /** Репозиторий истории изменения заявок */
     private final IPassRequestChangeLogRepository passRequestChangeLogRepository;
+    /** Репозиторий пользователей заявок */
+    private final IPassRequestUserRepository passRequestUserRepository;
+    /** Репозиторий динамических QR - кодов */
     private final IDynamicQRUserRepository dynamicQRUserRepository;
+    /** Репозиторий заявок */
+    private final IPassRequestRepository passRequestRepository;
 
+    /** Сервис комментариев заявок */
     private final IPassRequestCommentsService passRequestCommentsService;
+    /** Сервис информации о пользователях */
     private final IUserDetailsService userDetailsService;
 
+    /** Веб клиент для СЦОСа */
     private final WebClient devScosApiClient;
+    /** Веб клиент для ВАМа */
     private final WebClient devVamApiClient;
 
     @Autowired
-    public PassRequestServiceImpl(IPassRequestRepository passRequestRepository,
-                                  IPassRequestUserRepository passRequestUserRepository,
-                                  IPassRequestChangeLogRepository passRequestChangeLogRepository,
-                                  IDynamicQRUserRepository dynamicQRUserRepository,
+    public PassRequestServiceImpl(IPassRequestChangeLogRepository passRequestChangeLogRepository,
                                   IPassRequestCommentsService passRequestCommentsService,
+                                  IPassRequestUserRepository passRequestUserRepository,
+                                  IDynamicQRUserRepository dynamicQRUserRepository,
+                                  IPassRequestRepository passRequestRepository,
                                   IUserDetailsService userDetailsService,
                                   WebClient devScosApiClient,
                                   WebClient devVamApiClient) {
-        this.passRequestRepository = passRequestRepository;
-        this.passRequestUserRepository = passRequestUserRepository;
         this.passRequestChangeLogRepository = passRequestChangeLogRepository;
-        this.dynamicQRUserRepository = dynamicQRUserRepository;
         this.passRequestCommentsService = passRequestCommentsService;
+        this.passRequestUserRepository = passRequestUserRepository;
+        this.dynamicQRUserRepository = dynamicQRUserRepository;
+        this.passRequestRepository = passRequestRepository;
         this.userDetailsService = userDetailsService;
         this.devScosApiClient = devScosApiClient;
         this.devVamApiClient = devVamApiClient;
@@ -166,7 +173,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             return Optional.of(passRequestUserRepository.findAllByPassRequestId(passRequest.get().getId()));
         } else
             log.info("nothing to associate, the pass request type isn't \"GROUP\"");
-            return Optional.empty();
+        return Optional.empty();
     }
 
     /**
@@ -196,30 +203,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
         List<PassRequest> requestList = passRequestRepository.findAllByAuthorId(id);
 
         return Optional.of(requestList);
-    }
-
-    /**
-     * Получить список заявок по статусу для университета
-     * @param dto заявки
-     * @param page номер страницы
-     * @param pageSize размер страницы
-     * @return список заявок с определенным статусом
-     */
-    @Override
-    public Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto,
-                                                                           Long page,
-                                                                           Long pageSize) {
-        List<PassRequest> requests =
-                passRequestRepository.findAllByAuthorUniversityId(dto.getUniversityId());
-        log.info("Getting passRequests by status");
-        return Optional.of(
-                requests.stream()
-                        .filter(r -> r.getStatus() == dto.getStatus())
-                        .sorted(Comparator.comparing(PassRequest::getCreationDate).reversed())
-                        .skip(pageSize * (page - 1))
-                        .limit(pageSize)
-                        .collect(Collectors.toList())
-        );
     }
 
     /**
@@ -440,10 +423,10 @@ public class PassRequestServiceImpl implements IPassRequestService {
         Map<PassRequestStatus, Long> statusesCount = new HashMap<>();
         for (PassRequestStatus status : PassRequestStatus.values()) {
             statusesCount.put(
-                            status,
-                            requests.stream()
-                                    .filter(r -> r.getStatus().equals(status))
-                                    .count()
+                    status,
+                    requests.stream()
+                            .filter(r -> r.getStatus().equals(status))
+                            .count()
             );
         }
         return Optional.of(statusesCount);
@@ -630,33 +613,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
     }
 
     /**
-     * Обновление заявки
-     * @param dto DTO обновленной заявки
-     * @return обновленная заявка
-     */
-    @Override
-    public Optional<PassRequest> updatePassRequest(PassRequestDTO dto) {
-        Optional<PassRequest> passRequest = getPassRequest(dto);
-
-        if (passRequest.isPresent()) {
-            passRequest.get().setType(dto.getType());
-            passRequest.get().setStatus(dto.getStatus());
-            passRequest.get().setAuthorId(dto.getAuthorId());
-            passRequest.get().setEndDate(dto.getEndDate());
-            passRequest.get().setStartDate(dto.getStartDate());
-            passRequest.get().setTargetUniversityId(dto.getTargetUniversityId());
-            passRequest.get().setTargetUniversityAddress(dto.getTargetUniversityAddress());
-            passRequest.get().setTargetUniversityName(dto.getTargetUniversityName());
-            passRequestRepository.save(passRequest.get());
-
-            log.info("pass request with id: {} was updated", dto.getId());
-            return passRequest;
-        } else
-            log.warn("pass request with id: {} not found", dto.getId());
-            return Optional.empty();
-    }
-
-    /**
      * Обновление статуса заявки
      * @param dto DTO обновленной заявки
      * @return обновленная заявка
@@ -671,7 +627,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
             return getPassRequest(passRequest.get().getId());
         } else
             log.warn("pass request with id: {} not found", dto.getId());
-            return Optional.empty();
+        return Optional.empty();
     }
 
     /**
@@ -682,17 +638,17 @@ public class PassRequestServiceImpl implements IPassRequestService {
     @Override
     public Optional<PassRequest> updatePassRequestDates(PassRequestDTO passRequestDTO) {
         Optional<PassRequest> passRequest = getPassRequest(passRequestDTO.getId());
-         if (passRequest.isPresent()) {
-             if (Optional.ofNullable(passRequestDTO.getStartDate()).isPresent()) {
-                 passRequest.get().setStartDate(passRequestDTO.getStartDate());
-             }
-             if (Optional.ofNullable(passRequestDTO.getEndDate()).isPresent()) {
-                 passRequest.get().setEndDate(passRequestDTO.getEndDate());
-             }
+        if (passRequest.isPresent()) {
+            if (Optional.ofNullable(passRequestDTO.getStartDate()).isPresent()) {
+                passRequest.get().setStartDate(passRequestDTO.getStartDate());
+            }
+            if (Optional.ofNullable(passRequestDTO.getEndDate()).isPresent()) {
+                passRequest.get().setEndDate(passRequestDTO.getEndDate());
+            }
 
-             passRequestRepository.save(passRequest.get());
-             return passRequest;
-         }
+            passRequestRepository.save(passRequest.get());
+            return passRequest;
+        }
         return Optional.empty();
     }
 
@@ -748,34 +704,6 @@ public class PassRequestServiceImpl implements IPassRequestService {
         } else {
             return Optional.empty();
         }
-    }
-
-    /**
-     * Поиск и удаление просроченных заявок
-     * Удалению через 7 дней подлежат заявки со статусами:
-     * EXPIRED
-     * CANCELED_BY_CREATOR
-     * REJECTED_BY_TARGET_ORGANIZATION
-     */
-    @Override
-    public void getExpiredPassRequests() {
-        checkExpiredPassRequests();
-        List<PassRequest> expiredList =
-                passRequestRepository.findAllByStatus(PassRequestStatus.EXPIRED);
-
-        expiredList
-                .addAll(
-                        passRequestRepository.findAllByStatus(PassRequestStatus.REJECTED_BY_TARGET_ORGANIZATION)
-                );
-
-        for (PassRequest request : expiredList) {
-            Optional<PassRequestChangeLogEntry> entry = findInvalidRequests(request);
-            if (entry.isPresent() && entry.get().getDate().isBefore(LocalDateTime.now().minusDays(7))) {
-                log.info("old pass request with id {} was removed", request.getId());
-                passRequestRepository.deleteById(request.getId());
-            }
-        }
-        deleteOldAcceptedRequests();
     }
 
     /**
@@ -850,9 +778,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
 
         for (PassRequestStatus status : statuses) {
             entry = passRequest.getChangeLog()
-                            .stream()
-                            .filter(log -> log.getNewValue().equals(status.toString()))
-                            .findFirst();
+                    .stream()
+                    .filter(log -> log.getNewValue().equals(status.toString()))
+                    .findFirst();
             if (entry.isPresent()) {
                 return entry;
             }
@@ -1046,9 +974,9 @@ public class PassRequestServiceImpl implements IPassRequestService {
      * @return список отобранных заявок по критериям выше
      */
     private ResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationForUser(List<PassRequest> requests,
-                                                                           PassRequestStatus[] statuses,
-                                                                           Long page,
-                                                                           Long pageSize) {
+                                                                                        PassRequestStatus[] statuses,
+                                                                                        Long page,
+                                                                                        Long pageSize) {
         List<PassRequest> filteredRequests = new LinkedList<>();
         for (PassRequestStatus status : statuses) {
             filteredRequests.addAll(

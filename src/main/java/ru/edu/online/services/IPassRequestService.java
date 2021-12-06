@@ -39,8 +39,6 @@ public interface IPassRequestService {
                                                                                           long usersPerPage,
                                                                                           String search);
 
-    Optional<List<PassRequest>> getPassRequestByStatusForUniversity(PassRequestDTO dto, Long page, Long pageSize);
-
     Optional<ResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId);
 
     Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId, String status, Long page, Long pageSize);
@@ -48,10 +46,6 @@ public interface IPassRequestService {
     Optional<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(String authorId);
 
     Optional<List<PassRequestUser>> getPassRequestUsers(PassRequestDTO dto);
-
-    void getExpiredPassRequests();
-
-    Optional<PassRequest> updatePassRequest(PassRequestDTO dto);
 
     Optional<PassRequest> updatePassRequestStatus(PassRequestDTO dto);
 
