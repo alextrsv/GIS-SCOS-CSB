@@ -50,9 +50,6 @@ web:
         url: ${WEB_CLIENT_DEV_SCOS_URL}
       vam:
         url: ${WEB_CLIENT_DEV_VAM_URL}
-    test:
-      vam:
-        url: ${WEB_CLIENT_TEST_VAM_URL}
 
 # RestTemplate
 gis-scos:
