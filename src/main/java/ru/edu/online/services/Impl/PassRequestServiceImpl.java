@@ -469,10 +469,15 @@ public class PassRequestServiceImpl implements IPassRequestService {
         Map<PassRequestStatus, Integer> requestsCountByStatus = new HashMap<>();
         Optional<String> adminUniversityId = userDetailsService.getUserOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
+            List<PassRequest> allUniversityRequests =
+                    passRequestRepository.findAllByTargetUniversityId(adminUniversityId.get());
+            allUniversityRequests.removeIf(request ->
+                    request.getStatus() == PassRequestStatus.ACCEPTED && request.getChangeLog().isEmpty()
+            );
             for (PassRequestStatus status : PassRequestStatus.values()) {
                 requestsCountByStatus.put(
                         status,
-                        getPassRequestByStatusForUniversity(status, adminUniversityId.get()).size()
+                        (int) allUniversityRequests.stream().filter(passRequest -> passRequest.getStatus() == status).count()
                 );
             }
         }
