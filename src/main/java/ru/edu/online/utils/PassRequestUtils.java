@@ -1,10 +1,10 @@
 package ru.edu.online.utils;
 
-import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.OrganizationProfileDTO;
 import ru.edu.online.entities.enums.PassRequestSearchFilter;
 import ru.edu.online.repositories.IPassRequestRepository;
+import ru.edu.online.services.IScosAPIService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,19 +31,19 @@ public class PassRequestUtils {
      * Фильтровать заявки
      * @param requests заявки
      * @param search поиск
-     * @param devScosApiClient клиент для запроса
+     * @param scosAPIService сервис для общения со СЦОСом
      * @return список отфильтрованных заявок
      */
     public static List<PassRequest> filterRequest(List<PassRequest> requests,
                                                   String search,
-                                                  WebClient devScosApiClient) {
+                                                  IScosAPIService scosAPIService) {
         switch (getFilterType(search)) {
             case ORGANIZATION:
                 return filterRequestListByOrganizations(
-                                requests,
-                                search,
-                                devScosApiClient
-                        );
+                        requests,
+                        search,
+                        scosAPIService
+                );
             case NUMBER:
                 return requests
                         .stream()
@@ -63,16 +63,19 @@ public class PassRequestUtils {
      * Фильтрация заявок по организациям
      * @param requests заявки
      * @param organizationName название организации (частичное или полное)
-     * @param scosApiClient клиент для поиска заявки
+     * @param scosAPIService сервис для общения со СЦОСом
      * @return результат поиска
      */
     public static List<PassRequest> filterRequestListByOrganizations(List<PassRequest> requests,
                                                                      String organizationName,
-                                                                     WebClient scosApiClient) {
+                                                                     IScosAPIService scosAPIService) {
         List<PassRequest> filteredList = new ArrayList<>();
         Optional<OrganizationProfileDTO> organizationDTO;
         for (PassRequest request : requests) {
-            organizationDTO = ScosApiUtils.getOrganizationByGlobalId(scosApiClient, request.getAuthorUniversityId());
+            organizationDTO =
+                    scosAPIService.getOrganizationByGlobalId(
+                            request.getAuthorUniversityId()
+                    );
             if (organizationDTO.isPresent()) {
                 if (organizationDTO.get()
                         .getShort_name()
