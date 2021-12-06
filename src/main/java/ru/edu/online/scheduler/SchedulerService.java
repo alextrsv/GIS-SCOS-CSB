@@ -49,7 +49,7 @@ public class SchedulerService {
                 .forJob(jobDetail)
                 .withIdentity(jobDetail.getKey().getName(), "email-triggers")
                 .withDescription("generate new one-day dynamic QR-code")
-                .withSchedule(CronScheduleBuilder.cronSchedule("0/30 * * * * ?"))
+                .withSchedule(CronScheduleBuilder.cronSchedule("0 30 22 ? * * *"))
                 .build();
     }
 
