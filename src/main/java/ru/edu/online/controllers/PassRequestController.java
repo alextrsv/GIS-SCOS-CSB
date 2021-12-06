@@ -133,11 +133,11 @@ public class PassRequestController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /**
+    /*
      * Получение количества заявок по статусу для пользователя
      * @param principal авторизация пользователя
      * @return заявки
-     */
+
     @GetMapping("/count/get/user/status")
     public ResponseEntity<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(
             Principal principal) {
@@ -145,7 +145,7 @@ public class PassRequestController {
         return passRequestService.getPassRequestCountByStatusForUser(principal.getName()).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-
+*/
     /**
      * Получение заявок по статусу для пользователя
      * @param status заявки
