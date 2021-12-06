@@ -18,9 +18,13 @@ public class RunAfterStartup {
     @Autowired
     GetAllStudentsJob getAllStudentsJob;
 
+    @Autowired
+    GenerationQRJob generationQRJob;
+
     @EventListener(ApplicationReadyEvent.class)
     public void runAfterStartup() {
         getAllStudentsJob.doJob();
+        generationQRJob.generateQR();
         schedulerService.startGeneratingQRJob();
         schedulerService.startGettingStudentsQRJob();
     }
