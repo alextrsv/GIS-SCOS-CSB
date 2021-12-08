@@ -8,6 +8,7 @@ import ru.edu.online.clients.VamRestClient;
 import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.QRUser;
 import ru.edu.online.entities.dto.*;
+import ru.edu.online.repositories.IValidateStudentCacheRepository;
 import ru.edu.online.services.IDynamicQRUserService;
 import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
@@ -25,11 +26,14 @@ public class StudentServiceImpl implements QRUserService {
 
     private final IDynamicQRUserService dynamicQRUserService;
 
+    private final IValidateStudentCacheRepository studentCacheRepository;
+
     @Autowired
-    public StudentServiceImpl(GisScosApiRestClient gisScosApiRestClient, VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService) {
+    public StudentServiceImpl(GisScosApiRestClient gisScosApiRestClient, VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService, IValidateStudentCacheRepository studentCacheRepository) {
         this.gisScosApiRestClient = gisScosApiRestClient;
         this.vamRestClient = vamRestClient;
         this.dynamicQRUserService = dynamicQRUserService;
+        this.studentCacheRepository = studentCacheRepository;
     }
 
 
@@ -57,7 +61,11 @@ public class StudentServiceImpl implements QRUserService {
         permanentStudentQRDTO.setStatus("status");
         permanentStudentQRDTO.setRole("student");
 //        permanentStudentQRDTO.setStud_bilet(studentDTO.getId().toString().substring(0, 10));
-        permanentStudentQRDTO.setStud_bilet("25643682");
+        permanentStudentQRDTO.setStud_bilet(
+                studentCacheRepository.findByEmailAndScosId(
+                        studentDTO.getEmail(),
+                        studentDTO.getScos_id()).orElseThrow().getStudNumber()
+        );
         permanentStudentQRDTO.setEducation_form(getEducationForm(studentDTO.getStudy_plans()));
         permanentStudentQRDTO.setStart_year(getStartYear(studentDTO));
         permanentStudentQRDTO.setStud_bilet_duration(getEndYear(studentDTO));
