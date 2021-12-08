@@ -118,4 +118,37 @@ public class PRUtils {
                 .limit(requestsPerPage)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Получить заявку по id
+     * @param passRequestDTO заявки
+     * @return заявка
+     */
+    public static Optional<PassRequest> getPR(
+            PRDTO passRequestDTO,
+            IPRRepository passRequestRepository) {
+        return passRequestRepository.findById(passRequestDTO.getId());
+    }
+
+    /**
+     * Получить заявку по id
+     * @param passRequestUserDTO пользователя заявки
+     * @return заявка
+     */
+    public static Optional<PassRequest> getPR(
+            PRUserDTO passRequestUserDTO,
+            IPRRepository passRequestRepository) {
+        return passRequestRepository.findById(passRequestUserDTO.getPassRequestId());
+    }
+
+    /**
+     * Получить азявку по id
+     * @param id id заявки
+     * @return заявка
+     */
+    public static Optional<PassRequest> getPR(
+            UUID id,
+            IPRRepository passRequestRepository) {
+        return passRequestRepository.findById(id);
+    }
 }
