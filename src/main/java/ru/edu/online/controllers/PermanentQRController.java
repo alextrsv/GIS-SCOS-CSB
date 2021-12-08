@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.edu.online.entities.dto.PermanentUserQRDTO;
 import ru.edu.online.entities.enums.QRDataVerifyStatus;
-import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.services.IPermanentQRService;
 import ru.edu.online.services.IUserDetailsService;
 
