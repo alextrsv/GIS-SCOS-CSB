@@ -792,7 +792,7 @@ public class PassRequestServiceImpl implements IPassRequestService {
         //System.out.println("checkExpiredPassRequests");
         List<PassRequest> requests = passRequestRepository.findAll();
         requests.stream()
-                .filter(request -> isExpired(request.getStatus(), request.getStartDate()))
+                .filter(request -> isExpired(request.getStatus(), request.getEndDate()))
                 .forEach(request -> request.setStatus(PassRequestStatus.EXPIRED));
         passRequestRepository.saveAll(requests);
     }
@@ -800,13 +800,13 @@ public class PassRequestServiceImpl implements IPassRequestService {
     /**
      * Является ли заявка просроченной?
      * @param status статус заявки
-     * @param startDate дата начала действия
+     * @param endDate дата конца действия
      * @return ответ true или false
      */
-    private boolean isExpired(PassRequestStatus status, LocalDate startDate) {
+    private boolean isExpired(PassRequestStatus status, LocalDate endDate) {
         return (status != PassRequestStatus.ACCEPTED &&
                 status != PassRequestStatus.EXPIRED &&
-                startDate.isBefore(LocalDate.now()));
+                endDate.isBefore(LocalDate.now()));
     }
 
     /**
