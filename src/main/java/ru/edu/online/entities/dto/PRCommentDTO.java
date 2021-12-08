@@ -10,13 +10,13 @@ import java.util.UUID;
  */
 @Data
 @NoArgsConstructor
-public class PassRequestCommentDTO {
+public class PRCommentDTO {
     private UUID id;
     private String authorId;
     private UUID passRequestId;
     private String comment;
 
-    public PassRequestCommentDTO(String authorId, UUID passRequestId, String comment) {
+    public PRCommentDTO(String authorId, UUID passRequestId, String comment) {
         this.authorId = authorId;
         this.passRequestId = passRequestId;
         this.comment = comment;

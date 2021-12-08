@@ -12,7 +12,8 @@ import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.dto.UserDetailsDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
-import ru.edu.online.services.IPassRequestService;
+import ru.edu.online.services.IPRAdminService;
+import ru.edu.online.services.IPRUserService;
 import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
@@ -25,13 +26,16 @@ import java.util.Optional;
 @RequestMapping("/user")
 public class UserInfoController {
 
-    private final IPassRequestService passRequestService;
+    private final IPRAdminService passRequestAdminService;
+    private final IPRUserService passRequestUserService;
     private final IUserDetailsService userDetailsService;
 
     @Autowired
-    public UserInfoController(IPassRequestService passRequestService,
+    public UserInfoController(IPRAdminService passRequestAdminService,
+                              IPRUserService passRequestUserService,
                               IUserDetailsService userDetailsService) {
-        this.passRequestService = passRequestService;
+        this.passRequestAdminService = passRequestAdminService;
+        this.passRequestUserService = passRequestUserService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -65,7 +69,7 @@ public class UserInfoController {
                 || userDetailsService.isUniversity(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return passRequestService.getAcceptedPassRequests(principal.getName()).map(ResponseEntity::ok)
+        return passRequestUserService.getAcceptedPassRequests(principal.getName()).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -78,8 +82,8 @@ public class UserInfoController {
         if (userDetailsService.isSuperUser(principal.getName())
                 || userDetailsService.isUniversity(principal.getName())) {
             return ResponseEntity.of(
-                    passRequestService
-                            .getUsersFromAcceptedPassRequestsAdminUniversity(
+                    passRequestAdminService
+                            .getAdminUniversityUsers(
                                     principal.getName(),
                                     page,
                                     itemsPerPage,

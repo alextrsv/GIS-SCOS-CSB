@@ -9,7 +9,7 @@ import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.QRUser;
 import ru.edu.online.entities.dto.*;
 import ru.edu.online.services.IDynamicQRUserService;
-import ru.edu.online.services.QRUserService;
+import ru.edu.online.services.IQRUserService;
 import ru.edu.online.utils.HashingUtil;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class StudentServiceImpl implements QRUserService {
+public class StudentServiceImpl implements IQRUserService {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 

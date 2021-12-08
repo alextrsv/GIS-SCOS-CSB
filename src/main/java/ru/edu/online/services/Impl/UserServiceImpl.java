@@ -11,7 +11,7 @@ import ru.edu.online.entities.dto.OrganizationInQRDTO;
 import ru.edu.online.entities.dto.PermanentUserQRDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.services.IDynamicQRUserService;
-import ru.edu.online.services.QRUserService;
+import ru.edu.online.services.IQRUserService;
 import ru.edu.online.utils.HashingUtil;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserServiceImpl implements QRUserService {
+public class UserServiceImpl implements IQRUserService {
 
     private final GisScosApiRestClient gisScosApiRestClient;
 

@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.edu.online.entities.enums.PassFileType;
+import ru.edu.online.entities.enums.PRFileType;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,7 +15,7 @@ import java.util.UUID;
 @Data
 @Entity
 @NoArgsConstructor
-public class PassFile {
+public class PassRequestFile {
 
     /** Id файла, прикрепленного к заявке в БД. Генерируется автоматически */
     @Id
@@ -26,7 +26,7 @@ public class PassFile {
     /** Имя файла **/
     private String name;
     /** Тип файла **/
-    private PassFileType type;
+    private PRFileType type;
     /** Путь к файлу **/
     @JsonIgnore
     private String path;
@@ -35,8 +35,8 @@ public class PassFile {
 
 
 
-    public PassFile(String name, PassFileType type,
-                    String path, UUID passRequestId){
+    public PassRequestFile(String name, PRFileType type,
+                           String path, UUID passRequestId){
         this.name = name;
         this.type = type;
         this.path = path;

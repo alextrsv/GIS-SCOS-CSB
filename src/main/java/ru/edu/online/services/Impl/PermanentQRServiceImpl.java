@@ -11,8 +11,8 @@ import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.enums.QRDataVerifyStatus;
 import ru.edu.online.services.IPermanentQRService;
+import ru.edu.online.services.IQRUserService;
 import ru.edu.online.services.IScosAPIService;
-import ru.edu.online.services.QRUserService;
 import ru.edu.online.utils.HashingUtil;
 
 import java.awt.image.BufferedImage;
@@ -37,7 +37,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
 
     private final UserServiceImpl userServiceImpl;
 
-    private QRUserService qrUserServiceImps;
+    private IQRUserService IQRUserServiceImps;
 
 
 
@@ -90,16 +90,16 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
             if (vamStudent.isPresent()) {
                 vamStudent.get().setPhoto_url(scosUser.get().getPhoto_url());
                 vamStudent.get().setScos_id(scosUser.get().getUser_id());
-                this.qrUserServiceImps = studentServiceImpl;
+                this.IQRUserServiceImps = studentServiceImpl;
                 return Optional.of(vamStudent.get());
             }
             else{
-                this.qrUserServiceImps = userServiceImpl;
+                this.IQRUserServiceImps = userServiceImpl;
                 return Optional.of(scosUser.get());
             }
         }
         else{
-            this.qrUserServiceImps = userServiceImpl;
+            this.IQRUserServiceImps = userServiceImpl;
             return Optional.of(scosUser.get());
         }
     }
@@ -109,7 +109,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     public Optional<Resource> downloadQRAsFile(String userId) {
         Optional<QRUser> qrUser =  getDefinedRole(userId);
 //        String content = qrUserServiceImps.getContentWithHash(qrUser.get());
-        String content = String.format("{\"id\":\"%s\", \"hash\":\"%s\"}", userId, qrUserServiceImps.getHash(qrUser.orElseThrow()));
+        String content = String.format("{\"id\":\"%s\", \"hash\":\"%s\"}", userId, IQRUserServiceImps.getHash(qrUser.orElseThrow()));
         BufferedImage qrCodeImage = QrGenerator.generateQRCodeImage(content);
         return Converter.getResource(qrCodeImage);
     }
@@ -118,7 +118,7 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     public Optional<QRDataVerifyStatus> verifyData(String userId, String dataHash) {
         Optional<QRUser> qrUser =  getDefinedRole(userId);
         try {
-            String newHash = HashingUtil.getHash(qrUserServiceImps.getFullStaticQRPayload(qrUser.orElseThrow()).toString());
+            String newHash = HashingUtil.getHash(IQRUserServiceImps.getFullStaticQRPayload(qrUser.orElseThrow()).toString());
             if (newHash.equals(dataHash)) return Optional.of(QRDataVerifyStatus.OK);
             else return Optional.of(QRDataVerifyStatus.INVALID);
         } catch (NoSuchAlgorithmException e) {
@@ -130,12 +130,12 @@ public class PermanentQRServiceImpl implements IPermanentQRService {
     @Override
     public Optional<PermanentUserQRDTO> getFullUserInfo(String userId) {
         Optional<QRUser> qrUser = getDefinedRole(userId);
-        return Optional.ofNullable(qrUserServiceImps.getFullStaticQRPayload(qrUser.orElseThrow()));
+        return Optional.ofNullable(IQRUserServiceImps.getFullStaticQRPayload(qrUser.orElseThrow()));
     }
 
     @Override
     public Optional<PermanentUserQRDTO> getAbbreviatedStaticQRPayload(String userId) {
         Optional<QRUser> qrUser = getDefinedRole(userId);
-        return Optional.ofNullable(qrUserServiceImps.getAbbreviatedStaticQRPayload(qrUser.orElseThrow()));
+        return Optional.ofNullable(IQRUserServiceImps.getAbbreviatedStaticQRPayload(qrUser.orElseThrow()));
     }
 }

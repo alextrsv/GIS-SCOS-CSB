@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service;
 import ru.edu.online.entities.DynamicQRUser;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.StudentDTO;
-import ru.edu.online.entities.enums.PassRequestStatus;
-import ru.edu.online.entities.enums.PassRequestType;
+import ru.edu.online.entities.enums.PRStatus;
+import ru.edu.online.entities.enums.PRType;
 import ru.edu.online.repositories.IDynamicQRUserRepository;
-import ru.edu.online.repositories.IPassRequestUserRepository;
+import ru.edu.online.repositories.IPRUserRepository;
 import ru.edu.online.services.IDynamicQRUserService;
-import ru.edu.online.services.IPassRequestService;
+import ru.edu.online.services.IPRUserService;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -24,14 +24,16 @@ public class DynamicQRUserServiceImpl implements IDynamicQRUserService {
     final
     IDynamicQRUserRepository dynamicQRUserRepository;
 
-    private final IPassRequestService passRequestService;
+    private final IPRUserService passRequestUserService;
 
-    private final IPassRequestUserRepository passRequestUserRepository;
+    private final IPRUserRepository passRequestUserRepository;
 
     @Autowired
-    public DynamicQRUserServiceImpl(IDynamicQRUserRepository dynamicQRUserRepository, IPassRequestService passRequestService, IPassRequestUserRepository passRequestUserRepository) {
+    public DynamicQRUserServiceImpl(IDynamicQRUserRepository dynamicQRUserRepository,
+                                    IPRUserService passRequestService,
+                                    IPRUserRepository passRequestUserRepository) {
         this.dynamicQRUserRepository = dynamicQRUserRepository;
-        this.passRequestService = passRequestService;
+        this.passRequestUserService = passRequestService;
         this.passRequestUserRepository = passRequestUserRepository;
     }
 
@@ -71,16 +73,16 @@ public class DynamicQRUserServiceImpl implements IDynamicQRUserService {
         2. Отфильртовать их по типу (SINGLE)
         */
 
-        List<PassRequest> acceptedRequestsForUser = passRequestService.getPassRequestsByUserId(user.getUserId()).get()
+        List<PassRequest> acceptedRequestsForUser = passRequestUserService.getPassRequestsByUserId(user.getUserId()).get()
                 .stream()
-                .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
-                .filter(passRequest -> passRequest.getType() == PassRequestType.SINGLE)
+                .filter(passRequest -> passRequest.getStatus() == PRStatus.ACCEPTED)
+                .filter(passRequest -> passRequest.getType() == PRType.SINGLE)
                 .collect(Collectors.toList());
 
         acceptedRequestsForUser.addAll(passRequestUserRepository.getByScosId(user.getUserId()).stream()
-                .map(passRequestUser -> passRequestService.getPassRequestById(passRequestUser.getPassRequestId()).get())
-                .filter(passRequest -> passRequest.getType() == PassRequestType.GROUP)
-                .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
+                .map(passRequestUser -> passRequestUserService.getPassRequestById(passRequestUser.getPassRequestId()).get())
+                .filter(passRequest -> passRequest.getType() == PRType.GROUP)
+                .filter(passRequest -> passRequest.getStatus() == PRStatus.ACCEPTED)
                 .collect(Collectors.toList()));
 
         return new LinkedHashSet<>(acceptedRequestsForUser);
@@ -90,6 +92,4 @@ public class DynamicQRUserServiceImpl implements IDynamicQRUserService {
     public Boolean isExistsByUserIdAndOrgId(String userId, String organizationId){
         return dynamicQRUserRepository.existsByUserIdAndOrganizationId(userId, organizationId);
     }
-
-
 }

@@ -5,5 +5,5 @@ import ru.edu.online.entities.PassRequestChangeLogEntry;
 
 import java.util.UUID;
 
-public interface IPassRequestChangeLogRepository extends JpaRepository<PassRequestChangeLogEntry, UUID> {
+public interface IPRChangeLogRepository extends JpaRepository<PassRequestChangeLogEntry, UUID> {
 }

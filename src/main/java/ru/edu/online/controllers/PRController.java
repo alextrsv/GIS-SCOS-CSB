@@ -7,16 +7,17 @@ import org.springframework.web.bind.annotation.*;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestComment;
 import ru.edu.online.entities.PassRequestUser;
-import ru.edu.online.entities.dto.PassRequestCommentDTO;
-import ru.edu.online.entities.dto.PassRequestDTO;
-import ru.edu.online.entities.dto.PassRequestUserDTO;
+import ru.edu.online.entities.dto.PRCommentDTO;
+import ru.edu.online.entities.dto.PRDTO;
+import ru.edu.online.entities.dto.PRUserDTO;
 import ru.edu.online.entities.dto.ResponseDTO;
-import ru.edu.online.entities.enums.PassRequestStatus;
-import ru.edu.online.entities.enums.PassRequestType;
-import ru.edu.online.entities.enums.RequestsStatusForAdmin;
+import ru.edu.online.entities.enums.PRStatus;
+import ru.edu.online.entities.enums.PRStatusForAdmin;
+import ru.edu.online.entities.enums.PRType;
 import ru.edu.online.entities.enums.UserRole;
-import ru.edu.online.services.IPassRequestCommentsService;
-import ru.edu.online.services.IPassRequestService;
+import ru.edu.online.services.IPRAdminService;
+import ru.edu.online.services.IPRCommentsService;
+import ru.edu.online.services.IPRUserService;
 import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
@@ -30,22 +31,26 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/pass_requests")
-public class PassRequestController {
+public class PRController {
 
     /** Сервис комментариев заявок */
-    private final IPassRequestCommentsService passRequestCommentsService;
-    /** Сервис заявок */
-    private final IPassRequestService passRequestService;
+    private final IPRCommentsService passRequestCommentsService;
+    /** Сервис заявок администратора */
+    private final IPRAdminService passRequestAdminService;
+    /** Сервис заявок пользователя */
+    private final IPRUserService passRequestUserService;
     /** Сервис данных о пользователях */
     private final IUserDetailsService userDetailsService;
 
     @Autowired
-    public PassRequestController(IPassRequestCommentsService passRequestCommentsService,
-                                 IPassRequestService passRequestService,
-                                 IUserDetailsService userDetailsService) {
+    public PRController(IPRCommentsService passRequestCommentsService,
+                        IPRAdminService passRequestAdminService,
+                        IPRUserService passRequestUserService,
+                        IUserDetailsService userDetailsService) {
 
         this.passRequestCommentsService = passRequestCommentsService;
-        this.passRequestService = passRequestService;
+        this.passRequestAdminService = passRequestAdminService;
+        this.passRequestUserService = passRequestUserService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -55,26 +60,26 @@ public class PassRequestController {
      * @return созданная заявка
      */
     @PostMapping("/add")
-    public ResponseEntity<PassRequest> addPassRequest(@RequestBody PassRequestDTO dto,
+    public ResponseEntity<PassRequest> addPassRequest(@RequestBody PRDTO dto,
                                                       Principal principal) {
         switch (userDetailsService.getUserRole(principal.getName())) {
             case SUPER_USER:
                 switch (dto.getType()) {
                     case GROUP:
-                        return passRequestService.addGroupPassRequest(dto, principal.getName()).map(ResponseEntity::ok)
+                        return passRequestAdminService.addGroupPassRequest(dto, principal.getName()).map(ResponseEntity::ok)
                                 .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
                     case SINGLE:
-                        return passRequestService.addSinglePassRequest(dto, principal.getName()).map(ResponseEntity::ok)
+                        return passRequestUserService.addSinglePassRequest(dto, principal.getName()).map(ResponseEntity::ok)
                                 .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
                 }
             case ADMIN:
-                if (dto.getType() == PassRequestType.GROUP) {
-                    return passRequestService.addGroupPassRequest(dto, principal.getName()).map(ResponseEntity::ok)
+                if (dto.getType() == PRType.GROUP) {
+                    return passRequestAdminService.addGroupPassRequest(dto, principal.getName()).map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
                 }
             case STUDENT:
-                if (dto.getType() == PassRequestType.SINGLE) {
-                    return passRequestService.addSinglePassRequest(dto, principal.getName()).map(ResponseEntity::ok)
+                if (dto.getType() == PRType.SINGLE) {
+                    return passRequestUserService.addSinglePassRequest(dto, principal.getName()).map(ResponseEntity::ok)
                             .orElseGet(() -> ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build());
                 }
             default:
@@ -88,11 +93,11 @@ public class PassRequestController {
      * @return если заявка найдена, список пользователей заявки с учётом уже добавленного
      */
     @PostMapping("/add_user")
-    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PassRequestUserDTO dto,
+    public ResponseEntity<List<PassRequestUser>> addUserToPassRequest(@RequestBody PRUserDTO dto,
                                                                       Principal principal) {
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
-            return passRequestService.addUserToPassRequest(dto).map(ResponseEntity::ok)
+            return passRequestAdminService.addUserToPassRequest(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -105,7 +110,7 @@ public class PassRequestController {
      */
     @PostMapping("/comments/add")
     public ResponseEntity<PassRequestComment> addCommentToPassRequest(
-            @RequestBody PassRequestCommentDTO dto,
+            @RequestBody PRCommentDTO dto,
             Principal principal) {
 
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
@@ -129,23 +134,23 @@ public class PassRequestController {
                 userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return passRequestService.getPassRequestById(passRequestId).map(ResponseEntity::ok)
+        return passRequestUserService.getPassRequestById(passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /*
+    /**
      * Получение количества заявок по статусу для пользователя
      * @param principal авторизация пользователя
      * @return заявки
-
+     */
     @GetMapping("/count/get/user/status")
-    public ResponseEntity<Map<PassRequestStatus, Long>> getPassRequestCountByStatusForUser(
+    public ResponseEntity<Map<PRStatus, Long>> getPassRequestCountByStatusForUser(
             Principal principal) {
 
-        return passRequestService.getPassRequestCountByStatusForUser(principal.getName()).map(ResponseEntity::ok)
+        return passRequestUserService.getPassRequestCountByStatusForUser(principal.getName()).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-*/
+
     /**
      * Получение заявок по статусу для пользователя
      * @param status заявки
@@ -164,10 +169,10 @@ public class PassRequestController {
             Principal principal) {
 
         if (Optional.ofNullable(userId).isPresent()) {
-            return passRequestService.getPassRequestByStatusForUser(userId, status, page, itemsPerPage).map(ResponseEntity::ok)
+            return passRequestUserService.getPassRequestByStatusForUser(userId, status, page, itemsPerPage).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
-        return passRequestService.getPassRequestByStatusForUser(principal.getName(), status, page, itemsPerPage).map(ResponseEntity::ok)
+        return passRequestUserService.getPassRequestByStatusForUser(principal.getName(), status, page, itemsPerPage).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -177,12 +182,12 @@ public class PassRequestController {
      * @return мапа: статус - количество
      */
     @GetMapping("/count/get/admin/status")
-    public ResponseEntity<Map<PassRequestStatus, Integer>> getPassRequestCountByStatusForAdmin(
+    public ResponseEntity<Map<PRStatus, Integer>> getPassRequestCountByStatusForAdmin(
             Principal principal) {
 
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
-            return passRequestService.getPassRequestsCountByStatusForAdmin(principal.getName()).map(ResponseEntity::ok)
+            return passRequestAdminService.getPassRequestsCountByStatusForAdmin(principal.getName()).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
 
@@ -208,8 +213,8 @@ public class PassRequestController {
 
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
-            return passRequestService.getPassRequestsForAdmin(
-                            RequestsStatusForAdmin.of(status),
+            return passRequestAdminService.getPassRequestsForAdmin(
+                            PRStatusForAdmin.of(status),
                             page,
                             pageSize,
                             search,
@@ -228,11 +233,11 @@ public class PassRequestController {
      * @return список пользователей заявки
      */
     @GetMapping("/get/users")
-    public ResponseEntity<List<PassRequestUser>> getPassRequestUsers(@RequestBody PassRequestDTO dto,
+    public ResponseEntity<List<PassRequestUser>> getPassRequestUsers(@RequestBody PRDTO dto,
                                                                      Principal principal) {
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
-            return passRequestService.getPassRequestUsers(dto).map(ResponseEntity::ok)
+            return passRequestUserService.getPassRequestUsers(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
 
@@ -261,12 +266,12 @@ public class PassRequestController {
      * @return отредактированная заявка
      */
     @PutMapping("/edit/status")
-    public ResponseEntity<PassRequest> editPassRequestStatus(@RequestBody PassRequestDTO dto,
+    public ResponseEntity<PassRequest> editPassRequestStatus(@RequestBody PRDTO dto,
                                                              Principal principal) {
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return passRequestService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
+        return passRequestAdminService.updatePassRequestStatus(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -277,13 +282,13 @@ public class PassRequestController {
      * @return обновлённая заявка
      */
     @PutMapping("/edit/date")
-    public ResponseEntity<PassRequest> editPassRequestDates(@RequestBody PassRequestDTO dto,
+    public ResponseEntity<PassRequest> editPassRequestDates(@RequestBody PRDTO dto,
                                                             Principal principal) {
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        return passRequestService.updatePassRequestDates(dto).map(ResponseEntity::ok)
+        return passRequestAdminService.updatePassRequestDates(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -293,7 +298,7 @@ public class PassRequestController {
      * @return отредактированный комментарий
      */
     @PutMapping("/edit/comments")
-    public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PassRequestCommentDTO dto,
+    public ResponseEntity<PassRequestComment> editPassRequestComment(@RequestBody PRCommentDTO dto,
                                                                      Principal principal) {
         if (userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY ||
                 userDetailsService.getUserRole(principal.getName()) == UserRole.UNDEFINED) {
@@ -314,7 +319,7 @@ public class PassRequestController {
         if (userDetailsService.isSecurityOfficer(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return passRequestService.deletePassRequestById(id).map(ResponseEntity::ok)
+        return passRequestUserService.deletePassRequestById(id).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
@@ -324,11 +329,11 @@ public class PassRequestController {
      * @return обновлённый список пользоватлей заявки
      */
     @DeleteMapping("/delete_user")
-    public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PassRequestUserDTO[] dto,
+    public ResponseEntity<List<PassRequestUser>> deleteUserFromPassRequest(@RequestBody PRUserDTO[] dto,
                                                                            Principal principal) {
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
-            return passRequestService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
+            return passRequestAdminService.deleteUserFromPassRequest(dto).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -340,7 +345,7 @@ public class PassRequestController {
      * @return удалённый комментарий
      */
     @DeleteMapping("/comments/delete")
-    public ResponseEntity<PassRequestComment> deletePassRequestComment(@RequestBody PassRequestCommentDTO dto,
+    public ResponseEntity<PassRequestComment> deletePassRequestComment(@RequestBody PRCommentDTO dto,
                                                                        Principal principal) {
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {

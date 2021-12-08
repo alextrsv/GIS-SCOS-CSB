@@ -7,9 +7,9 @@ import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.OrganizationProfileDTO;
 import ru.edu.online.entities.dto.StudentDTO;
-import ru.edu.online.entities.enums.PassRequestStatus;
+import ru.edu.online.entities.enums.PRStatus;
 import ru.edu.online.services.IOrganizationService;
-import ru.edu.online.services.IPassRequestService;
+import ru.edu.online.services.IPRUserService;
 import ru.edu.online.services.IScosAPIService;
 
 import java.util.HashMap;
@@ -22,26 +22,26 @@ import java.util.stream.Collectors;
 public class OrganizationServiceImpl implements IOrganizationService {
 
     /** Сервис заявок */
-    private final IPassRequestService passRequestService;
+    private final IPRUserService passRequestUserService;
 
     /** Сервис для работы с АПИ СЦОСа */
     private final IScosAPIService scosAPIService;
 
     @Autowired
-    public OrganizationServiceImpl(IPassRequestService passRequestService,
+    public OrganizationServiceImpl(IPRUserService passRequestUserService,
                                    IScosAPIService scosAPIService) {
-        this.passRequestService = passRequestService;
+        this.passRequestUserService = passRequestUserService;
         this.scosAPIService = scosAPIService;
     }
 
     @Override
     public List<String> getPermittedOrganizations(StudentDTO studentDTO) {
         List<String> acceptedOrganizationsUUID =
-                passRequestService.getPassRequestsByUserId(
+                passRequestUserService.getPassRequestsByUserId(
                                 studentDTO.getId()
                         ).orElseThrow()
                         .stream()
-                        .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
+                        .filter(passRequest -> passRequest.getStatus() == PRStatus.ACCEPTED)
                         .map(PassRequest::getTargetUniversityId)
                         .collect(Collectors.toList());
         acceptedOrganizationsUUID.add(studentDTO.getOrganization_id());

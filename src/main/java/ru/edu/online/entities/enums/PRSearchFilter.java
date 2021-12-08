@@ -5,7 +5,7 @@ package ru.edu.online.entities.enums;
  * ORGANIZATION - поиск по организациям
  * NUMBER - поиск по номеру заявки
  */
-public enum PassRequestSearchFilter {
+public enum PRSearchFilter {
     ORGANIZATION,
     NUMBER
 }

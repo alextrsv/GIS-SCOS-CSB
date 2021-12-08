@@ -3,8 +3,8 @@ package ru.edu.online.entities;
 import lombok.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-import ru.edu.online.entities.enums.PassRequestStatus;
-import ru.edu.online.entities.enums.PassRequestType;
+import ru.edu.online.entities.enums.PRStatus;
+import ru.edu.online.entities.enums.PRType;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -55,9 +55,9 @@ public class PassRequest {
     /** Дата конца периода действия заявки */
     private LocalDate endDate;
     /** Тип заявки */
-    private PassRequestType type;
+    private PRType type;
     /** Статус заявки */
-    private PassRequestStatus status;
+    private PRStatus status;
 
     /** Список пользователей групповой заявки */
     @OneToMany(
@@ -77,7 +77,7 @@ public class PassRequest {
     )
     @LazyCollection(LazyCollectionOption.FALSE)
     @ToString.Exclude
-    private List<PassFile> files;
+    private List<PassRequestFile> files;
 
     /** Список комментариев, прикрепленных к заявке */
     @OneToMany(
@@ -101,8 +101,8 @@ public class PassRequest {
 
     public PassRequest(String authorId, String authorFirstName, String authorLastName,
                        String authorPatronymicName, String authorUniversityId, String authorUniversityName,
-                       LocalDate startDate, LocalDate endDate, PassRequestStatus status,
-                       PassRequestType type, String targetUniversityAddress,
+                       LocalDate startDate, LocalDate endDate, PRStatus status,
+                       PRType type, String targetUniversityAddress,
                        String targetUniversityName, String targetUniversityId,
                        Long number, String authorPhotoURL) {
         this.creationDate = LocalDateTime.now();

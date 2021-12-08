@@ -2,8 +2,10 @@ package ru.edu.online.utils;
 
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.OrganizationProfileDTO;
-import ru.edu.online.entities.enums.PassRequestSearchFilter;
-import ru.edu.online.repositories.IPassRequestRepository;
+import ru.edu.online.entities.dto.PRDTO;
+import ru.edu.online.entities.dto.PRUserDTO;
+import ru.edu.online.entities.enums.PRSearchFilter;
+import ru.edu.online.repositories.IPRRepository;
 import ru.edu.online.services.IScosAPIService;
 
 import java.util.*;
@@ -12,19 +14,19 @@ import java.util.stream.Collectors;
 /**
  * Утилитный класс заявок
  */
-public class PassRequestUtils {
+public class PRUtils {
 
     /**
      * Получить тип фильтра по строке поиска
      * @param search строка поиска
      * @return тип фильтра (номер заявки, организация)
      */
-    public static PassRequestSearchFilter getFilterType(String search) {
+    public static PRSearchFilter getFilterType(String search) {
         if (search.matches(".*\\d.*")) {
-            return PassRequestSearchFilter.NUMBER;
+            return PRSearchFilter.NUMBER;
         }
 
-        return PassRequestSearchFilter.ORGANIZATION;
+        return PRSearchFilter.ORGANIZATION;
     }
 
     /**
@@ -97,7 +99,7 @@ public class PassRequestUtils {
      * @param requestRepository репозиторий заявок
      * @return номер новой заявки
      */
-    public static Long getRequestNumber(IPassRequestRepository requestRepository) {
+    public static Long getRequestNumber(IPRRepository requestRepository) {
         return requestRepository.countAllByNumberGreaterThan(0L) + 1;
     }
 
