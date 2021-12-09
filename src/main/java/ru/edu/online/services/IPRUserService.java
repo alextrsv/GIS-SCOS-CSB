@@ -3,7 +3,7 @@ package ru.edu.online.services;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.dto.PRDTO;
-import ru.edu.online.entities.dto.ResponseDTO;
+import ru.edu.online.entities.dto.GenericResponseDTO;
 import ru.edu.online.entities.enums.PRStatus;
 
 import java.util.List;
@@ -15,14 +15,14 @@ public interface IPRUserService {
 
     Optional<PassRequest> addSinglePassRequest(PRDTO passRequestDTO, String userId);
 
-    Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId,
-                                                                     String status,
-                                                                     Long page,
-                                                                     Long pageSize);
+    Optional<GenericResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId,
+                                                                            String status,
+                                                                            Long page,
+                                                                            Long pageSize);
 
     Optional<Map<PRStatus, Long>> getPassRequestCountByStatusForUser(String authorId);
 
-    Optional<ResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId);
+    Optional<GenericResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId);
 
     Optional<List<PassRequest>> getPassRequestsByUserId(String userId);
 

@@ -1,6 +1,6 @@
 package ru.edu.online.utils;
 
-import ru.edu.online.entities.dto.UserDetailsDTO;
+import ru.edu.online.entities.dto.UserDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,7 +13,7 @@ public class UserUtils {
      * @param email почта
      * @return результат поиска
      */
-    public static List<UserDetailsDTO> searchByEmail(List<UserDetailsDTO> users, String email) {
+    public static List<UserDTO> searchByEmail(List<UserDTO> users, String email) {
         return users.stream().filter(user -> user.getEmail().contains(email)).collect(Collectors.toList());
     }
 
@@ -24,7 +24,7 @@ public class UserUtils {
      * @param users пользователеи
      * @return страница пользователей
      */
-    public static List<UserDetailsDTO> paginateUsers(List<UserDetailsDTO> users, long page, long usersPerPage) {
+    public static List<UserDTO> paginateUsers(List<UserDTO> users, long page, long usersPerPage) {
         return users
                 .stream()
                 .skip(usersPerPage * (page - 1))

@@ -10,7 +10,7 @@ import ru.edu.online.entities.PassRequestUser;
 import ru.edu.online.entities.dto.PRCommentDTO;
 import ru.edu.online.entities.dto.PRDTO;
 import ru.edu.online.entities.dto.PRUserDTO;
-import ru.edu.online.entities.dto.ResponseDTO;
+import ru.edu.online.entities.dto.GenericResponseDTO;
 import ru.edu.online.entities.enums.PRStatus;
 import ru.edu.online.entities.enums.PRStatusForAdmin;
 import ru.edu.online.entities.enums.PRType;
@@ -161,7 +161,7 @@ public class PRController {
      * @return заявки
      */
     @GetMapping("/get/user/status")
-    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(
+    public ResponseEntity<GenericResponseDTO<PassRequest>> getPassRequestByStatusForUser(
             @RequestParam Long page,
             @RequestParam Long itemsPerPage,
             @RequestParam String status,
@@ -204,7 +204,7 @@ public class PRController {
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests")
-    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestsForAdmin(
+    public ResponseEntity<GenericResponseDTO<PassRequest>> getPassRequestsForAdmin(
             @RequestParam(value = "page") Long page,
             @RequestParam(value = "itemsPerPage") Long pageSize,
             @RequestParam(value = "status") String status,

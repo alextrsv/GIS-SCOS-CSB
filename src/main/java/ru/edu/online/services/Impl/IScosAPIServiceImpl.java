@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.OrganizationProfileDTO;
-import ru.edu.online.entities.dto.UserByFIOResponseDTO;
+import ru.edu.online.entities.dto.UsersDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.services.IScosAPIService;
 
@@ -120,11 +120,11 @@ public class IScosAPIServiceImpl implements IScosAPIService {
      * @return список пользователей СЦОСа по ФИО
      */
     @Override
-    public Optional<UserByFIOResponseDTO> getUserByFIO(String firstName, String lastName) {
+    public Optional<UsersDTO> getUserByFIO(String firstName, String lastName) {
         return Optional.ofNullable(devScosApiClient.get()
                 .uri(String.join("", "/users?page=0&size=100&query=", lastName, " ", firstName))
                 .retrieve()
-                .bodyToMono(UserByFIOResponseDTO.class)
+                .bodyToMono(UsersDTO.class)
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
                 .onErrorResume(WebClientResponseException.class,
                         ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))

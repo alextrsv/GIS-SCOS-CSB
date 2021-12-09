@@ -145,10 +145,10 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск по почте (опционально)
      * @return страница пользователей из ООВО админа с одобренными заявками
      */
-    public Optional<ResponseDTO<UserDetailsDTO>> getAdminUniversityUsers(String userId,
-                                                                         long page,
-                                                                         long usersPerPage,
-                                                                         String search) {
+    public Optional<GenericResponseDTO<UserDTO>> getAdminUniversityUsers(String userId,
+                                                                                long page,
+                                                                                long usersPerPage,
+                                                                                String search) {
         Optional<String> adminOrganizationGlobalId = userDetailsService.getUserOrganizationGlobalId(userId);
         if (adminOrganizationGlobalId.isPresent()) {
             List<PassRequest> acceptedRequestsForUniversity =
@@ -157,7 +157,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
                                     adminOrganizationGlobalId.get(),
                                     PRStatus.ACCEPTED
                             );
-            List<UserDetailsDTO> users =
+            List<UserDTO> users =
                     getUsersFromSinglePassRequests(
                             acceptedRequestsForUniversity.stream()
                                     .filter(request -> request.getType() == PRType.SINGLE)
@@ -180,7 +180,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
             long usersCount = users.size();
             users = UserUtils.paginateUsers(users, page, usersPerPage);
 
-            return Optional.of(new ResponseDTO<>(
+            return Optional.of(new GenericResponseDTO<>(
                     page,
                     usersPerPage,
                     usersCount % usersPerPage == 0 ? usersCount / usersPerPage : usersCount / usersPerPage + 1,
@@ -196,19 +196,19 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param singleRequests одиночные одобренные заявки
      * @return пользователи одиночных заявок
      */
-    private List<UserDetailsDTO> getUsersFromSinglePassRequests(List<PassRequest> singleRequests) {
-        List<UserDetailsDTO> users = new LinkedList<>();
+    private List<UserDTO> getUsersFromSinglePassRequests(List<PassRequest> singleRequests) {
+        List<UserDTO> users = new LinkedList<>();
         for (PassRequest request : singleRequests) {
             Optional<UserProfileDTO> profile = userDetailsService.getUserProfile(request.getAuthorId());
             if (profile.isPresent()) {
-                UserDetailsDTO userDetails = new UserDetailsDTO();
+                UserDTO userDetails = new UserDTO();
 
-                userDetails.setUserId(request.getAuthorId());
-                userDetails.setFirstName(profile.get().getFirstName());
-                userDetails.setLastName(profile.get().getLastName());
-                userDetails.setPatronymicName(profile.get().getPatronymicName());
+                userDetails.setUser_id(request.getAuthorId());
+                userDetails.setFirst_name(profile.get().getFirstName());
+                userDetails.setLast_name(profile.get().getLastName());
+                userDetails.setPatronymic_name(profile.get().getPatronymicName());
                 userDetails.setEmail(profile.get().getEmail());
-                userDetails.setPhotoURL(profile.get().getPhotoURL());
+                userDetails.setPhoto_url(profile.get().getPhotoURL());
                 userDetails.setUserOrganizationShortName(profile.get().getOrganizationShortName());
 
                 users.add(userDetails);
@@ -219,21 +219,21 @@ public class PRAdminServiceImpl implements IPRAdminService {
     }
 
 
-    private List<UserDetailsDTO> getUsersFromGroupPassRequests(List<PassRequest> groupRequests) {
-        List<UserDetailsDTO> users = new LinkedList<>();
+    private List<UserDTO> getUsersFromGroupPassRequests(List<PassRequest> groupRequests) {
+        List<UserDTO> users = new LinkedList<>();
 
         for (PassRequest request : groupRequests) {
             for (PassRequestUser user : request.getPassRequestUsers()) {
                 Optional<UserProfileDTO> profile = userDetailsService.getUserProfile(user.getScosId());
                 if (profile.isPresent()) {
-                    UserDetailsDTO userDetails = new UserDetailsDTO();
+                    UserDTO userDetails = new UserDTO();
 
-                    userDetails.setUserId(user.getScosId());
-                    userDetails.setFirstName(profile.get().getFirstName());
-                    userDetails.setLastName(profile.get().getLastName());
-                    userDetails.setPatronymicName(profile.get().getPatronymicName());
+                    userDetails.setUser_id(user.getScosId());
+                    userDetails.setFirst_name(profile.get().getFirstName());
+                    userDetails.setLast_name(profile.get().getLastName());
+                    userDetails.setPatronymic_name(profile.get().getPatronymicName());
                     userDetails.setEmail(profile.get().getEmail());
-                    userDetails.setPhotoURL(profile.get().getPhotoURL());
+                    userDetails.setPhoto_url(profile.get().getPhotoURL());
                     userDetails.setUserOrganizationShortName(profile.get().getOrganizationShortName());
 
                     users.add(userDetails);
@@ -278,11 +278,11 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @return отобранные по критериям заявки
      */
     @Override
-    public Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(PRStatusForAdmin status,
-                                                                      Long page,
-                                                                      Long pageSize,
-                                                                      String search,
-                                                                      String userId) {
+    public Optional<GenericResponseDTO<PassRequest>> getPassRequestsForAdmin(PRStatusForAdmin status,
+                                                                             Long page,
+                                                                             Long pageSize,
+                                                                             String search,
+                                                                             String userId) {
         Optional<String> adminUniversityId = userDetailsService.getUserOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             List<PassRequest> allUniversityRequests =
@@ -313,7 +313,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск
      * @return список заявок в обработке
      */
-    public ResponseDTO<PassRequest> getPassRequestsForProcessing(
+    public GenericResponseDTO<PassRequest> getPassRequestsForProcessing(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -336,7 +336,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск
      * @return список заявок в обработке
      */
-    public ResponseDTO<PassRequest> getPassRequestsInProcessing(
+    public GenericResponseDTO<PassRequest> getPassRequestsInProcessing(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -360,7 +360,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск
      * @return список обработанных заявок
      */
-    public ResponseDTO<PassRequest> getExpiredPassRequests(
+    public GenericResponseDTO<PassRequest> getExpiredPassRequests(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -383,7 +383,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск
      * @return список обработанных заявок
      */
-    public ResponseDTO<PassRequest> getProcessedPassRequests(
+    public GenericResponseDTO<PassRequest> getProcessedPassRequests(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -592,7 +592,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск (опционально)
      * @return список заявок по входным параметрам
      */
-    private ResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+    private GenericResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
             PRStatus[] statuses,
             List<PassRequest> requests,
             Long page,
@@ -613,7 +613,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
         long requestsCount = requestList.size();
         requestList = PRUtils.paginateRequests(requestList, page, pageSize);
 
-        return new ResponseDTO<>(
+        return new GenericResponseDTO<>(
                 page,
                 pageSize,
                 requestsCount % pageSize == 0 ? requestsCount / pageSize : requestsCount / pageSize + 1,

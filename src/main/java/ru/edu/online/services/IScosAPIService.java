@@ -2,7 +2,7 @@ package ru.edu.online.services;
 
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.OrganizationProfileDTO;
-import ru.edu.online.entities.dto.UserByFIOResponseDTO;
+import ru.edu.online.entities.dto.UsersDTO;
 import ru.edu.online.entities.dto.UserDTO;
 
 import java.util.Optional;
@@ -19,5 +19,5 @@ public interface IScosAPIService {
 
     Optional<UserDTO> getUserByEmail(String email);
 
-    Optional<UserByFIOResponseDTO> getUserByFIO(String firstName, String lastName);
+    Optional<UsersDTO> getUserByFIO(String firstName, String lastName);
 }

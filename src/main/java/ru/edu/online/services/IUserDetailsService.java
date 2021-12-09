@@ -1,7 +1,7 @@
 package ru.edu.online.services;
 
-import ru.edu.online.entities.dto.ResponseDTO;
-import ru.edu.online.entities.dto.UserDetailsDTO;
+import ru.edu.online.entities.dto.GenericResponseDTO;
+import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
 
@@ -23,7 +23,7 @@ public interface IUserDetailsService {
 
     Optional<UserProfileDTO> getUserProfile(String userId);
 
-    Optional<ResponseDTO<UserDetailsDTO>> getUsersByOrganization(String userId,
+    Optional<GenericResponseDTO<UserDTO>> getUsersByOrganization(String userId,
                                                                  Long page,
                                                                  Long pageSize,
                                                                  String search);

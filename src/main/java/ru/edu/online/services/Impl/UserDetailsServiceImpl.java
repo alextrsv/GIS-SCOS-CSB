@@ -179,7 +179,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     private Optional<UserProfileDTO> getEmploymentProfile(String userId, UserRole role) {
         Optional<UserDTO> userScosInfo = scosAPIService.getUserDetails(userId);
         if (userScosInfo.isPresent()) {
-            Optional<UserByFIOResponseDTO> userByFIO =
+            Optional<UsersDTO> userByFIO =
                     scosAPIService.getUserByFIO(
                             userScosInfo.get().getFirst_name(),
                             userScosInfo.get().getLast_name()
@@ -231,10 +231,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      * @return список пользователей из ООВО админа
      */
     @Override
-    public Optional<ResponseDTO<UserDetailsDTO>> getUsersByOrganization(String userId,
-                                                                        Long page,
-                                                                        Long pageSize,
-                                                                        String search) {
+    public Optional<GenericResponseDTO<UserDTO>> getUsersByOrganization(String userId,
+                                                                               Long page,
+                                                                               Long pageSize,
+                                                                               String search) {
         Optional<UserDTO> user = scosAPIService.getUserDetails(userId);
         Optional<EmploymentDTO> employmentDTO = user.orElseThrow().getEmployments()
                 .stream()
@@ -244,15 +244,16 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 employmentDTO.orElseThrow().getOgrn()
         );
         if (students.isPresent()) {
-            List<UserDetailsDTO> users = new ArrayList<>();
+            List<UserDTO> users = new ArrayList<>();
 
             for (StudentDTO student : students.get().getResults()) {
-                UserDetailsDTO userDetails = new UserDetailsDTO();
+                UserDTO userDetails = new UserDTO();
                 user = Arrays.stream(
                                 scosAPIService.getUserByFIO(
                                         student.getName(),
-                                        student.getSurname()).orElseThrow().getData()
-                        )
+                                        student.getSurname()
+                                ).orElseThrow()
+                                        .getData())
                         .filter(u -> u.getUser_id().equals(
                                 scosAPIService.getUserByEmail(
                                         student.getEmail()
@@ -260,13 +261,13 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                         )
                         .findFirst();
                 if (user.isPresent()) {
-                    userDetails.setUserId(user.get().getUser_id());
-                    userDetails.setFirstName(student.getName());
-                    userDetails.setLastName(student.getSurname());
-                    userDetails.setPatronymicName(student.getMiddle_name());
+                    userDetails.setUser_id(user.get().getUser_id());
+                    userDetails.setFirst_name(student.getName());
+                    userDetails.setLast_name(student.getSurname());
+                    userDetails.setPatronymic_name(student.getMiddle_name());
                     userDetails.setEmail(student.getEmail());
-                    userDetails.setRoles(new String[]{"STUDENT"});
-                    userDetails.setPhotoURL(user.get().getPhoto_url());
+                    userDetails.setRoles(List.of("STUDENT"));
+                    userDetails.setPhoto_url(user.get().getPhoto_url());
                     userDetails.setUserOrganizationShortName(
                             scosAPIService.getOrganizationByGlobalId(
                                     student.getOrganization_id()
@@ -284,7 +285,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                     .limit(pageSize)
                     .collect(Collectors.toList());
 
-            return Optional.of(new ResponseDTO<>(
+            return Optional.of(new GenericResponseDTO<>(
                     page,
                     pageSize,
                     usersCount % pageSize == 0 ? usersCount / pageSize : usersCount / pageSize + 1,

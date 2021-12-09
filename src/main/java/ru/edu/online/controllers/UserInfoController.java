@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.edu.online.entities.PassRequest;
-import ru.edu.online.entities.dto.ResponseDTO;
-import ru.edu.online.entities.dto.UserDetailsDTO;
+import ru.edu.online.entities.dto.GenericResponseDTO;
+import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.entities.dto.UserProfileDTO;
 import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.services.IPRAdminService;
@@ -64,7 +64,7 @@ public class UserInfoController {
     }
 
     @GetMapping("/access")
-    public ResponseEntity<ResponseDTO<PassRequest>> getUserAccesses(Principal principal) {
+    public ResponseEntity<GenericResponseDTO<PassRequest>> getUserAccesses(Principal principal) {
         if (userDetailsService.isSecurityOfficer(principal.getName())
                 || userDetailsService.isUniversity(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -74,7 +74,7 @@ public class UserInfoController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<ResponseDTO<UserDetailsDTO>> getUsersFromAcceptedPassRequestsAdminUniversity(
+    public ResponseEntity<GenericResponseDTO<UserDTO>> getUsersFromAcceptedPassRequestsAdminUniversity(
             Principal principal,
             @RequestParam Long page,
             @RequestParam Long itemsPerPage,
@@ -103,10 +103,10 @@ public class UserInfoController {
      * @return список пользователей по параметрам
      */
     @GetMapping("/organization")
-    public ResponseEntity<ResponseDTO<UserDetailsDTO>> getUserByOrganisation(Principal principal,
-                                                                             @RequestParam Long page,
-                                                                             @RequestParam Long itemsPerPage,
-                                                                             @RequestParam(required = false) String search) {
+    public ResponseEntity<GenericResponseDTO<UserDTO>> getUserByOrganisation(Principal principal,
+                                                                                    @RequestParam Long page,
+                                                                                    @RequestParam Long itemsPerPage,
+                                                                                    @RequestParam(required = false) String search) {
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
             return ResponseEntity.of(

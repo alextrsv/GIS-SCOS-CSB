@@ -122,7 +122,7 @@ public class PRUserServiceImpl implements IPRUserService {
      * @return список одобренных заявок
      */
     @Override
-    public Optional<ResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId) {
+    public Optional<GenericResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId) {
         log.info("getting accepted passRequests for user with id {}", authorId);
         List<PassRequest> requests =
                 passRequestRepository.findAllByAuthorId(authorId);
@@ -150,10 +150,10 @@ public class PRUserServiceImpl implements IPRUserService {
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId,
-                                                                            String status,
-                                                                            Long page,
-                                                                            Long pageSize) {
+    public Optional<GenericResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId,
+                                                                                   String status,
+                                                                                   Long page,
+                                                                                   Long pageSize) {
         List<PassRequest> requests =
                 passRequestRepository.findAllByAuthorId(authorId);
         // Добавление всех групповых заявок, в которых фигурирует пользователь
@@ -353,10 +353,10 @@ public class PRUserServiceImpl implements IPRUserService {
      * @param pageSize размер страницы
      * @return список отобранных заявок по критериям выше
      */
-    private ResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationForUser(List<PassRequest> requests,
-                                                                                        PRStatus[] statuses,
-                                                                                        Long page,
-                                                                                        Long pageSize) {
+    private GenericResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationForUser(List<PassRequest> requests,
+                                                                                               PRStatus[] statuses,
+                                                                                               Long page,
+                                                                                               Long pageSize) {
         List<PassRequest> filteredRequests = new LinkedList<>();
         for (PRStatus status : statuses) {
             filteredRequests.addAll(
@@ -365,7 +365,7 @@ public class PRUserServiceImpl implements IPRUserService {
                             .collect(Collectors.toList())
             );
         }
-        return new ResponseDTO<>(
+        return new GenericResponseDTO<>(
                 page,
                 pageSize,
                 filteredRequests.size() % pageSize == 0 ?
