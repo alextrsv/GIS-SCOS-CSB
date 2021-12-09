@@ -411,7 +411,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
         //System.out.println("checkExpiredPassRequests");
         List<PassRequest> requests = passRequestRepository.findAll();
         requests.stream()
-                .filter(request -> isExpired(request.getStatus(), request.getStartDate()))
+                .filter(request -> isExpired(request.getStatus(), request.getEndDate()))
                 .forEach(request -> request.setStatus(PRStatus.EXPIRED));
         passRequestRepository.saveAll(requests);
     }
@@ -419,13 +419,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
     /**
      * Является ли заявка просроченной?
      * @param status статус заявки
-     * @param startDate дата начала действия
+     * @param endDate дата конца действия
      * @return ответ true или false
      */
-    private boolean isExpired(PRStatus status, LocalDate startDate) {
+    private boolean isExpired(PRStatus status, LocalDate endDate) {
         return (status != PRStatus.ACCEPTED &&
                 status != PRStatus.EXPIRED &&
-                startDate.isBefore(LocalDate.now()));
+                endDate.isBefore(LocalDate.now()));
     }
 
     /**
