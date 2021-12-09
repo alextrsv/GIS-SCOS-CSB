@@ -24,13 +24,23 @@ public class CacheStudent {
     @Setter(AccessLevel.PROTECTED)
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    /** Дата валидации студента */
+    /** Дата последней валидации студента */
     private LocalDate validationDate;
     /** Почта */
     private String email;
+    /** Идентификатор в СЦОСе */
+    private String scosId;
+    /** Валиден ли кэш? */
+    private boolean isValid;
 
-    public CacheStudent(String email) {
-        this.email = email;
+    public CacheStudent(String email, String scosId) {
         this.validationDate = LocalDate.now();
+        this.scosId = scosId;
+        this.email = email;
+        this.isValid = true;
+    }
+
+    public String getStudNumber() {
+        return String.valueOf((int) (this.id + 10000000));
     }
 }

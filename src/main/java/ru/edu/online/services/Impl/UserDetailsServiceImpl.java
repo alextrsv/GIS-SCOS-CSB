@@ -2,6 +2,8 @@ package ru.edu.online.services.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.util.retry.Retry;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@EnableScheduling
 public class UserDetailsServiceImpl implements IUserDetailsService {
 
     private final IValidateStudentCacheRepository studentCashRepository;
@@ -136,19 +139,15 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public boolean isStudent(String userId) {
-        //Optional<CacheStudent> student;
+        Optional<CacheStudent> student;
 
         Optional<StudentDTO> studentDTO = getStudentByEmail(userId);
         if (studentDTO.isPresent()) {
-            /*student = getStudentFromCacheByEmail(studentDTO.get());
+            student = getStudentFromCacheByEmail(studentDTO.get().getEmail(), userId);
             if (student.isPresent()) {
                 return true;
             }
-            if (saveStudentInCashByEmail(studentDTO.get())) {
-                return true;
-            }
-
-             */
+            saveStudentInCashByEmailAndScosId(studentDTO.get().getEmail(), userId);
             return true;
         }
         return false;
@@ -186,16 +185,34 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 .block();
     }
 
+    /**
+     * Синхронный запрос к АПИ ГИС СЦОС на загрузку
+     * информации о пользователе по id из principal
+     * @param userId идентификатор пользователя
+     * @return dto пользователя из ответа на запрос
+     */
+    private UserDTO loadUserInfoById(String userId) {
+        return devScosApiClient
+                .get()
+                .uri(String.join("", "/users/", userId))
+                .retrieve()
+                .bodyToMono(UserDTO.class)
+                .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
+                .retryWhen(Retry.fixedDelay(3, Duration.ofMillis(REQUEST_TIMEOUT)))
+                .block();
+    }
+
     private Optional<StudentDTO> getStudentByEmail(String userId) {
-        UserDetailsDTO userDetails = loadUserInfoByIdSync(userId);
-        StudentsDTO students = VamApiUtils.getStudents("email", userDetails.getEmail(), devVamApiClient);
+        UserDTO user = loadUserInfoById(userId);
+        StudentsDTO students = VamApiUtils.getStudents("email", user.getEmail(), devVamApiClient);
         return students
                 .getResults()
                 .stream()
                 .filter(
                         student ->
-                                student.getEmail().equals(userDetails.getEmail())
+                                student.getEmail().equals(user.getEmail())
                 )
+                .filter(student -> student.getName().equals(user.getFirst_name()))
                 .findFirst();
     }
 
@@ -374,7 +391,13 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setLastName(student.get().getSurname());
                 userProfile.setPatronymicName(student.get().getMiddle_name());
                 userProfile.setStudyYear(student.get().getStudy_year());
-                userProfile.setStudNumber("25643682");
+                userProfile.setStudNumber(
+                        studentCashRepository.findByEmailAndScosId(
+                                student.get().getEmail(),
+                                user.getUser_id()
+                        ).orElseThrow()
+                                .getStudNumber()
+                );
                 userProfile.setEducationForm("Бюджет");
                 userProfile.setOrganizationFullName(organization.get().getFull_name());
                 userProfile.setOrganizationShortName(organization.get().getShort_name());
@@ -402,34 +425,38 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     }
 
     /**
-     * Получить студента из кэша по почте
-     * @param student dto студента
+     * Получить студента из кэша по почте и СЦОС id
+     * @param email почта студента
+     * @param scosId идентификатор в СЦОСе
      * @return студент, если не найден - Optional.empty()
      */
-    private Optional<CacheStudent> getStudentFromCacheByEmail(StudentDTO student) {
-        return studentCashRepository.findByEmail(student.getEmail());
+    private Optional<CacheStudent> getStudentFromCacheByEmail(String email, String scosId) {
+        return studentCashRepository.findByEmailAndScosId(email, scosId);
     }
 
     /**
      * Сохранить студента в кэш по почте студента
-     * @param studentDTO студента из ВАМа
+     * @param email почта студента
+     * @param scosId идентификатор в СЦОСе
      */
-    private boolean saveStudentInCashByEmail(StudentDTO studentDTO) {
-        if (studentDTO.getEmail() != null) {
-            studentCashRepository.save(
-                    new CacheStudent(studentDTO.getEmail())
-            );
-            return true;
-        }
-        return false;
+    private void saveStudentInCashByEmailAndScosId(String email, String scosId) {
+        studentCashRepository.save(
+                new CacheStudent(email, scosId)
+        );
     }
 
     /**
-     * Удалить устаревшие записи о валидированных студентах
-     * @return успешно ли удаление?
+     * Пометить старые валидации как невалидные каждые сутки.
      */
     @Override
-    public boolean removeOldValidations() {
-        return studentCashRepository.deleteByValidationDateBefore(LocalDate.now().minusMonths(1));
+    @Scheduled(fixedDelay = 1000*60*60*24)
+    public void makeOldValidationsInvalid() {
+        List<CacheStudent> students =
+                studentCashRepository.findAllByValidationDateBefore(
+                                LocalDate.now().minusMonths(1)
+                );
+
+        students.forEach(student -> student.setValid(false));
+        studentCashRepository.saveAll(students);
     }
 }

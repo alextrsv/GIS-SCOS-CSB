@@ -5,13 +5,14 @@ import org.springframework.stereotype.Repository;
 import ru.edu.online.entities.CacheStudent;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface IValidateStudentCacheRepository extends JpaRepository<CacheStudent, UUID> {
 
-    Optional<CacheStudent> findByEmail(String email);
+    Optional<CacheStudent> findByEmailAndScosId(String email, String scosId);
 
-    boolean deleteByValidationDateBefore(LocalDate date);
+    List<CacheStudent> findAllByValidationDateBefore(LocalDate localDate);
 }
