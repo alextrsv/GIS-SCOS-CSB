@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ResponseDTO<T> {
+public class GenericResponseDTO<T> {
     private Long currentPage;
     private Long pageSize;
     private Long pagesCount;
