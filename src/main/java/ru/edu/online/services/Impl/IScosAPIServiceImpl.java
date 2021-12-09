@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.OrganizationProfileDTO;
-import ru.edu.online.entities.dto.UsersDTO;
 import ru.edu.online.entities.dto.UserDTO;
+import ru.edu.online.entities.dto.UsersDTO;
 import ru.edu.online.services.IScosAPIService;
 
 import java.time.Duration;

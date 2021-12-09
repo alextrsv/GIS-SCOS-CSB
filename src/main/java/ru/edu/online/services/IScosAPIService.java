@@ -2,8 +2,8 @@ package ru.edu.online.services;
 
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.OrganizationProfileDTO;
-import ru.edu.online.entities.dto.UsersDTO;
 import ru.edu.online.entities.dto.UserDTO;
+import ru.edu.online.entities.dto.UsersDTO;
 
 import java.util.Optional;
 
