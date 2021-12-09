@@ -1,12 +1,13 @@
 package ru.edu.online.utils;
 
 import ru.edu.online.entities.PassRequest;
-import ru.edu.online.entities.dto.OrganizationProfileDTO;
-import ru.edu.online.entities.dto.PRDTO;
-import ru.edu.online.entities.dto.PRUserDTO;
+import ru.edu.online.entities.PassRequestUser;
+import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.PRSearchFilter;
+import ru.edu.online.entities.enums.PRStatus;
 import ru.edu.online.repositories.IPRRepository;
 import ru.edu.online.services.IScosAPIService;
+import ru.edu.online.services.IUserDetailsService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,9 +73,8 @@ public class PRUtils {
                                                                      String organizationName,
                                                                      IScosAPIService scosAPIService) {
         List<PassRequest> filteredList = new ArrayList<>();
-        Optional<OrganizationProfileDTO> organizationDTO;
         for (PassRequest request : requests) {
-            organizationDTO =
+            Optional<OrganizationProfileDTO> organizationDTO =
                     scosAPIService.getOrganizationByGlobalId(
                             request.getAuthorUniversityId()
                     );
@@ -117,6 +117,90 @@ public class PRUtils {
                 .skip(requestsPerPage * (page - 1))
                 .limit(requestsPerPage)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Получить запросы для университета с поиском и пагинацией по категории
+     * @param statuses массив статусов заявок
+     * @param requests список заявок, которые пришли в университет
+     * @param page номер страницы
+     * @param pageSize размер страницы
+     * @param search поиск (опционально)
+     * @return список заявок по входным параметрам
+     */
+    public static GenericResponseDTO<PassRequest> getPRByStatusWithPaginationAndSearchForUniversity(
+            PRStatus[] statuses,
+            List<PassRequest> requests,
+            Long page,
+            Long pageSize,
+            String search,
+            IScosAPIService scosAPIService) {
+        List<PassRequest> requestList = new LinkedList<>();
+        for (PRStatus status : statuses) {
+            requestList.addAll(
+                    requests.stream()
+                            .filter(request -> request.getStatus() == status)
+                            .collect(Collectors.toList())
+            );
+        }
+
+        if (Optional.ofNullable(search).isPresent()) {
+            requestList = filterRequest(requestList, search, scosAPIService);
+        }
+        long requestsCount = requestList.size();
+        requestList = paginateRequests(requestList, page, pageSize);
+
+        return new GenericResponseDTO<>(
+                page,
+                pageSize,
+                requestsCount % pageSize == 0 ? requestsCount / pageSize : requestsCount / pageSize + 1,
+                requestsCount,
+                requestList
+        );
+    }
+
+    /**
+     * Получить пользователей из заявок
+     * @param requests одобренные заявки
+     * @return пользователи заявок
+     */
+    public static List<UserDTO> getUsersFromPassRequests(List<PassRequest> requests,
+                                                         IUserDetailsService userDetailsService) {
+        List<UserDTO> users = new LinkedList<>();
+        Optional<UserProfileDTO> profile;
+
+        for (PassRequest request : requests) {
+            switch (request.getType()) {
+                case SINGLE:
+                    profile = userDetailsService.getUserProfile(request.getAuthorId());
+                    profile.ifPresent(
+                            userProfileDTO ->
+                                    users.add(
+                                            UserUtils.getUserDTOFromUserProfileDTO(
+                                                    userProfileDTO,
+                                                    request.getAuthorId()
+                                            )
+                                    )
+                    );
+                    break;
+                case GROUP:
+                    for (PassRequestUser user : request.getPassRequestUsers()) {
+                        profile = userDetailsService.getUserProfile(user.getScosId());
+                        profile.ifPresent(
+                                userProfileDTO ->
+                                        users.add(
+                                                UserUtils.getUserDTOFromUserProfileDTO(
+                                                        userProfileDTO,
+                                                        user.getScosId()
+                                                )
+                                        )
+                        );
+                    }
+                    break;
+            }
+        }
+
+        return users;
     }
 
     /**

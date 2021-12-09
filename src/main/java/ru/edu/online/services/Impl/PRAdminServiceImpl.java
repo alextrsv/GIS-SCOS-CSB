@@ -146,102 +146,23 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @return страница пользователей из ООВО админа с одобренными заявками
      */
     public Optional<GenericResponseDTO<UserDTO>> getAdminUniversityUsers(String userId,
-                                                                                long page,
-                                                                                long usersPerPage,
-                                                                                String search) {
+                                                                         long page,
+                                                                         long usersPerPage,
+                                                                         String search) {
         Optional<String> adminOrganizationGlobalId = userDetailsService.getUserOrganizationGlobalId(userId);
-        if (adminOrganizationGlobalId.isPresent()) {
-            List<PassRequest> acceptedRequestsForUniversity =
-                    passRequestRepository
-                            .findAllByTargetUniversityIdAndStatus(
-                                    adminOrganizationGlobalId.get(),
-                                    PRStatus.ACCEPTED
-                            );
-            List<UserDTO> users =
-                    getUsersFromSinglePassRequests(
-                            acceptedRequestsForUniversity.stream()
-                                    .filter(request -> request.getType() == PRType.SINGLE)
-                                    .collect(Collectors.toList()
-                                    )
-                    );
+        List<PassRequest> acceptedRequestsForUniversity =
+                passRequestRepository
+                        .findAllByTargetUniversityIdAndStatus(
+                                adminOrganizationGlobalId.orElseThrow(),
+                                PRStatus.ACCEPTED
+                        );
+        List<UserDTO> users =
+                PRUtils.getUsersFromPassRequests(
+                        acceptedRequestsForUniversity,
+                        userDetailsService
+                );
 
-            users.addAll(
-                    getUsersFromGroupPassRequests(
-                            acceptedRequestsForUniversity.stream()
-                                    .filter(request -> request.getType() == PRType.GROUP)
-                                    .collect(Collectors.toList()
-                                    )
-                    )
-            );
-
-            if (Optional.ofNullable(search).isPresent()) {
-                users = UserUtils.searchByEmail(users, search);
-            }
-            long usersCount = users.size();
-            users = UserUtils.paginateUsers(users, page, usersPerPage);
-
-            return Optional.of(new GenericResponseDTO<>(
-                    page,
-                    usersPerPage,
-                    usersCount % usersPerPage == 0 ? usersCount / usersPerPage : usersCount / usersPerPage + 1,
-                    usersCount,
-                    users
-            ));
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Получить пользователей из одиночных одобренных заявок
-     * @param singleRequests одиночные одобренные заявки
-     * @return пользователи одиночных заявок
-     */
-    private List<UserDTO> getUsersFromSinglePassRequests(List<PassRequest> singleRequests) {
-        List<UserDTO> users = new LinkedList<>();
-        for (PassRequest request : singleRequests) {
-            Optional<UserProfileDTO> profile = userDetailsService.getUserProfile(request.getAuthorId());
-            if (profile.isPresent()) {
-                UserDTO userDetails = new UserDTO();
-
-                userDetails.setUser_id(request.getAuthorId());
-                userDetails.setFirst_name(profile.get().getFirstName());
-                userDetails.setLast_name(profile.get().getLastName());
-                userDetails.setPatronymic_name(profile.get().getPatronymicName());
-                userDetails.setEmail(profile.get().getEmail());
-                userDetails.setPhoto_url(profile.get().getPhotoURL());
-                userDetails.setUserOrganizationShortName(profile.get().getOrganizationShortName());
-
-                users.add(userDetails);
-            }
-        }
-
-        return users;
-    }
-
-
-    private List<UserDTO> getUsersFromGroupPassRequests(List<PassRequest> groupRequests) {
-        List<UserDTO> users = new LinkedList<>();
-
-        for (PassRequest request : groupRequests) {
-            for (PassRequestUser user : request.getPassRequestUsers()) {
-                Optional<UserProfileDTO> profile = userDetailsService.getUserProfile(user.getScosId());
-                if (profile.isPresent()) {
-                    UserDTO userDetails = new UserDTO();
-
-                    userDetails.setUser_id(user.getScosId());
-                    userDetails.setFirst_name(profile.get().getFirstName());
-                    userDetails.setLast_name(profile.get().getLastName());
-                    userDetails.setPatronymic_name(profile.get().getPatronymicName());
-                    userDetails.setEmail(profile.get().getEmail());
-                    userDetails.setPhoto_url(profile.get().getPhotoURL());
-                    userDetails.setUserOrganizationShortName(profile.get().getOrganizationShortName());
-
-                    users.add(userDetails);
-                }
-            }
-        }
-
-        return users;
+        return UserUtils.aggregateUserWithPaginationAndSearch(users, page, usersPerPage, search);
     }
 
     /**
