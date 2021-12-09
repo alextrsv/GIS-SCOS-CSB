@@ -584,45 +584,6 @@ public class PRAdminServiceImpl implements IPRAdminService {
     }
 
     /**
-     * Получить запросы для университета с поиском и пагинацией по категории
-     * @param statuses массив статусов заявок
-     * @param requests список заявок, которые пришли в университет
-     * @param page номер страницы
-     * @param pageSize размер страницы
-     * @param search поиск (опционально)
-     * @return список заявок по входным параметрам
-     */
-    private GenericResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
-            PRStatus[] statuses,
-            List<PassRequest> requests,
-            Long page,
-            Long pageSize,
-            String search) {
-        List<PassRequest> requestList = new LinkedList<>();
-        for (PRStatus status : statuses) {
-            requestList.addAll(
-                    requests.stream()
-                            .filter(request -> request.getStatus() == status)
-                            .collect(Collectors.toList())
-            );
-        }
-
-        if (Optional.ofNullable(search).isPresent()) {
-            requestList = PRUtils.filterRequest(requestList, search, scosAPIService);
-        }
-        long requestsCount = requestList.size();
-        requestList = PRUtils.paginateRequests(requestList, page, pageSize);
-
-        return new GenericResponseDTO<>(
-                page,
-                pageSize,
-                requestsCount % pageSize == 0 ? requestsCount / pageSize : requestsCount / pageSize + 1,
-                requestsCount,
-                requestList
-        );
-    }
-
-    /**
      * Получить заявку по id
      * @param passRequestDTO заявки
      * @return заявка
