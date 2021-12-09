@@ -20,7 +20,7 @@ import java.util.Optional;
 @Service
 public class IScosAPIServiceImpl implements IScosAPIService {
 
-    private static final long REQUEST_TIMEOUT = 10000;
+    private static final long REQUEST_TIMEOUT = 3000;
 
     private final WebClient devScosApiClient;
 

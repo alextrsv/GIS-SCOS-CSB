@@ -21,7 +21,7 @@ public class IVamAPIServiceImpl implements IVamAPIService {
 
     private final WebClient devVamApiClient;
 
-    private final static long REQUEST_TIMEOUT = 10000;
+    private final static long REQUEST_TIMEOUT = 3000;
 
     @Autowired
     public IVamAPIServiceImpl(WebClient devVamApiClient) {
