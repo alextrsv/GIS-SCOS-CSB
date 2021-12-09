@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import ru.edu.online.entities.CacheStudent;
 import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.ScosUserRole;
 import ru.edu.online.entities.enums.UserRole;
@@ -61,9 +62,6 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         }
         if (hasRole(userId, ScosUserRole.UNIVERSITY)) {
             return UserRole.ADMIN;
-        }
-        if (userId.equals("ba878477-1c00-4e3e-9a19-f61a147a2f83")) {
-            return UserRole.TEACHER;
         }
         if (isStudent(userId)) {
             return UserRole.STUDENT;
@@ -137,7 +135,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     public boolean isStudent(String userId) {
         Optional<CacheStudent> student;
 
-        Optional<StudentDTO> studentDTO = getStudentByEmail(userId);
+        Optional<StudentDTO> studentDTO =
+                vamAPIService.getStudentByEmail(
+                        scosAPIService.getUserDetails(userId).orElseThrow()
+                );
         if (studentDTO.isPresent()) {
             student = getStudentFromCacheByEmail(studentDTO.get().getEmail(), userId);
             if (student.isPresent()) {
@@ -176,8 +177,6 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 return getEmploymentProfile(userId, getUserRole(userId));
             case STUDENT:
                 return Optional.ofNullable(getStudentProfile(userId));
-            case TEACHER:
-                return Optional.of(getTeacherProfile());
             default:
                 return Optional.empty();
         }
@@ -345,7 +344,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setStudNumber(
                         studentCashRepository.findByEmailAndScosId(
                                 student.get().getEmail(),
-                                user.getUser_id()
+                                user.orElseThrow().getUser_id()
                         ).orElseThrow()
                                 .getStudNumber()
                 );
@@ -361,18 +360,6 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         }
 
         return null;
-    }
-
-    private UserProfileDTO getTeacherProfile() {
-        UserProfileDTO userProfileDTO = new UserProfileDTO();
-        userProfileDTO.setOrganizationShortName("Университет ИТМО");
-        userProfileDTO.setOrganizationFullName("Федеральное государственное автономное образовательное учреждение высшего образования «Национальный исследовательский университет ИТМО»");
-        userProfileDTO.setFirstName("Преподаватель");
-        userProfileDTO.setLastName("Тестовый");
-        userProfileDTO.setPatronymicName("");
-        userProfileDTO.setRole(UserRole.TEACHER);
-
-        return userProfileDTO;
     }
 
     /**
