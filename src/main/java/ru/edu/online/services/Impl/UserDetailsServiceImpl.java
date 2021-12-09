@@ -386,7 +386,6 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     /**
      * Пометить старые валидации как невалидные каждые сутки.
      */
-    @Override
     @Scheduled(fixedDelay = 1000*60*60*24)
     public void makeOldValidationsInvalid() {
         List<CacheStudent> students =

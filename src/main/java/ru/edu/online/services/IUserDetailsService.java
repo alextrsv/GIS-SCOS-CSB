@@ -19,8 +19,6 @@ public interface IUserDetailsService {
 
     boolean isStudent(String userId);
 
-    void makeOldValidationsInvalid();
-
     Optional<UserProfileDTO> getUserProfile(String userId);
 
     Optional<GenericResponseDTO<UserDTO>> getUsersByOrganization(String userId,
