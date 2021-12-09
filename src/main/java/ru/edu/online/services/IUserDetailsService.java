@@ -19,7 +19,7 @@ public interface IUserDetailsService {
 
     boolean isStudent(String userId);
 
-    boolean removeOldValidations();
+    void makeOldValidationsInvalid();
 
     Optional<UserProfileDTO> getUserProfile(String userId);
 

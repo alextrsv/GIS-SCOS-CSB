@@ -2,6 +2,8 @@ package ru.edu.online.services.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.edu.online.entities.dto.*;
 import ru.edu.online.entities.enums.ScosUserRole;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@EnableScheduling
 public class UserDetailsServiceImpl implements IUserDetailsService {
 
     /** Репозиторий кэша студентов */
@@ -132,13 +135,17 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     @Override
     public boolean isStudent(String userId) {
+        Optional<CacheStudent> student;
 
-        Optional<UserDTO> userDTO = scosAPIService.getUserDetails(userId);
-        if (userDTO.isPresent()) {
-            Optional<StudentDTO> studentDTO = vamAPIService.getStudentByEmail(userDTO.get());
-            return studentDTO.isPresent();
+        Optional<StudentDTO> studentDTO = getStudentByEmail(userId);
+        if (studentDTO.isPresent()) {
+            student = getStudentFromCacheByEmail(studentDTO.get().getEmail(), userId);
+            if (student.isPresent()) {
+                return true;
+            }
+            saveStudentInCashByEmailAndScosId(studentDTO.get().getEmail(), userId);
+            return true;
         }
-
         return false;
     }
 
@@ -335,7 +342,13 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 userProfile.setLastName(student.get().getSurname());
                 userProfile.setPatronymicName(student.get().getMiddle_name());
                 userProfile.setStudyYear(student.get().getStudy_year());
-                userProfile.setStudNumber("25643682");
+                userProfile.setStudNumber(
+                        studentCashRepository.findByEmailAndScosId(
+                                student.get().getEmail(),
+                                user.getUser_id()
+                        ).orElseThrow()
+                                .getStudNumber()
+                );
                 userProfile.setEducationForm("Бюджет");
                 userProfile.setOrganizationFullName(organization.get().getFull_name());
                 userProfile.setOrganizationShortName(organization.get().getShort_name());
@@ -363,11 +376,38 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     }
 
     /**
-     * Удалить устаревшие записи о валидированных студентах
-     * @return успешно ли удаление?
+     * Получить студента из кэша по почте и СЦОС id
+     * @param email почта студента
+     * @param scosId идентификатор в СЦОСе
+     * @return студент, если не найден - Optional.empty()
+     */
+    private Optional<CacheStudent> getStudentFromCacheByEmail(String email, String scosId) {
+        return studentCashRepository.findByEmailAndScosId(email, scosId);
+    }
+
+    /**
+     * Сохранить студента в кэш по почте студента
+     * @param email почта студента
+     * @param scosId идентификатор в СЦОСе
+     */
+    private void saveStudentInCashByEmailAndScosId(String email, String scosId) {
+        studentCashRepository.save(
+                new CacheStudent(email, scosId)
+        );
+    }
+
+    /**
+     * Пометить старые валидации как невалидные каждые сутки.
      */
     @Override
-    public boolean removeOldValidations() {
-        return studentCashRepository.deleteByValidationDateBefore(LocalDate.now().minusMonths(1));
+    @Scheduled(fixedDelay = 1000*60*60*24)
+    public void makeOldValidationsInvalid() {
+        List<CacheStudent> students =
+                studentCashRepository.findAllByValidationDateBefore(
+                                LocalDate.now().minusMonths(1)
+                );
+
+        students.forEach(student -> student.setValid(false));
+        studentCashRepository.saveAll(students);
     }
 }
