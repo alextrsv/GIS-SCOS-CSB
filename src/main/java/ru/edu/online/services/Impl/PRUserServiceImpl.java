@@ -21,6 +21,10 @@ import ru.edu.online.utils.PRUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис заявок пользователя.
+ * Описывает логику работы заявок для студента.
+ */
 @Slf4j
 @Service
 public class PRUserServiceImpl implements IPRUserService {
@@ -117,7 +121,7 @@ public class PRUserServiceImpl implements IPRUserService {
     }
 
     /**
-     * Получение всех одобренных заявок пользователя
+     * Получение всех одобренных заявок пользователя (доступов)
      * @param authorId идентификатор пользователя
      * @return список одобренных заявок
      */
@@ -154,18 +158,7 @@ public class PRUserServiceImpl implements IPRUserService {
                                                                                    String status,
                                                                                    Long page,
                                                                                    Long pageSize) {
-        List<PassRequest> requests =
-                passRequestRepository.findAllByAuthorId(authorId);
-        // Добавление всех групповых заявок, в которых фигурирует пользователь
-        requests.addAll(passRequestUserRepository.getByScosId(authorId)
-                .stream()
-                .map(PassRequestUser::getPassRequestId)
-                .map(this::getPassRequestById)
-                .map(Optional::get)
-                .collect(Collectors.toList()));
-        requests.removeIf(request ->
-                request.getStatus() == PRStatus.ACCEPTED && request.getChangeLog().isEmpty()
-        );
+        List<PassRequest> requests = getUserRequests(authorId);
         log.info("Getting passRequests by status");
         switch (status) {
             case "accepted":
@@ -178,9 +171,7 @@ public class PRUserServiceImpl implements IPRUserService {
             case "rejected":
                 return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
                         requests,
-                        new PRStatus[]{
-                                PRStatus.REJECTED_BY_TARGET_ORGANIZATION,
-                        },
+                        new PRStatus[]{PRStatus.REJECTED_BY_TARGET_ORGANIZATION},
                         page,
                         pageSize
                 ));
@@ -214,17 +205,7 @@ public class PRUserServiceImpl implements IPRUserService {
     @Override
     public Optional<Map<PRStatus, Long>> getPassRequestCountByStatusForUser(String authorId) {
         log.info("Getting passRequests count by status for user");
-        List<PassRequest> requests =
-                passRequestRepository.findAllByAuthorId(authorId);
-        requests.addAll(passRequestUserRepository.getByScosId(authorId)
-                .stream()
-                .map(PassRequestUser::getPassRequestId)
-                .map(this::getPassRequestById)
-                .map(Optional::get)
-                .collect(Collectors.toList()));
-        requests.removeIf(request ->
-                request.getStatus() == PRStatus.ACCEPTED && request.getChangeLog().isEmpty()
-        );
+        List<PassRequest> requests = getUserRequests(authorId);
         Map<PRStatus, Long> statusesCount = new HashMap<>();
         for (PRStatus status : PRStatus.values()) {
             statusesCount.put(
@@ -284,11 +265,11 @@ public class PRUserServiceImpl implements IPRUserService {
 
     /**
      * Создать одиночную заявку
-     * @param dto заявки
+     * @param passRequestDTO заявки
      * @param userId идентификатор пользователя
      * @return созданная заявка
      */
-    private Optional<PassRequest> createSinglePassRequest(PRDTO dto, String userId) {
+    private Optional<PassRequest> createSinglePassRequest(PRDTO passRequestDTO, String userId) {
         UserDTO author = scosAPIService.getUserDetails(userId).orElseThrow();
         author.setPhoto_url(
                 Arrays.stream(
@@ -317,7 +298,7 @@ public class PRUserServiceImpl implements IPRUserService {
             if (authorOrganization.isPresent()) {
                 Optional<OrganizationProfileDTO> targetOrganization =
                         scosAPIService.getOrganizationByGlobalId(
-                                dto.getTargetUniversityId()
+                                passRequestDTO.getTargetUniversityId()
                         );
 
                 if (targetOrganization.isPresent()) {
@@ -328,13 +309,13 @@ public class PRUserServiceImpl implements IPRUserService {
                             author.getPatronymic_name(),
                             student.get().getOrganization_id(),
                             authorOrganization.get().getShort_name(),
-                            dto.getStartDate(),
-                            dto.getEndDate(),
-                            dto.getStatus(),
-                            dto.getType(),
-                            dto.getTargetUniversityAddress(),
+                            passRequestDTO.getStartDate(),
+                            passRequestDTO.getEndDate(),
+                            passRequestDTO.getStatus(),
+                            passRequestDTO.getType(),
+                            passRequestDTO.getTargetUniversityAddress(),
                             targetOrganization.get().getShort_name(),
-                            dto.getTargetUniversityId(),
+                            passRequestDTO.getTargetUniversityId(),
                             PRUtils.getRequestNumber(passRequestRepository),
                             author.getPhoto_url())
                     );
@@ -373,6 +354,28 @@ public class PRUserServiceImpl implements IPRUserService {
                 (long) filteredRequests.size(),
                 PRUtils.paginateRequests(filteredRequests, page, pageSize)
         );
+    }
+
+    /**
+     * Получить список всех заявок пользователя кроме скрытых
+     * Скрытыми являются автоматические заявки
+     * @param userId идентификатор пользователя
+     * @return список заявок пользователя
+     */
+    private List<PassRequest> getUserRequests(String userId) {
+        List<PassRequest> requests;
+        requests = passRequestRepository.findAllByAuthorId(userId);
+        requests.addAll(passRequestUserRepository.getByScosId(userId)
+                .stream()
+                .map(PassRequestUser::getPassRequestId)
+                .map(this::getPassRequestById)
+                .map(Optional::get)
+                .collect(Collectors.toList()));
+        requests.removeIf(request ->
+                request.getStatus() == PRStatus.ACCEPTED && request.getChangeLog().isEmpty()
+        );
+
+        return requests;
     }
 
     /**

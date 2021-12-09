@@ -26,10 +26,9 @@ import ru.edu.online.utils.UserUtils;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
- * Сервис для работы с заявками.
+ * Сервис для работы с заявками администратора.
  */
 @Service
 @Slf4j
@@ -240,12 +239,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
             Long pageSize,
             String search) {
         log.info("collect requests sent for consideration to the target OOVO");
-        return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+        return PRUtils.getPRByStatusWithPaginationAndSearchForUniversity(
                 new PRStatus[]{PRStatus.TARGET_ORGANIZATION_REVIEW},
                 requests,
                 page,
                 pageSize,
-                search
+                search,
+                scosAPIService
         );
     }
 
@@ -264,12 +264,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
             String search) {
         log.info("collect requests sent in consideration to the target OOVO");
 
-        return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+        return PRUtils.getPRByStatusWithPaginationAndSearchForUniversity(
                 new PRStatus[]{PRStatus.PROCESSED_IN_TARGET_ORGANIZATION},
                 requests,
                 page,
                 pageSize,
-                search
+                search,
+                scosAPIService
         );
     }
 
@@ -287,12 +288,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
             Long pageSize,
             String search) {
         log.info("collect expired requests sent for to the OOVO");
-        return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+        return PRUtils.getPRByStatusWithPaginationAndSearchForUniversity(
                 new PRStatus[]{PRStatus.EXPIRED},
                 requests,
                 page,
                 pageSize,
-                search
+                search,
+                scosAPIService
         );
     }
 
@@ -311,7 +313,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
             String search) {
 
         log.info("collect considered requests sent for to the OOVO");
-        return aggregatePassRequestsByStatusWithPaginationAndSearchForUniversity(
+        return PRUtils.getPRByStatusWithPaginationAndSearchForUniversity(
                 new PRStatus[]{
                         PRStatus.ACCEPTED,
                         PRStatus.REJECTED_BY_TARGET_ORGANIZATION,
@@ -319,7 +321,8 @@ public class PRAdminServiceImpl implements IPRAdminService {
                 requests,
                 page,
                 pageSize,
-                search
+                search,
+                scosAPIService
         );
     }
 
@@ -400,9 +403,9 @@ public class PRAdminServiceImpl implements IPRAdminService {
     }
 
     /**
-     * Проверка всех заявок на наличие просроченных
+     * Проверка всех заявок на наличие просроченных каждые сутки
      */
-    @Scheduled(fixedDelay = 1000*10)
+    @Scheduled(fixedDelay = 1000*60*60*24)
     private void checkExpiredPassRequests() {
         log.info("checkExpiredPassRequests");
         //System.out.println("checkExpiredPassRequests");
