@@ -2,7 +2,7 @@ package ru.edu.online.services;
 
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestUser;
-import ru.edu.online.entities.dto.GenericResponseDTO;
+import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.dto.PRDTO;
 import ru.edu.online.entities.dto.PRUserDTO;
 import ru.edu.online.entities.dto.UserDTO;
@@ -21,16 +21,16 @@ public interface IPRAdminService {
 
     Optional<Map<PRStatus, Integer>> getPassRequestsCountByStatusForAdmin(String userId);
 
-    Optional<GenericResponseDTO<PassRequest>> getPassRequestsForAdmin(PRStatusForAdmin status,
-                                                                      Long page,
-                                                                      Long pageSize,
-                                                                      String search,
-                                                                      String userId);
+    Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(PRStatusForAdmin status,
+                                                               Long page,
+                                                               Long pageSize,
+                                                               String search,
+                                                               String userId);
 
-    Optional<GenericResponseDTO<UserDTO>> getAdminUniversityUsers(String userId,
-                                                                  long page,
-                                                                  long usersPerPage,
-                                                                  String search);
+    Optional<ResponseDTO<UserDTO>> getAdminUniversityUsers(String userId,
+                                                           long page,
+                                                           long usersPerPage,
+                                                           String search);
 
     Optional<PassRequest> updatePassRequestStatus(PRDTO passRequestDTO);
 

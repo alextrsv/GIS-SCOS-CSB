@@ -126,7 +126,7 @@ public class PRUserServiceImpl implements IPRUserService {
      * @return список одобренных заявок
      */
     @Override
-    public Optional<GenericResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId) {
+    public Optional<ResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId) {
         log.info("getting accepted passRequests for user with id {}", authorId);
         List<PassRequest> requests =
                 passRequestRepository.findAllByAuthorId(authorId);
@@ -154,10 +154,10 @@ public class PRUserServiceImpl implements IPRUserService {
      * @return список заявок с определенным статусом
      */
     @Override
-    public Optional<GenericResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId,
-                                                                                   String status,
-                                                                                   Long page,
-                                                                                   Long pageSize) {
+    public Optional<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(String authorId,
+                                                                            String status,
+                                                                            Long page,
+                                                                            Long pageSize) {
         List<PassRequest> requests = getUserRequests(authorId);
         log.info("Getting passRequests by status");
         switch (status) {
@@ -334,7 +334,7 @@ public class PRUserServiceImpl implements IPRUserService {
      * @param pageSize размер страницы
      * @return список отобранных заявок по критериям выше
      */
-    private GenericResponseDTO<PassRequest> getPRByStatusWithPaginationForUser(
+    private ResponseDTO<PassRequest> getPRByStatusWithPaginationForUser(
             List<PassRequest> requests,
             PRStatus[] statuses,
             Long page,
@@ -347,7 +347,7 @@ public class PRUserServiceImpl implements IPRUserService {
                             .collect(Collectors.toList())
             );
         }
-        return new GenericResponseDTO<>(
+        return new ResponseDTO<>(
                 page,
                 pageSize,
                 filteredRequests.size() % pageSize == 0 ?

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestComment;
 import ru.edu.online.entities.PassRequestUser;
-import ru.edu.online.entities.dto.GenericResponseDTO;
+import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.dto.PRCommentDTO;
 import ru.edu.online.entities.dto.PRDTO;
 import ru.edu.online.entities.dto.PRUserDTO;
@@ -161,7 +161,7 @@ public class PRController {
      * @return заявки
      */
     @GetMapping("/get/user/status")
-    public ResponseEntity<GenericResponseDTO<PassRequest>> getPassRequestByStatusForUser(
+    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestByStatusForUser(
             @RequestParam Long page,
             @RequestParam Long itemsPerPage,
             @RequestParam String status,
@@ -204,7 +204,7 @@ public class PRController {
      * @return список заявок для обработки
      */
     @GetMapping("/get/requests")
-    public ResponseEntity<GenericResponseDTO<PassRequest>> getPassRequestsForAdmin(
+    public ResponseEntity<ResponseDTO<PassRequest>> getPassRequestsForAdmin(
             @RequestParam(value = "page") Long page,
             @RequestParam(value = "itemsPerPage") Long pageSize,
             @RequestParam(value = "status") String status,

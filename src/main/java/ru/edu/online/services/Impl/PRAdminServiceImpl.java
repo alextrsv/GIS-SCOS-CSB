@@ -145,11 +145,12 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск по почте (опционально)
      * @return страница пользователей из ООВО админа с одобренными заявками
      */
-    public Optional<GenericResponseDTO<UserDTO>> getAdminUniversityUsers(String userId,
-                                                                         long page,
-                                                                         long usersPerPage,
-                                                                         String search) {
-        Optional<String> adminOrganizationGlobalId = userDetailsService.getUserOrganizationGlobalId(userId);
+    public Optional<ResponseDTO<UserDTO>> getAdminUniversityUsers(String userId,
+                                                                  long page,
+                                                                  long usersPerPage,
+                                                                  String search) {
+        Optional<String> adminOrganizationGlobalId =
+                scosAPIService.getUserOrganizationGlobalId(userId);
         List<PassRequest> acceptedRequestsForUniversity =
                 passRequestRepository
                         .findAllByTargetUniversityIdAndStatus(
@@ -173,7 +174,8 @@ public class PRAdminServiceImpl implements IPRAdminService {
     @Override
     public Optional<Map<PRStatus, Integer>> getPassRequestsCountByStatusForAdmin(String userId) {
         Map<PRStatus, Integer> requestsCountByStatus = new HashMap<>();
-        Optional<String> adminUniversityId = userDetailsService.getUserOrganizationGlobalId(userId);
+        Optional<String> adminUniversityId =
+                scosAPIService.getUserOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             List<PassRequest> allUniversityRequests =
                     passRequestRepository.findAllByTargetUniversityId(adminUniversityId.get());
@@ -199,12 +201,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @return отобранные по критериям заявки
      */
     @Override
-    public Optional<GenericResponseDTO<PassRequest>> getPassRequestsForAdmin(PRStatusForAdmin status,
-                                                                             Long page,
-                                                                             Long pageSize,
-                                                                             String search,
-                                                                             String userId) {
-        Optional<String> adminUniversityId = userDetailsService.getUserOrganizationGlobalId(userId);
+    public Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(PRStatusForAdmin status,
+                                                                      Long page,
+                                                                      Long pageSize,
+                                                                      String search,
+                                                                      String userId) {
+        Optional<String> adminUniversityId =
+                scosAPIService.getUserOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
             List<PassRequest> allUniversityRequests =
                     passRequestRepository.findAllByTargetUniversityId(adminUniversityId.get());
@@ -234,7 +237,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск
      * @return список заявок в обработке
      */
-    public GenericResponseDTO<PassRequest> getPassRequestsForProcessing(
+    public ResponseDTO<PassRequest> getPassRequestsForProcessing(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -257,7 +260,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск
      * @return список заявок в обработке
      */
-    public GenericResponseDTO<PassRequest> getPassRequestsInProcessing(
+    public ResponseDTO<PassRequest> getPassRequestsInProcessing(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -281,7 +284,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск
      * @return список обработанных заявок
      */
-    public GenericResponseDTO<PassRequest> getExpiredPassRequests(
+    public ResponseDTO<PassRequest> getExpiredPassRequests(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -304,7 +307,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск
      * @return список обработанных заявок
      */
-    public GenericResponseDTO<PassRequest> getProcessedPassRequests(
+    public ResponseDTO<PassRequest> getProcessedPassRequests(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -422,7 +425,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @param search поиск (опционально)
      * @return список заявок по входным параметрам
      */
-    private GenericResponseDTO<PassRequest> getPRByStatusWithPaginationAndSearchForUniversity(
+    private ResponseDTO<PassRequest> getPRByStatusWithPaginationAndSearchForUniversity(
             PRStatus[] statuses,
             List<PassRequest> requests,
             Long page,
@@ -443,7 +446,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
         long requestsCount = requestList.size();
         requestList = PRUtils.paginateRequests(requestList, page, pageSize);
 
-        return new GenericResponseDTO<>(
+        return new ResponseDTO<>(
                 page,
                 pageSize,
                 requestsCount % pageSize == 0 ? requestsCount / pageSize : requestsCount / pageSize + 1,
