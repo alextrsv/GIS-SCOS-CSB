@@ -1,8 +1,7 @@
 package ru.edu.online.utils;
 
-import ru.edu.online.entities.dto.GenericResponseDTO;
-import ru.edu.online.entities.dto.UserDTO;
-import ru.edu.online.entities.dto.UserProfileDTO;
+import ru.edu.online.entities.dto.*;
+import ru.edu.online.entities.enums.UserRole;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +42,7 @@ public class UserUtils {
      * @param search поиск (опционально)
      * @return список пользователей по заданным критериям
      */
-    public static Optional<GenericResponseDTO<UserDTO>> aggregateUserWithPaginationAndSearch(
+    public static Optional<ResponseDTO<UserDTO>> aggregateUserWithPaginationAndSearch(
             List<UserDTO> users,
             long page,
             long usersPerPage,
@@ -54,7 +53,7 @@ public class UserUtils {
         long usersCount = users.size();
         users = paginateUsers(users, page, usersPerPage);
 
-        return Optional.of(new GenericResponseDTO<>(
+        return Optional.of(new ResponseDTO<>(
                 page,
                 usersPerPage,
                 usersCount % usersPerPage == 0 ? usersCount / usersPerPage : usersCount / usersPerPage + 1,
@@ -83,4 +82,92 @@ public class UserUtils {
         return user;
     }
 
+    /**
+     * Получить UserProfileDTO из UserDTO
+     * @param user dto пользователя
+     * @param role роль пользователя
+     * @param userOrganization организация пользователя
+     * @return профиль пользователя
+     */
+    public static UserProfileDTO getUserProfileDTOFromUserDTO(UserDTO user,
+                                                              UserRole role,
+                                                              OrganizationDTO userOrganization) {
+        UserProfileDTO userProfile = new UserProfileDTO();
+
+        userProfile.setEmail(user.getEmail());
+        userProfile.setRole(role);
+        userProfile.setPhotoURL(user.getPhoto_url());
+        userProfile.setFirstName(user.getFirst_name());
+        userProfile.setLastName(user.getLast_name());
+        userProfile.setPatronymicName(user.getPatronymic_name());
+        userProfile.setOrganizationFullName(userOrganization.getFull_name());
+        userProfile.setOrganizationShortName(userOrganization.getShort_name());
+
+        return userProfile;
+    }
+
+    /**
+     * Получить UserProfileDTO из StudentDTO
+     * @param student dto студента из ВАМ
+     * @param organization организация студента
+     * @param studNumber номер студенческого билета
+     * @param photoURL ссылка на фото
+     * @param email почта
+     * @return профиль студента
+     */
+    public static UserProfileDTO getUserProfileDTOFromStudentDTO(
+            StudentDTO student,
+            OrganizationProfileDTO organization,
+            String studNumber,
+            String photoURL,
+            String email) {
+
+        UserProfileDTO userProfile = new UserProfileDTO();
+
+        userProfile.setFirstName(student.getName());
+        userProfile.setLastName(student.getSurname());
+        userProfile.setPatronymicName(student.getMiddle_name());
+        userProfile.setStudyYear(student.getStudy_year());
+        userProfile.setStudNumber(studNumber);
+        userProfile.setEducationForm("Бюджет");
+        userProfile.setOrganizationFullName(organization.getFull_name());
+        userProfile.setOrganizationShortName(organization.getShort_name());
+        userProfile.setRole(UserRole.STUDENT);
+        userProfile.setPhotoURL(photoURL);
+        userProfile.setEmail(email);
+
+        return userProfile;
+    }
+
+    /**
+     * Получить пользователей конкретной страницы с поиском
+     * @param users список пользователей
+     * @param page номер страницы
+     * @param usersPerPage количество пользователей на странице
+     * @param search поиск (опционально)
+     * @return список пользователей по параметрам
+     */
+    public static ResponseDTO<UserDTO> getUsersWithPaginationAndSearch(List<UserDTO> users,
+                                                                       long page,
+                                                                       long usersPerPage,
+                                                                       String search) {
+        if (Optional.ofNullable(search).isPresent()) {
+            users = searchByEmail(users, search);
+        }
+        long usersCount = users.size();
+        users = users.stream()
+                .skip(usersPerPage * (page - 1))
+                .limit(usersPerPage)
+                .collect(Collectors.toList());
+
+        return new ResponseDTO<>(
+                page,
+                usersPerPage,
+                usersCount % usersPerPage == 0 ?
+                        usersCount / usersPerPage :
+                        usersCount / usersPerPage + 1,
+                usersCount,
+                users
+        );
+    }
 }
