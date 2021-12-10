@@ -49,6 +49,32 @@ public class ScosAPIServiceImpl implements IScosAPIService {
     }
 
     /**
+     * Получить global_id организации админа
+     * @param userId идентификатор пользователя
+     * @return global_id организации админа
+     */
+    @Override
+    public Optional<String> getUserOrganizationGlobalId(String userId) {
+        Optional<UserDTO> admin = getUserDetails(userId);
+        if (admin.isPresent()) {
+            Optional<EmploymentDTO> employmentDTO = admin.get()
+                    .getEmployments()
+                    .stream()
+                    .filter(e -> e.getRoles().contains("UNIVERSITY"))
+                    .findFirst();
+            if (employmentDTO.isPresent()) {
+                Optional<OrganizationDTO> adminOrganization =
+                        getOrganization(employmentDTO.get().getOgrn());
+                if (adminOrganization.isPresent()) {
+                    return adminOrganization.get().getOrganizationId();
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
      * Запрос на получение организации по id
      * @param globalId идентификатор организации
      * @return организация

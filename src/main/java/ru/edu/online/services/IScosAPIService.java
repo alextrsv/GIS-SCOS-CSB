@@ -11,6 +11,8 @@ public interface IScosAPIService {
 
     Optional<OrganizationDTO[]> getOrganizations();
 
+    Optional<String> getUserOrganizationGlobalId(String userId);
+
     Optional<OrganizationProfileDTO> getOrganizationByGlobalId(String globalId);
 
     Optional<OrganizationDTO> getOrganization(String idOrOGRN);
