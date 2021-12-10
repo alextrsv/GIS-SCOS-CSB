@@ -26,6 +26,7 @@ import ru.edu.online.utils.UserUtils;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Сервис для работы с заявками администратора.
@@ -239,13 +240,12 @@ public class PRAdminServiceImpl implements IPRAdminService {
             Long pageSize,
             String search) {
         log.info("collect requests sent for consideration to the target OOVO");
-        return PRUtils.getPRByStatusWithPaginationAndSearchForUniversity(
+        return getPRByStatusWithPaginationAndSearchForUniversity(
                 new PRStatus[]{PRStatus.TARGET_ORGANIZATION_REVIEW},
                 requests,
                 page,
                 pageSize,
-                search,
-                scosAPIService
+                search
         );
     }
 
@@ -264,13 +264,12 @@ public class PRAdminServiceImpl implements IPRAdminService {
             String search) {
         log.info("collect requests sent in consideration to the target OOVO");
 
-        return PRUtils.getPRByStatusWithPaginationAndSearchForUniversity(
+        return getPRByStatusWithPaginationAndSearchForUniversity(
                 new PRStatus[]{PRStatus.PROCESSED_IN_TARGET_ORGANIZATION},
                 requests,
                 page,
                 pageSize,
-                search,
-                scosAPIService
+                search
         );
     }
 
@@ -288,13 +287,12 @@ public class PRAdminServiceImpl implements IPRAdminService {
             Long pageSize,
             String search) {
         log.info("collect expired requests sent for to the OOVO");
-        return PRUtils.getPRByStatusWithPaginationAndSearchForUniversity(
+        return getPRByStatusWithPaginationAndSearchForUniversity(
                 new PRStatus[]{PRStatus.EXPIRED},
                 requests,
                 page,
                 pageSize,
-                search,
-                scosAPIService
+                search
         );
     }
 
@@ -313,7 +311,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
             String search) {
 
         log.info("collect considered requests sent for to the OOVO");
-        return PRUtils.getPRByStatusWithPaginationAndSearchForUniversity(
+        return getPRByStatusWithPaginationAndSearchForUniversity(
                 new PRStatus[]{
                         PRStatus.ACCEPTED,
                         PRStatus.REJECTED_BY_TARGET_ORGANIZATION,
@@ -321,8 +319,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
                 requests,
                 page,
                 pageSize,
-                search,
-                scosAPIService
+                search
         );
     }
 
@@ -414,6 +411,45 @@ public class PRAdminServiceImpl implements IPRAdminService {
                 .filter(request -> isExpired(request.getStatus(), request.getEndDate()))
                 .forEach(request -> request.setStatus(PRStatus.EXPIRED));
         passRequestRepository.saveAll(requests);
+    }
+
+    /**
+     * Получить запросы для университета с поиском и пагинацией по категории
+     * @param statuses массив статусов заявок
+     * @param requests список заявок, которые пришли в университет
+     * @param page номер страницы
+     * @param pageSize размер страницы
+     * @param search поиск (опционально)
+     * @return список заявок по входным параметрам
+     */
+    private GenericResponseDTO<PassRequest> getPRByStatusWithPaginationAndSearchForUniversity(
+            PRStatus[] statuses,
+            List<PassRequest> requests,
+            Long page,
+            Long pageSize,
+            String search) {
+        List<PassRequest> requestList = new LinkedList<>();
+        for (PRStatus status : statuses) {
+            requestList.addAll(
+                    requests.stream()
+                            .filter(request -> request.getStatus() == status)
+                            .collect(Collectors.toList())
+            );
+        }
+
+        if (Optional.ofNullable(search).isPresent()) {
+            requestList = PRUtils.filterRequest(requestList, search, scosAPIService);
+        }
+        long requestsCount = requestList.size();
+        requestList = PRUtils.paginateRequests(requestList, page, pageSize);
+
+        return new GenericResponseDTO<>(
+                page,
+                pageSize,
+                requestsCount % pageSize == 0 ? requestsCount / pageSize : requestsCount / pageSize + 1,
+                requestsCount,
+                requestList
+        );
     }
 
     /**

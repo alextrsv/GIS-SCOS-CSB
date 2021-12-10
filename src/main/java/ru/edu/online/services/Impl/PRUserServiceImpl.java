@@ -138,7 +138,7 @@ public class PRUserServiceImpl implements IPRUserService {
                 .map(Optional::get)
                 .collect(Collectors.toList()));
 
-        return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
+        return Optional.of(getPRByStatusWithPaginationForUser(
                 requests,
                 new PRStatus[]{PRStatus.ACCEPTED},
                 (long) 1,
@@ -162,21 +162,21 @@ public class PRUserServiceImpl implements IPRUserService {
         log.info("Getting passRequests by status");
         switch (status) {
             case "accepted":
-                return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
+                return Optional.of(getPRByStatusWithPaginationForUser(
                         requests,
                         new PRStatus[]{PRStatus.ACCEPTED},
                         page,
                         pageSize
                 ));
             case "rejected":
-                return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
+                return Optional.of(getPRByStatusWithPaginationForUser(
                         requests,
                         new PRStatus[]{PRStatus.REJECTED_BY_TARGET_ORGANIZATION},
                         page,
                         pageSize
                 ));
             case "processing":
-                return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
+                return Optional.of(getPRByStatusWithPaginationForUser(
                         requests,
                         new PRStatus[]{
                                 PRStatus.TARGET_ORGANIZATION_REVIEW,
@@ -186,7 +186,7 @@ public class PRUserServiceImpl implements IPRUserService {
                         pageSize
                 ));
             case "expired":
-                return Optional.of(aggregatePassRequestsByStatusWithPaginationForUser(
+                return Optional.of(getPRByStatusWithPaginationForUser(
                         requests,
                         new PRStatus[]{PRStatus.EXPIRED},
                         page,
@@ -334,10 +334,11 @@ public class PRUserServiceImpl implements IPRUserService {
      * @param pageSize размер страницы
      * @return список отобранных заявок по критериям выше
      */
-    private GenericResponseDTO<PassRequest> aggregatePassRequestsByStatusWithPaginationForUser(List<PassRequest> requests,
-                                                                                               PRStatus[] statuses,
-                                                                                               Long page,
-                                                                                               Long pageSize) {
+    private GenericResponseDTO<PassRequest> getPRByStatusWithPaginationForUser(
+            List<PassRequest> requests,
+            PRStatus[] statuses,
+            Long page,
+            Long pageSize) {
         List<PassRequest> filteredRequests = new LinkedList<>();
         for (PRStatus status : statuses) {
             filteredRequests.addAll(
