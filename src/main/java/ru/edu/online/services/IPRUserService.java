@@ -2,8 +2,8 @@ package ru.edu.online.services;
 
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestUser;
-import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.dto.PRDTO;
+import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.enums.PRStatus;
 
 import java.util.List;
