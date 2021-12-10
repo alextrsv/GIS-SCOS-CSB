@@ -41,6 +41,6 @@ public class CacheStudent {
     }
 
     public String getStudNumber() {
-        return String.valueOf((int) (this.id + 10000000));
+        return String.valueOf((int) (this.id + 27549369));
     }
 }
