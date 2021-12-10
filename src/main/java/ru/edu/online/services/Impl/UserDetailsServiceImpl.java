@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Сервис данных пользователя
@@ -101,32 +100,6 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
     }
 
     /**
-     * Получить global_id организации админа
-     * @param userId идентификатор пользователя
-     * @return global_id организации админа
-     */
-    @Override
-    public Optional<String> getUserOrganizationGlobalId(String userId) {
-        Optional<UserDTO> admin = scosAPIService.getUserDetails(userId);
-        if (admin.isPresent()) {
-            Optional<EmploymentDTO> employmentDTO = admin.get()
-                    .getEmployments()
-                    .stream()
-                    .filter(e -> e.getRoles().contains("UNIVERSITY"))
-                    .findFirst();
-            if (employmentDTO.isPresent()) {
-                Optional<OrganizationDTO> adminOrganization =
-                        scosAPIService.getOrganization(employmentDTO.get().getOgrn());
-                if (adminOrganization.isPresent()) {
-                    return adminOrganization.get().getOrganizationId();
-                }
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    /**
      * Является ли пользователь студентом?
      * @param userId идентификатор пользователя
      * @return true/false в зависимости от роли пользователя
@@ -176,136 +149,57 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
             case SUPER_USER:
                 return getEmploymentProfile(userId, getUserRole(userId));
             case STUDENT:
-                return Optional.ofNullable(getStudentProfile(userId));
+                return getStudentProfile(userId);
             default:
                 return Optional.empty();
         }
     }
 
+    /**
+     * Получить профиль сотрудника огранизации
+     * (Админ ООВО, Охранник, Супер - пользователь)
+     * @param userId идентификатор пользователя
+     * @param role роль пользователя
+     * @return профиль пользователя
+     */
     private Optional<UserProfileDTO> getEmploymentProfile(String userId, UserRole role) {
-        Optional<UserDTO> userScosInfo = scosAPIService.getUserDetails(userId);
-        if (userScosInfo.isPresent()) {
-            Optional<UsersDTO> userByFIO =
-                    scosAPIService.getUserByFIO(
-                            userScosInfo.get().getFirst_name(),
-                            userScosInfo.get().getLast_name()
-                    );
-            if (userByFIO.isPresent()) {
-                Optional<UserDTO> userInfo =
-                        Arrays.stream(userByFIO.get().getData())
-                                .filter(user -> user.getUser_id().equals(userId))
-                                .findFirst();
+        Optional<UserDTO> user = scosAPIService.getUserDetails(userId);
 
-                UserProfileDTO userProfile = new UserProfileDTO();
+        user = Arrays.stream(
+                scosAPIService.getUserByFIO(
+                        user.orElseThrow().getFirst_name(),
+                        user.orElseThrow().getLast_name()
+                ).orElseThrow().getData())
+                .filter(u -> u.getUser_id().equals(userId))
+                .findFirst();
 
-                if (userInfo.isPresent()) {
-                    Optional<EmploymentDTO> employment =
-                            userScosInfo.get().getEmployments()
-                                    .stream()
-                                    .filter(e -> e.getRoles().contains(role.getValue()))
-                                    .findFirst();
-                    if (employment.isPresent()) {
-                        Optional<OrganizationDTO> organization =
-                                scosAPIService.getOrganization(
-                                        employment.get().getOgrn()
-                                );
+        Optional<EmploymentDTO> userEmployment =
+                user.orElseThrow().getEmployments()
+                        .stream()
+                        .filter(e -> e.getRoles().contains(role.getValue()))
+                        .findFirst();
 
-                        userProfile.setEmail(userInfo.get().getEmail());
-                        userProfile.setRole(role);
-                        userProfile.setPhotoURL(userInfo.get().getPhoto_url());
-                        userProfile.setFirstName(userInfo.get().getFirst_name());
-                        userProfile.setLastName(userInfo.get().getLast_name());
-                        userProfile.setPatronymicName(userInfo.get().getPatronymic_name());
+        Optional<OrganizationDTO> userOrganization =
+                scosAPIService.getOrganization(
+                        userEmployment.orElseThrow().getOgrn()
+                );
 
-                        if (organization.isPresent()) {
-                            userProfile.setOrganizationFullName(organization.get().getFull_name());
-                            userProfile.setOrganizationShortName(organization.get().getShort_name());
-                        }
-                    }
-                }
-
-                return Optional.of(userProfile);
-            }
-        }
-
-        return Optional.empty();
+        return Optional.of(
+                UserUtils.getUserProfileDTOFromUserDTO(
+                        user.orElseThrow(),
+                        role,
+                        userOrganization.orElseThrow())
+        );
     }
 
     /**
-     * Получить пользователей организации
-     * @param userId идентификатор польователя
-     * @return список пользователей из ООВО админа
+     * Получить профиль студента
+     * @param userId идентификатор СЦОСа студента
+     * @return профиль студента
      */
-    @Override
-    public Optional<GenericResponseDTO<UserDTO>> getUsersByOrganization(String userId,
-                                                                               Long page,
-                                                                               Long pageSize,
-                                                                               String search) {
+    private Optional<UserProfileDTO> getStudentProfile(String userId) {
         Optional<UserDTO> user = scosAPIService.getUserDetails(userId);
-        Optional<EmploymentDTO> employmentDTO = user.orElseThrow().getEmployments()
-                .stream()
-                .findFirst();
-        Optional<StudentsDTO> students = vamAPIService.getStudents(
-                "organization_id",
-                employmentDTO.orElseThrow().getOgrn()
-        );
-        if (students.isPresent()) {
-            List<UserDTO> users = new ArrayList<>();
-
-            for (StudentDTO student : students.get().getResults()) {
-                UserDTO userDetails = new UserDTO();
-                user = Arrays.stream(
-                                scosAPIService.getUserByFIO(
-                                        student.getName(),
-                                        student.getSurname()
-                                ).orElseThrow()
-                                        .getData())
-                        .filter(u -> u.getUser_id().equals(
-                                scosAPIService.getUserByEmail(
-                                        student.getEmail()
-                                ).orElseThrow().getUser_id())
-                        )
-                        .findFirst();
-                if (user.isPresent()) {
-                    userDetails.setUser_id(user.get().getUser_id());
-                    userDetails.setFirst_name(student.getName());
-                    userDetails.setLast_name(student.getSurname());
-                    userDetails.setPatronymic_name(student.getMiddle_name());
-                    userDetails.setEmail(student.getEmail());
-                    userDetails.setRoles(List.of("STUDENT"));
-                    userDetails.setPhoto_url(user.get().getPhoto_url());
-                    userDetails.setUserOrganizationShortName(
-                            scosAPIService.getOrganizationByGlobalId(
-                                    student.getOrganization_id()
-                            ).orElseThrow().getShort_name());
-                    users.add(userDetails);
-                }
-            }
-
-            if (Optional.ofNullable(search).isPresent()) {
-                users = UserUtils.searchByEmail(users, search);
-            }
-            long usersCount = users.size();
-            users = users.stream()
-                    .skip(pageSize * (page - 1))
-                    .limit(pageSize)
-                    .collect(Collectors.toList());
-
-            return Optional.of(new GenericResponseDTO<>(
-                    page,
-                    pageSize,
-                    usersCount % pageSize == 0 ? usersCount / pageSize : usersCount / pageSize + 1,
-                    usersCount,
-                    users
-            ));
-
-        }
-
-        return Optional.empty();
-    }
-
-    private UserProfileDTO getStudentProfile(String userId) {
-        Optional<UserDTO> user = scosAPIService.getUserDetails(userId);
+        String userEmail = user.orElseThrow().getEmail();
 
         user = Arrays.stream(
                 scosAPIService.getUserByFIO(
@@ -318,14 +212,12 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         Optional<StudentsDTO> students =
                 vamAPIService.getStudents(
                         "email",
-                        user.orElseThrow().getEmail()
+                        userEmail
                 );
-        Optional<UserDTO> finalUser = user;
         Optional<StudentDTO> student = students.orElseThrow().getResults()
                 .stream()
                 .filter(
-                        s ->
-                                s.getEmail().equals(finalUser.orElseThrow().getEmail())
+                        s -> s.getEmail().equals(userEmail)
                 )
                 .filter(s -> s.getStudy_year() != null)
                 .findFirst();
@@ -335,31 +227,87 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                             student.get().getOrganization_id()
                     );
 
-            if (organization.isPresent()) {
-                UserProfileDTO userProfile = new UserProfileDTO();
-                userProfile.setFirstName(student.get().getName());
-                userProfile.setLastName(student.get().getSurname());
-                userProfile.setPatronymicName(student.get().getMiddle_name());
-                userProfile.setStudyYear(student.get().getStudy_year());
-                userProfile.setStudNumber(
-                        studentCashRepository.findByEmailAndScosId(
-                                student.get().getEmail(),
-                                user.orElseThrow().getUser_id()
-                        ).orElseThrow()
-                                .getStudNumber()
-                );
-                userProfile.setEducationForm("Бюджет");
-                userProfile.setOrganizationFullName(organization.get().getFull_name());
-                userProfile.setOrganizationShortName(organization.get().getShort_name());
-                userProfile.setRole(UserRole.STUDENT);
-                userProfile.setPhotoURL(user.orElseThrow().getPhoto_url());
-                userProfile.setEmail(user.orElseThrow().getEmail());
+            String studNumber = studentCashRepository.findByEmailAndScosId(
+                            student.get().getEmail(),
+                            user.orElseThrow().getUser_id()
+                    ).orElseThrow()
+                    .getStudNumber();
 
-                return userProfile;
+            return Optional.of(
+                    UserUtils.getUserProfileDTOFromStudentDTO(
+                            student.orElseThrow(),
+                            organization.orElseThrow(),
+                            studNumber,
+                            user.orElseThrow().getPhoto_url(),
+                            userEmail)
+            );
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Получить пользователей организации
+     * @param userId идентификатор польователя
+     * @return список пользователей из ООВО админа
+     */
+    @Override
+    public Optional<ResponseDTO<UserDTO>> getUsersByOrganization(String userId,
+                                                                 Long page,
+                                                                 Long pageSize,
+                                                                 String search) {
+        Optional<UserDTO> user = scosAPIService.getUserDetails(userId);
+        Optional<EmploymentDTO> employmentDTO = user
+                .orElseThrow()
+                .getEmployments()
+                .stream()
+                .findFirst();
+
+        Optional<StudentsDTO> students = vamAPIService.getStudents(
+                "organization_id",
+                employmentDTO.orElseThrow().getOgrn()
+        );
+
+        List<UserDTO> users = new ArrayList<>();
+
+        for (StudentDTO student : students.orElseThrow().getResults()) {
+            UserDTO userDetails = new UserDTO();
+            user = Arrays.stream(
+                            scosAPIService.getUserByFIO(
+                                            student.getName(),
+                                            student.getSurname()
+                                    ).orElseThrow()
+                                    .getData()
+                    )
+                    .filter(
+                            u -> u.getUser_id().equals(
+                                    scosAPIService.getUserByEmail(
+                                                    student.getEmail()
+                                            )
+                                            .orElseThrow()
+                                            .getUser_id()
+                            )
+                    )
+                    .findFirst();
+            if (user.isPresent()) {
+                userDetails.setUser_id(user.get().getUser_id());
+                userDetails.setFirst_name(student.getName());
+                userDetails.setLast_name(student.getSurname());
+                userDetails.setPatronymic_name(student.getMiddle_name());
+                userDetails.setEmail(student.getEmail());
+                userDetails.setRoles(List.of("STUDENT"));
+                userDetails.setPhoto_url(user.get().getPhoto_url());
+                userDetails.setUserOrganizationShortName(
+                        scosAPIService.getOrganizationByGlobalId(
+                                student.getOrganization_id()
+                        ).orElseThrow().getShort_name());
+                users.add(userDetails);
             }
         }
 
-        return null;
+        return Optional.of(
+                UserUtils.getUsersWithPaginationAndSearch(users, page, pageSize, search)
+        );
     }
 
     /**
