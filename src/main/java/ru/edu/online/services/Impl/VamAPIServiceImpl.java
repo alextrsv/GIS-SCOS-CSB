@@ -15,17 +15,22 @@ import ru.edu.online.services.IVamAPIService;
 import java.time.Duration;
 import java.util.Optional;
 
+/**
+ * Сервис для работы с АПИ ВАМа
+ */
 @Slf4j
 @Service
-public class IVamAPIServiceImpl implements IVamAPIService {
+public class VamAPIServiceImpl implements IVamAPIService {
 
-    private final WebClient devVamApiClient;
-
+    /** Время ожидания ответа на запрос */
     private final static long REQUEST_TIMEOUT = 3000;
 
-    @Autowired
-    public IVamAPIServiceImpl(WebClient devVamApiClient) {
+    /** Клиент для запросов к ВАМу */
+    private final WebClient devVamApiClient;
 
+
+    @Autowired
+    public VamAPIServiceImpl(WebClient devVamApiClient) {
         this.devVamApiClient = devVamApiClient;
     }
 

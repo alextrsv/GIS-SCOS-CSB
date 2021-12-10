@@ -7,10 +7,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-import ru.edu.online.entities.dto.OrganizationDTO;
-import ru.edu.online.entities.dto.OrganizationProfileDTO;
-import ru.edu.online.entities.dto.UserDTO;
-import ru.edu.online.entities.dto.UsersDTO;
+import ru.edu.online.entities.dto.*;
 import ru.edu.online.services.IScosAPIService;
 
 import java.time.Duration;
@@ -18,15 +15,17 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class IScosAPIServiceImpl implements IScosAPIService {
+public class ScosAPIServiceImpl implements IScosAPIService {
 
+    /** Время ожидания ответа на запрос */
     private static final long REQUEST_TIMEOUT = 3000;
 
+    /** Клиент для запросов к СЦОСу */
     private final WebClient devScosApiClient;
 
 
     @Autowired
-    public IScosAPIServiceImpl(WebClient devScosApiClient) {
+    public ScosAPIServiceImpl(WebClient devScosApiClient) {
         this.devScosApiClient = devScosApiClient;
     }
 
@@ -47,6 +46,32 @@ public class IScosAPIServiceImpl implements IScosAPIService {
                         ex -> ex.getRawStatusCode() == 503 ? Mono.empty() : Mono.error(ex))
                 .retryWhen(Retry.fixedDelay(5, Duration.ofMillis(REQUEST_TIMEOUT)))
                 .block());
+    }
+
+    /**
+     * Получить global_id организации админа
+     * @param userId идентификатор пользователя
+     * @return global_id организации админа
+     */
+    @Override
+    public Optional<String> getUserOrganizationGlobalId(String userId) {
+        Optional<UserDTO> admin = getUserDetails(userId);
+        if (admin.isPresent()) {
+            Optional<EmploymentDTO> employmentDTO = admin.get()
+                    .getEmployments()
+                    .stream()
+                    .filter(e -> e.getRoles().contains("UNIVERSITY"))
+                    .findFirst();
+            if (employmentDTO.isPresent()) {
+                Optional<OrganizationDTO> adminOrganization =
+                        getOrganization(employmentDTO.get().getOgrn());
+                if (adminOrganization.isPresent()) {
+                    return adminOrganization.get().getOrganizationId();
+                }
+            }
+        }
+
+        return Optional.empty();
     }
 
     /**
