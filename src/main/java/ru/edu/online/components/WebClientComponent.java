@@ -14,9 +14,6 @@ public class WebClientComponent {
     /** Адрес DEV АПИ VAM */
     @Value("${web.client.dev.vam.url}")
     private String DEV_VAM_URL;
-    /** Адрес TEST АПИ VAM */
-    @Value("${web.client.test.vam.url}")
-    private String TEST_VAM_URL;
     /** Адрес DEV АПИ ГИС СЦОС */
     @Value("${web.client.dev.scos.url}")
     private String DEV_SCOS_URL;
@@ -36,19 +33,6 @@ public class WebClientComponent {
         return WebClient
                 .builder()
                 .baseUrl(DEV_SCOS_URL)
-                .defaultHeader(HEADER_NAME, HEADER_VALUE)
-                .build();
-    }
-
-    /**
-     * Бин веб клиента для взаимодействия с TEST АПИ ВАМа
-     * @return веб клиент
-     */
-    @Bean
-    public WebClient testVamApiClient() {
-        return WebClient
-                .builder()
-                .baseUrl(TEST_VAM_URL)
                 .defaultHeader(HEADER_NAME, HEADER_VALUE)
                 .build();
     }

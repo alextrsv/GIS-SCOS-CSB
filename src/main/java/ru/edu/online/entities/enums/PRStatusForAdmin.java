@@ -9,7 +9,7 @@ import java.util.stream.Stream;
  * PROCESSED - обработаны
  * EXPIRED - Просрочены
  */
-public enum RequestsStatusForAdmin {
+public enum PRStatusForAdmin {
     FOR_PROCESSING("forProcessing"),
     IN_PROCESSING("inProcessing"),
     PROCESSED("processed"),
@@ -22,12 +22,12 @@ public enum RequestsStatusForAdmin {
         return this.status;
     }
 
-    RequestsStatusForAdmin(String status) {
+    PRStatusForAdmin(String status) {
         this.status = status;
     }
 
-    public static RequestsStatusForAdmin of(String status) {
-        return Stream.of(RequestsStatusForAdmin.values())
+    public static PRStatusForAdmin of(String status) {
+        return Stream.of(PRStatusForAdmin.values())
                 .filter(s -> s.getStatus().equals(status))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);

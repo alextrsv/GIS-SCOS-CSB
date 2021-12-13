@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface IPassRequestUserRepository extends JpaRepository<PassRequestUser, UUID> {
+public interface IPRUserRepository extends JpaRepository<PassRequestUser, UUID> {
 
     Boolean existsByPassRequestIdAndScosId(UUID passRequestId, String scosId);
 

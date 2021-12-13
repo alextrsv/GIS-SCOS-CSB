@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.edu.online.entities.PassFile;
-import ru.edu.online.entities.dto.PassRequestFileIdentifierDTO;
-import ru.edu.online.services.IPassFileService;
+import ru.edu.online.entities.PassRequestFile;
+import ru.edu.online.entities.dto.PRFileIdentifierDTO;
+import ru.edu.online.services.IPRFileService;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,12 +18,12 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/file")
-public class PassFileController {
+public class PRFileController {
 
-    private final IPassFileService passFileService;
+    private final IPRFileService passFileService;
 
     @Autowired
-    public PassFileController(IPassFileService passFileService) {
+    public PRFileController(IPRFileService passFileService) {
         this.passFileService = passFileService;
     }
 
@@ -34,8 +34,8 @@ public class PassFileController {
      * @return загруженный файл если успешно
      */
     @PostMapping("/upload")
-    private ResponseEntity<PassFile> uploadPassFile(@RequestParam("file") MultipartFile passFile,
-                                                    @RequestParam("passRequestId") UUID passRequestId) {
+    private ResponseEntity<PassRequestFile> uploadPassFile(@RequestParam("file") MultipartFile passFile,
+                                                           @RequestParam("passRequestId") UUID passRequestId) {
         return passFileService.uploadPassFile(passFile, passRequestId).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -47,10 +47,10 @@ public class PassFileController {
      * @return список загруженных файлов если успешно
      */
     @PostMapping("/upload/multiple")
-    private ResponseEntity<List<PassFile>> uploadPassFiles(@RequestParam("file") MultipartFile[] passFiles,
-                                                           @RequestParam("passRequestId") UUID passRequestId) {
+    private ResponseEntity<List<PassRequestFile>> uploadPassFiles(@RequestParam("file") MultipartFile[] passFiles,
+                                                                  @RequestParam("passRequestId") UUID passRequestId) {
 
-        List<PassFile> uploadedFiles = passFileService.uploadPassFiles(passFiles, passRequestId);
+        List<PassRequestFile> uploadedFiles = passFileService.uploadPassFiles(passFiles, passRequestId);
         if (uploadedFiles.isEmpty())
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         else
@@ -74,7 +74,7 @@ public class PassFileController {
      * @return информация о файле
      */
     @GetMapping("/view")
-    public ResponseEntity<PassFile> getFileInfo(@RequestBody PassRequestFileIdentifierDTO dto) {
+    public ResponseEntity<PassRequestFile> getFileInfo(@RequestBody PRFileIdentifierDTO dto) {
         return passFileService.getFile(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
@@ -85,7 +85,7 @@ public class PassFileController {
      * @return информация об удаленном файле
      */
     @DeleteMapping("/delete")
-    private ResponseEntity<PassFile> deletePassFile(@RequestBody PassRequestFileIdentifierDTO dto){
+    private ResponseEntity<PassRequestFile> deletePassFile(@RequestBody PRFileIdentifierDTO dto){
         return passFileService.deletePassFile(dto).map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

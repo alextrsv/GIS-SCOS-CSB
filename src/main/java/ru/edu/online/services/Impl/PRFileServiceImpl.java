@@ -10,13 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.edu.online.entities.PassFile;
 import ru.edu.online.entities.PassRequest;
-import ru.edu.online.entities.dto.PassRequestFileIdentifierDTO;
-import ru.edu.online.entities.enums.PassFileType;
-import ru.edu.online.repositories.IPassFileRepository;
-import ru.edu.online.repositories.IPassRequestRepository;
-import ru.edu.online.services.IPassFileService;
+import ru.edu.online.entities.PassRequestFile;
+import ru.edu.online.entities.dto.PRFileIdentifierDTO;
+import ru.edu.online.entities.enums.PRFileType;
+import ru.edu.online.repositories.IPRFileRepository;
+import ru.edu.online.repositories.IPRRepository;
+import ru.edu.online.services.IPRFileService;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,20 +30,20 @@ import java.util.*;
  */
 @Service
 @Slf4j
-public class PassFileServiceImpl implements IPassFileService {
+public class PRFileServiceImpl implements IPRFileService {
 
     /** Репозиторий файлов */
-    private final IPassFileRepository passFileRepository;
+    private final IPRFileRepository passFileRepository;
 
-    private final IPassRequestRepository passRequestRepository;
+    private final IPRRepository passRequestRepository;
 
     /** Директория для хранения файлов. Указывается в application.properties */
     @Value("${upload.dir}")
     private String uploadDir;
 
     @Autowired
-    public PassFileServiceImpl(IPassFileRepository passFileRepository,
-                               IPassRequestRepository passRequestRepository) {
+    public PRFileServiceImpl(IPRFileRepository passFileRepository,
+                             IPRRepository passRequestRepository) {
         this.passFileRepository = passFileRepository;
         this.passRequestRepository = passRequestRepository;
     }
@@ -57,8 +57,8 @@ public class PassFileServiceImpl implements IPassFileService {
      * @return информация о загруженном файле
      */
     @Override
-    public Optional<PassFile> uploadPassFile(MultipartFile file, UUID passRequestId) {
-        PassFile passFile;
+    public Optional<PassRequestFile> uploadPassFile(MultipartFile file, UUID passRequestId) {
+        PassRequestFile passRequestFile;
 
         String path = System.getProperty("user.dir")
                 + File.separator
@@ -73,9 +73,9 @@ public class PassFileServiceImpl implements IPassFileService {
         Optional<PassRequest> currentRequest =
                 passRequestRepository.findById(passRequestId);
         if (currentRequest.isPresent()) {
-            passFile = new PassFile(
+            passRequestFile = new PassRequestFile(
                     file.getOriginalFilename(),
-                    PassFileType.of(getFileExtension(file)),
+                    PRFileType.of(getFileExtension(file)),
                     path,
                     passRequestId
             );
@@ -86,7 +86,7 @@ public class PassFileServiceImpl implements IPassFileService {
                     + file.getOriginalFilename()
                     + "\" has been uploaded");
 
-            return Optional.of(passFileRepository.save(Objects.requireNonNull(passFile)));
+            return Optional.of(passFileRepository.save(Objects.requireNonNull(passRequestFile)));
         }else{
             log.warn("file hasn't been uploaded");
             return Optional.empty();
@@ -112,12 +112,12 @@ public class PassFileServiceImpl implements IPassFileService {
      * @return список, с информацией о загруженных файлах
      */
     @Override
-    public List<PassFile> uploadPassFiles(MultipartFile[] passFiles, UUID passRequestId) {
-        ArrayList<PassFile> uploadedFiles = new ArrayList<>();
+    public List<PassRequestFile> uploadPassFiles(MultipartFile[] passFiles, UUID passRequestId) {
+        ArrayList<PassRequestFile> uploadedFiles = new ArrayList<>();
 
 
         for (MultipartFile file: passFiles) {
-            Optional<PassFile> passFile = uploadPassFile(file, passRequestId);
+            Optional<PassRequestFile> passFile = uploadPassFile(file, passRequestId);
             passFile.ifPresent(uploadedFiles::add);
         }
         log.info("files were uploaded");
@@ -131,7 +131,7 @@ public class PassFileServiceImpl implements IPassFileService {
      */
     @Override
     public ResponseEntity<Resource> downloadFile(UUID fileId, UUID passRequestId) {
-        Optional<PassFile> file = Optional.empty();
+        Optional<PassRequestFile> file = Optional.empty();
 
         Optional<PassRequest> passRequest =
                 passRequestRepository.findById(passRequestId);
@@ -147,7 +147,7 @@ public class PassFileServiceImpl implements IPassFileService {
             try {
                 Resource resource = new UrlResource(Path.of(file.get().getPath()).toUri());
                 return ResponseEntity.ok()
-                        .contentType(PassFileType.getMediaType(file.get().getType()))
+                        .contentType(PRFileType.getMediaType(file.get().getType()))
                         .header(HttpHeaders.CONTENT_DISPOSITION,
                                 "attachment; filename=\"" + file.get().getName() + "\"")
                         .body(resource);
@@ -165,7 +165,7 @@ public class PassFileServiceImpl implements IPassFileService {
      * @return информация о файле, если он найден в репозитории
      */
     @Override
-    public Optional<PassFile> getFile(PassRequestFileIdentifierDTO dto) {
+    public Optional<PassRequestFile> getFile(PRFileIdentifierDTO dto) {
         log.info("loading info for file with {}", dto.getFileId());
         return passFileRepository.findById(dto.getFileId());
     }
@@ -176,8 +176,8 @@ public class PassFileServiceImpl implements IPassFileService {
      * @return информация об удаленном файле
      */
     @Override
-    public Optional<PassFile> deletePassFile(PassRequestFileIdentifierDTO dto) {
-        Optional<PassFile> passFile = getFile(dto);
+    public Optional<PassRequestFile> deletePassFile(PRFileIdentifierDTO dto) {
+        Optional<PassRequestFile> passFile = getFile(dto);
 
         if (passFile.isPresent()){
             if(deleteFromDisk(passFile.get())) {
@@ -193,11 +193,11 @@ public class PassFileServiceImpl implements IPassFileService {
 
     /**
      * Удаление файла с диска
-     * @param passFile информация о файле
+     * @param passRequestFile информация о файле
      * @return был ли удален файл?
      */
-    private boolean deleteFromDisk(PassFile passFile) {
-        File fileToDelete = new File(passFile.getPath());
+    private boolean deleteFromDisk(PassRequestFile passRequestFile) {
+        File fileToDelete = new File(passRequestFile.getPath());
         return fileToDelete.delete();
     }
 

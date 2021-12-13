@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  * EXPIRED - истек срок действия заявки. (текущая дата больше конца периода заявки)
  * ACCEPTED - одобрена
  */
-public enum PassRequestStatus {
+public enum PRStatus {
     WAITING_FOR_APPROVEMENT_BY_USER,
     TARGET_ORGANIZATION_REVIEW,
     PROCESSED_IN_TARGET_ORGANIZATION,
@@ -20,8 +20,8 @@ public enum PassRequestStatus {
     ACCEPTED
     ;
 
-    public static PassRequestStatus of(String status) {
-        return Stream.of(PassRequestStatus.values())
+    public static PRStatus of(String status) {
+        return Stream.of(PRStatus.values())
                 .filter(t -> t.toString().equals(status))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);

@@ -3,15 +3,14 @@ package ru.edu.online.services.Impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.OrganizationProfileDTO;
 import ru.edu.online.entities.dto.StudentDTO;
-import ru.edu.online.entities.enums.PassRequestStatus;
+import ru.edu.online.entities.enums.PRStatus;
 import ru.edu.online.services.IOrganizationService;
-import ru.edu.online.services.IPassRequestService;
-import ru.edu.online.utils.ScosApiUtils;
+import ru.edu.online.services.IPRUserService;
+import ru.edu.online.services.IScosAPIService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,23 +21,29 @@ import java.util.stream.Collectors;
 @Service
 public class OrganizationServiceImpl implements IOrganizationService {
 
-    private final IPassRequestService passRequestService;
-    private final WebClient scosApiClient;
+    /** Сервис заявок */
+    private final IPRUserService passRequestUserService;
+
+    /** Сервис для работы с АПИ СЦОСа */
+    private final IScosAPIService scosAPIService;
 
     @Autowired
-    public OrganizationServiceImpl(IPassRequestService passRequestService,
-                                   WebClient devScosApiClient) {
-        this.passRequestService = passRequestService;
-        this.scosApiClient = devScosApiClient;
+    public OrganizationServiceImpl(IPRUserService passRequestUserService,
+                                   IScosAPIService scosAPIService) {
+        this.passRequestUserService = passRequestUserService;
+        this.scosAPIService = scosAPIService;
     }
 
     @Override
     public List<String> getPermittedOrganizations(StudentDTO studentDTO) {
-        List<String> acceptedOrganizationsUUID = passRequestService.getPassRequestsByUserId(studentDTO.getId()).get()
-                .stream()
-                .filter(passRequest -> passRequest.getStatus() == PassRequestStatus.ACCEPTED)
-                .map(PassRequest::getTargetUniversityId)
-                .collect(Collectors.toList());
+        List<String> acceptedOrganizationsUUID =
+                passRequestUserService.getPassRequestsByUserId(
+                                studentDTO.getId()
+                        ).orElseThrow()
+                        .stream()
+                        .filter(passRequest -> passRequest.getStatus() == PRStatus.ACCEPTED)
+                        .map(PassRequest::getTargetUniversityId)
+                        .collect(Collectors.toList());
         acceptedOrganizationsUUID.add(studentDTO.getOrganization_id());
         return acceptedOrganizationsUUID;
     }
@@ -49,7 +54,7 @@ public class OrganizationServiceImpl implements IOrganizationService {
      */
     @Override
     public Map<String, String> getOrganizations() {
-        OrganizationDTO[] organizations = ScosApiUtils.getOrganizations(scosApiClient);
+        OrganizationDTO[] organizations = scosAPIService.getOrganizations().orElseThrow();
         Map<String, String> organizationsForUI = new HashMap<>();
 
         for (OrganizationDTO organization : organizations) {
@@ -63,6 +68,6 @@ public class OrganizationServiceImpl implements IOrganizationService {
 
     @Override
     public Optional<OrganizationProfileDTO> getOrganizationProfile(String globalId) {
-        return ScosApiUtils.getOrganizationByGlobalId(scosApiClient, globalId);
+        return scosAPIService.getOrganizationByGlobalId(globalId);
     }
 }

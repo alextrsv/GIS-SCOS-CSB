@@ -12,9 +12,9 @@ import ru.edu.online.entities.dto.OrganizationDTO;
 import ru.edu.online.entities.dto.StudentDTO;
 import ru.edu.online.entities.dto.StudentsDTO;
 import ru.edu.online.entities.dto.UserDTO;
-import ru.edu.online.entities.enums.PassRequestStatus;
-import ru.edu.online.entities.enums.PassRequestType;
-import ru.edu.online.repositories.IPassRequestRepository;
+import ru.edu.online.entities.enums.PRStatus;
+import ru.edu.online.entities.enums.PRType;
+import ru.edu.online.repositories.IPRRepository;
 import ru.edu.online.services.IDynamicQRUserService;
 
 import java.time.LocalDate;
@@ -32,10 +32,10 @@ public class GetAllStudentsJob extends QuartzJobBean {
 
     private final IDynamicQRUserService dynamicQRUserService;
 
-    private final IPassRequestRepository passRequestRepository;
+    private final IPRRepository passRequestRepository;
 
     @Autowired
-    public GetAllStudentsJob(VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService, IPassRequestRepository passRequestRepository, GisScosApiRestClient gisScosApiRestClient) {
+    public GetAllStudentsJob(VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService, IPRRepository passRequestRepository, GisScosApiRestClient gisScosApiRestClient) {
         this.vamRestClient = vamRestClient;
         this.dynamicQRUserService = dynamicQRUserService;
         this.passRequestRepository = passRequestRepository;
@@ -94,8 +94,8 @@ public class GetAllStudentsJob extends QuartzJobBean {
                         organizationDTO.getShort_name(),
                         LocalDate.of(LocalDate.now().getYear(), 8, 1),
                         LocalDate.of(LocalDate.now().getYear() + 1, 7, 1),
-                        PassRequestStatus.ACCEPTED,
-                        PassRequestType.SINGLE,
+                        PRStatus.ACCEPTED,
+                        PRType.SINGLE,
                         "organizationAddress",
                         organizationDTO.getShort_name(),
                         orgId.get(),

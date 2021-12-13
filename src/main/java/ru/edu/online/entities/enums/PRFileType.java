@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  * PNG - изображение формата  PNG
  * PDF - файл формата PDF
  * **/
-public enum PassFileType {
+public enum PRFileType {
     DOC("doc"),
     DOCX("docx"),
     TXT("txt"),
@@ -24,7 +24,7 @@ public enum PassFileType {
 
     String type;
 
-    PassFileType(String type){
+    PRFileType(String type){
         this.type = type;
     }
 
@@ -37,7 +37,7 @@ public enum PassFileType {
      * @param type один из типов файла
      * @return MediaType (Mime type)
      */
-    public static MediaType getMediaType(PassFileType type) {
+    public static MediaType getMediaType(PRFileType type) {
         switch (type) {
             case DOC:
             case DOCX:
@@ -56,8 +56,8 @@ public enum PassFileType {
         }
     }
 
-    public static PassFileType of(String type) {
-        return Stream.of(PassFileType.values())
+    public static PRFileType of(String type) {
+        return Stream.of(PRFileType.values())
                 .filter(t -> t.getType().equals(type))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);

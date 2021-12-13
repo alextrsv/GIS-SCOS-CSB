@@ -5,10 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.edu.online.entities.PassRequest;
 import ru.edu.online.entities.PassRequestComment;
-import ru.edu.online.entities.dto.PassRequestCommentDTO;
-import ru.edu.online.repositories.IPassRequestCommentRepository;
-import ru.edu.online.repositories.IPassRequestRepository;
-import ru.edu.online.services.IPassRequestCommentsService;
+import ru.edu.online.entities.dto.PRCommentDTO;
+import ru.edu.online.repositories.IPRCommentRepository;
+import ru.edu.online.repositories.IPRRepository;
+import ru.edu.online.services.IPRCommentsService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,14 +20,14 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-public class PassRequestCommentsServiceImpl implements IPassRequestCommentsService {
+public class PRCommentsServiceImpl implements IPRCommentsService {
 
-    private final IPassRequestRepository passRequestRepository;
-    private final IPassRequestCommentRepository passRequestCommentRepository;
+    private final IPRRepository passRequestRepository;
+    private final IPRCommentRepository passRequestCommentRepository;
 
     @Autowired
-    public PassRequestCommentsServiceImpl(IPassRequestRepository passRequestRepository,
-                                          IPassRequestCommentRepository passRequestCommentRepository) {
+    public PRCommentsServiceImpl(IPRRepository passRequestRepository,
+                                 IPRCommentRepository passRequestCommentRepository) {
         this.passRequestRepository = passRequestRepository;
         this.passRequestCommentRepository = passRequestCommentRepository;
     }
@@ -38,7 +38,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
      * @return добавленный комментарий
      */
     @Override
-    public Optional<PassRequestComment> addCommentToPassRequest(PassRequestCommentDTO dto) {
+    public Optional<PassRequestComment> addCommentToPassRequest(PRCommentDTO dto) {
         Optional<PassRequest> request = getRequest(dto);
 
         if (request.isPresent()) {
@@ -78,7 +78,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
      * @return отредактированный комментарий
      */
     @Override
-    public Optional<PassRequestComment> updateComment(PassRequestCommentDTO dto) {
+    public Optional<PassRequestComment> updateComment(PRCommentDTO dto) {
         Optional<PassRequestComment> comment = getComment(dto);
         if (comment.isPresent()) {
             comment.get().setComment(dto.getComment());
@@ -100,7 +100,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
      * @return удалённый комментарий
      */
     @Override
-    public Optional<PassRequestComment> deletePassRequestComment(PassRequestCommentDTO dto) {
+    public Optional<PassRequestComment> deletePassRequestComment(PRCommentDTO dto) {
         Optional<PassRequestComment> comment = getComment(dto);
 
         if (comment.isPresent()) {
@@ -117,7 +117,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
      * @param dto комментария
      * @return комментарий
      */
-    private Optional<PassRequestComment> getComment(PassRequestCommentDTO dto) {
+    private Optional<PassRequestComment> getComment(PRCommentDTO dto) {
         return passRequestCommentRepository.findById(dto.getId());
     }
 
@@ -126,7 +126,7 @@ public class PassRequestCommentsServiceImpl implements IPassRequestCommentsServi
      * @param dto комментария
      * @return заявка
      */
-    private Optional<PassRequest> getRequest(PassRequestCommentDTO dto) {
+    private Optional<PassRequest> getRequest(PRCommentDTO dto) {
         return passRequestRepository.findById(dto.getPassRequestId());
     }
 

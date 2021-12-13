@@ -7,5 +7,5 @@ import ru.edu.online.entities.PassRequestComment;
 import java.util.UUID;
 
 @Repository
-public interface IPassRequestCommentRepository extends JpaRepository<PassRequestComment, UUID> {
+public interface IPRCommentRepository extends JpaRepository<PassRequestComment, UUID> {
 }

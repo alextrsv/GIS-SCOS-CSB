@@ -3,7 +3,7 @@ package ru.edu.online.services;
 import ru.edu.online.entities.QRUser;
 import ru.edu.online.entities.dto.PermanentUserQRDTO;
 
-public interface QRUserService {
+public interface IQRUserService {
 
     public String getContentWithHash(QRUser qrUser);
     //  получение полной инфы о пользователе для авторизованного сканирующего

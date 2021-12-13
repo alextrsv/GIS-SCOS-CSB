@@ -19,6 +19,4 @@ public class StudentsDTO {
         this.results = allStudents;
         this.last_page = page_amount;
     }
-
-//    public StudentsDTO(){}
 }
