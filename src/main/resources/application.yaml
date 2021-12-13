@@ -20,6 +20,10 @@ spring:
       max-file-size: 200MB
       max-request-size: 200MB
 
+server:
+  address: ${BIND_IP_ADDRESS}
+  port: ${BIND_PORT}
+
 # Upload files dir
 upload:
   dir: PassFiles
