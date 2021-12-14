@@ -164,6 +164,13 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     private Optional<UserProfileDTO> getEmploymentProfile(String userId, UserRole role) {
         Optional<UserDTO> user = scosAPIService.getUserDetails(userId);
+        String ogrn = user.orElseThrow()
+                .getEmployments()
+                .stream()
+                .filter(e -> e.getRoles().contains(role.getValue()))
+                .findFirst()
+                .orElseThrow()
+                .getOgrn();
 
         user = Arrays.stream(
                 scosAPIService.getUserByFIO(
@@ -173,15 +180,9 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                 .filter(u -> u.getUser_id().equals(userId))
                 .findFirst();
 
-        Optional<EmploymentDTO> userEmployment =
-                user.orElseThrow().getEmployments()
-                        .stream()
-                        .filter(e -> e.getRoles().contains(role.getValue()))
-                        .findFirst();
-
         Optional<OrganizationDTO> userOrganization =
                 scosAPIService.getOrganization(
-                        userEmployment.orElseThrow().getOgrn()
+                        ogrn
                 );
 
         return Optional.of(
