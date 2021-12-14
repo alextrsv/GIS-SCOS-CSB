@@ -1,5 +1,6 @@
 package ru.edu.online.entities.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -27,7 +28,7 @@ public class UserDTO extends QRUser {
     private String photo_url;
     private String userOrganizationShortName;
 
-
+    @JsonIgnore
     public List<String> getUserOrganizationORGN(){
         List<String> res = employments.stream().map(EmploymentDTO::getOgrn).collect(Collectors.toList());
         for (String str: res) {
