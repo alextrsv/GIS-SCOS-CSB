@@ -79,11 +79,11 @@ public class UserInfoController {
     @GetMapping("/access")
     public ResponseEntity<ResponseDTO<PassRequest>> getUserAccesses(@RequestParam(required = false) String userId,
                                                                     Principal principal) {
-        if (userDetailsService.isSecurityOfficer(principal.getName())
-                || userDetailsService.isUniversity(principal.getName())) {
+        if (userDetailsService.isSecurityOfficer(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        if (Optional.ofNullable(userId).isPresent()) {
+        if (userDetailsService.isUniversity(principal.getName())
+                && Optional.ofNullable(userId).isPresent()) {
             return passRequestUserService.getAcceptedPassRequests(userId).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
