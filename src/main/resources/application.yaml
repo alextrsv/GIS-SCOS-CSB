@@ -12,8 +12,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: https://auth-dev.online.edu.ru/realms/portfolio/protocol/openid-connect/certs
-          issuer-uri: https://auth-dev.online.edu.ru/realms/portfolio
+          jwk-set-uri: ${JWT_CERTS_URL}
+          issuer-uri: ${JWT_ISSUER_URL}
 
   servlet:
     multipart:
@@ -41,7 +41,7 @@ management:
 
 # Actuator Frontend
 frontend:
-  url: https://dev.online.edu.ru/stud-bilet/v0/student
+  url: ${ACTUATOR_FRONT}
 
 # Web client
 web:
@@ -57,7 +57,7 @@ web:
 
 # RestTemplate
 gis-scos:
-  host: dev.online.edu.ru
+  host: ${GIS_HOST}
   prefix: /api/v2/
 vam:
   prefix: /vam/api/v2/
