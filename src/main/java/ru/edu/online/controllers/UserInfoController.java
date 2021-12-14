@@ -77,13 +77,18 @@ public class UserInfoController {
      * @return список одобренных заявок (доступов)
      */
     @GetMapping("/access")
-    public ResponseEntity<ResponseDTO<PassRequest>> getUserAccesses(Principal principal) {
+    public ResponseEntity<ResponseDTO<PassRequest>> getUserAccesses(@RequestParam(required = false) String userId,
+                                                                    Principal principal) {
         if (userDetailsService.isSecurityOfficer(principal.getName())
                 || userDetailsService.isUniversity(principal.getName())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return passRequestUserService.getAcceptedPassRequests(principal.getName()).map(ResponseEntity::ok)
+        if (Optional.ofNullable(userId).isPresent()) {
+            return passRequestUserService.getAcceptedPassRequests(userId).map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        }
+        return passRequestUserService.getAcceptedPassRequests(principal.getName()).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     /**
