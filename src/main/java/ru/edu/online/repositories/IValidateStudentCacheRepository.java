@@ -12,7 +12,7 @@ import java.util.UUID;
 @Repository
 public interface IValidateStudentCacheRepository extends JpaRepository<CacheStudent, UUID> {
 
-    Optional<CacheStudent> findByEmailAndScosId(String email, String scosId);
+    List<CacheStudent> findAllByEmailAndScosId(String email, String scosId);
 
     List<CacheStudent> findAllByValidationDateBefore(LocalDate localDate);
 }

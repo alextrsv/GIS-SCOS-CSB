@@ -113,7 +113,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                         scosAPIService.getUserDetails(userId).orElseThrow()
                 );
         if (studentDTO.isPresent()) {
-            student = getStudentFromCacheByEmail(studentDTO.get().getEmail(), userId);
+            student = getStudentFromCacheByEmailAndScosId(studentDTO.get().getEmail(), userId);
             if (student.isPresent()) {
                 return true;
             }
@@ -228,10 +228,10 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                             student.get().getOrganization_id()
                     );
 
-            String studNumber = studentCashRepository.findByEmailAndScosId(
+            String studNumber = studentCashRepository.findAllByEmailAndScosId(
                             student.get().getEmail(),
                             user.orElseThrow().getUser_id()
-                    ).orElseThrow()
+                    ).stream().findAny().orElseThrow()
                     .getStudNumber();
 
             return Optional.of(
@@ -317,8 +317,8 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      * @param scosId идентификатор в СЦОСе
      * @return студент, если не найден - Optional.empty()
      */
-    private Optional<CacheStudent> getStudentFromCacheByEmail(String email, String scosId) {
-        return studentCashRepository.findByEmailAndScosId(email, scosId);
+    private Optional<CacheStudent> getStudentFromCacheByEmailAndScosId(String email, String scosId) {
+        return studentCashRepository.findAllByEmailAndScosId(email, scosId).stream().findFirst();
     }
 
     /**

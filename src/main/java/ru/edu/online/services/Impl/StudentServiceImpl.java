@@ -62,9 +62,9 @@ public class StudentServiceImpl implements IQRUserService {
         permanentStudentQRDTO.setRole("student");
 //        permanentStudentQRDTO.setStud_bilet(studentDTO.getId().toString().substring(0, 10));
         permanentStudentQRDTO.setStud_bilet(
-                studentCacheRepository.findByEmailAndScosId(
+                studentCacheRepository.findAllByEmailAndScosId(
                         studentDTO.getEmail(),
-                        studentDTO.getScos_id()).orElseThrow().getStudNumber()
+                        studentDTO.getScos_id()).stream().findFirst().orElseThrow().getStudNumber()
         );
         permanentStudentQRDTO.setEducation_form(getEducationForm(studentDTO.getStudy_plans()));
         permanentStudentQRDTO.setStart_year(getStartYear(studentDTO));
