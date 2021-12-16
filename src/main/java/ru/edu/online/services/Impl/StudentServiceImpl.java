@@ -138,7 +138,7 @@ public class StudentServiceImpl implements IQRUserService {
 
         dynamicQRUserService.getAcceptedPassRequests(new DynamicQRUser(studentDTO))
                 .forEach(passRequest -> {
-                    orgs.add(new OrganizationInQRDTO(passRequest.getTargetUniversityName(), "",
+                    orgs.add(new OrganizationInQRDTO(passRequest.getTargetUniversityId(), passRequest.getTargetUniversityName(), "",
                             passRequest.getStartDate().toString() + " - " + passRequest.getEndDate().toString()));
                 });
         return orgs;

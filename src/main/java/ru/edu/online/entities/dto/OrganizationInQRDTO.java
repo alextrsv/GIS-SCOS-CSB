@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganizationInQRDTO {
+        String id;
         String universityName;
         String universityAddress;
         String dateInterval;
