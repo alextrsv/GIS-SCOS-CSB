@@ -23,6 +23,9 @@ spring:
 server:
   address: ${BIND_IP_ADDRESS}
   port: ${BIND_PORT}
+  tomcat:
+    accessLogEnabled: true
+    accessLogPattern: '%a asdasd'
 
 # Upload files dir
 upload:
