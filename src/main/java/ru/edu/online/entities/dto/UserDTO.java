@@ -27,6 +27,7 @@ public class UserDTO extends QRUser {
     private String organizationID; //не принимается из СЦОС, устанавливается в UserServiceImpl
     private String photo_url;
     private String userOrganizationShortName;
+    private String stud;
 
     @JsonIgnore
     public List<String> getUserOrganizationORGN(){
