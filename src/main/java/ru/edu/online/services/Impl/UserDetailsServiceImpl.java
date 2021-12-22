@@ -302,6 +302,12 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                         scosAPIService.getOrganizationByGlobalId(
                                 student.getOrganization_id()
                         ).orElseThrow().getShort_name());
+                userDetails.setStud(
+                        getStudNumber(
+                                user.orElseThrow().getEmail(),
+                                user.orElseThrow().getUser_id()
+                        )
+                );
                 users.add(userDetails);
             }
         }
@@ -319,6 +325,23 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     private Optional<CacheStudent> getStudentFromCacheByEmailAndScosId(String email, String scosId) {
         return studentCashRepository.findAllByEmailAndScosId(email, scosId).stream().findFirst();
+    }
+
+    /**
+     * Получить номер студенческого билета
+     * @param email почта студента
+     * @param scosId идентификатор студента из СЦОСа
+     * @return номер студенческого билета в виде строки
+     */
+    private String getStudNumber(String email, String scosId) {
+        Optional<CacheStudent> cacheStudent =
+                getStudentFromCacheByEmailAndScosId(email, scosId);
+        if (cacheStudent.isPresent()) {
+            return cacheStudent.get().getStudNumber();
+        } else {
+            saveStudentInCashByEmailAndScosId(email, scosId);
+            return getStudNumber(email, scosId);
+        }
     }
 
     /**
