@@ -462,8 +462,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @return ответ true или false
      */
     private boolean isExpired(PRStatus status, LocalDate endDate) {
-        return (status != PRStatus.ACCEPTED &&
-                status != PRStatus.EXPIRED &&
+        return (status != PRStatus.EXPIRED &&
                 endDate.isBefore(LocalDate.now()));
     }
 
