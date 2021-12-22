@@ -405,7 +405,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
     /**
      * Проверка всех заявок на наличие просроченных каждые сутки
      */
-    @Scheduled(fixedDelay = 1000*60*60*24)
+    @Scheduled(fixedDelay = 1000*20)
     private void checkExpiredPassRequests() {
         log.info("checkExpiredPassRequests");
         //System.out.println("checkExpiredPassRequests");
@@ -462,8 +462,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @return ответ true или false
      */
     private boolean isExpired(PRStatus status, LocalDate endDate) {
-        return (status != PRStatus.ACCEPTED &&
-                status != PRStatus.EXPIRED &&
+        return (status != PRStatus.EXPIRED &&
                 endDate.isBefore(LocalDate.now()));
     }
 
