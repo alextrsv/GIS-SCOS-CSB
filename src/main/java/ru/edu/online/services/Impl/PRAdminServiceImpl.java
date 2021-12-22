@@ -405,7 +405,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
     /**
      * Проверка всех заявок на наличие просроченных каждые сутки
      */
-    @Scheduled(fixedDelay = 1000*20)
+    @Scheduled(fixedDelay = 1000*60*60*24)
     private void checkExpiredPassRequests() {
         log.info("checkExpiredPassRequests");
         //System.out.println("checkExpiredPassRequests");
