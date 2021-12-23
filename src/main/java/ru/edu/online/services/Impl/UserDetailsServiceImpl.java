@@ -234,13 +234,15 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
                     ).stream().findAny().orElseThrow()
                     .getStudNumber();
 
+            UserProfileDTO profile = UserUtils.getUserProfileDTOFromStudentDTO(
+                    student.orElseThrow(),
+                    organization.orElseThrow(),
+                    studNumber,
+                    user.orElseThrow().getPhoto_url(),
+                    userEmail);
+
             return Optional.of(
-                    UserUtils.getUserProfileDTOFromStudentDTO(
-                            student.orElseThrow(),
-                            organization.orElseThrow(),
-                            studNumber,
-                            user.orElseThrow().getPhoto_url(),
-                            userEmail)
+                    getStudentFlows(student.orElseThrow().getId(), profile)
             );
         }
 
@@ -315,6 +317,72 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         return Optional.of(
                 UserUtils.getUsersWithPaginationAndSearch(users, page, pageSize, search)
         );
+    }
+
+    /**
+     * Получить движение контингента студента
+     * @param studentId идентификатор студента в ВАМ
+     * @param userProfile профиль студента для заполнения
+     * @return заполненный профиль студента
+     */
+    private UserProfileDTO getStudentFlows(String studentId, UserProfileDTO userProfile) {
+        Optional<StudentFlowsDTO> studentFlows = vamAPIService.getStudentFlows(studentId);
+
+        // Устанавливаем дату начала обучения
+        userProfile.setStart_date(
+                studentFlows
+                        .orElseThrow()
+                        .getResults()
+                        .stream()
+                        .filter(f -> f.getFlow_type().equals("ENROLLMENT"))
+                        .findFirst()
+                        .orElseThrow()
+                        .getDate()
+        );
+
+        Optional<ContingentFlowDTO> flow =
+                studentFlows.orElseThrow()
+                .getResults()
+                .stream()
+                .filter(f -> f.getFlow_type().equals("DEDUCTION")).findAny();
+        if (flow.isPresent()) {
+            return setFlowToUserProfile(flow.get(), userProfile);
+        }
+
+        flow = studentFlows.orElseThrow()
+                .getResults()
+                .stream()
+                .filter(f -> f.getFlow_type().equals("SUBBATICAL_TAKING")).findAny();
+        if (flow.isPresent()) {
+            return setFlowToUserProfile(flow.get(), userProfile);
+        }
+
+        flow = studentFlows.orElseThrow()
+                .getResults()
+                .stream()
+                .filter(f -> f.getFlow_type().equals("ENROLLMENT")).findAny();
+        return flow.map(
+                contingentFlowDTO ->
+                        setFlowToUserProfile(contingentFlowDTO, userProfile))
+                .orElse(userProfile);
+    }
+
+    /**
+     * Установить движение контингента для профиля студента
+     * @param flow движение контингента
+     * @param userProfile профиль пользователя
+     * @return профиль с движением контингента если оно найдено
+     */
+    private UserProfileDTO setFlowToUserProfile(ContingentFlowDTO flow,
+                                                UserProfileDTO userProfile) {
+        userProfile.setContingent_flow(flow.getContingent_flow());
+        userProfile.setFlow_type(flow.getFlow_type());
+        userProfile.setFlow_date(flow.getDate());
+        userProfile.setFaculty(flow.getFaculty());
+        userProfile.setForm_fin(flow.getForm_fin());
+        userProfile.setEducation_form(flow.getEducation_form());
+
+        return userProfile;
     }
 
     /**
