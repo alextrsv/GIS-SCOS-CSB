@@ -1,6 +1,7 @@
 package ru.edu.online.services;
 
 import ru.edu.online.entities.dto.StudentDTO;
+import ru.edu.online.entities.dto.StudentFlowsDTO;
 import ru.edu.online.entities.dto.StudentsDTO;
 import ru.edu.online.entities.dto.UserDTO;
 
@@ -11,4 +12,6 @@ public interface IVamAPIService {
     Optional<StudentsDTO> getStudents(String parameter, String value);
 
     Optional<StudentDTO> getStudentByEmail(UserDTO user);
+
+    Optional<StudentFlowsDTO> getStudentFlows(String studentId);
 }

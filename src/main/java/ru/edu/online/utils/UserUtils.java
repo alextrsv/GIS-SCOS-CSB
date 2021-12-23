@@ -129,7 +129,6 @@ public class UserUtils {
         userProfile.setPatronymicName(student.getMiddle_name());
         userProfile.setStudyYear(student.getStudy_year());
         userProfile.setStudNumber(studNumber);
-        userProfile.setEducationForm("Бюджет");
         userProfile.setOrganizationFullName(organization.getFull_name());
         userProfile.setOrganizationShortName(organization.getShort_name());
         userProfile.setRole(UserRole.STUDENT);

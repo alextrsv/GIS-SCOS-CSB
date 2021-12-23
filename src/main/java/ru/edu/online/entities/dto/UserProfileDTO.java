@@ -20,9 +20,14 @@ public class UserProfileDTO {
     private String patronymicName;
     private String email;
     private String studNumber;
-    private String educationForm;
+    private String contingent_flow;
+    private String flow_type;
+    private String flow_date;
+    private String faculty;
+    private String education_form;
+    private String form_fin;
+    private String start_date;
     private String photoURL;
     private Integer studyYear;
     private UserRole role;
-
 }

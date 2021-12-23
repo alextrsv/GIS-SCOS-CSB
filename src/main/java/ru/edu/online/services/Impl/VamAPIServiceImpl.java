@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import ru.edu.online.entities.dto.StudentDTO;
+import ru.edu.online.entities.dto.StudentFlowsDTO;
 import ru.edu.online.entities.dto.StudentsDTO;
 import ru.edu.online.entities.dto.UserDTO;
 import ru.edu.online.services.IVamAPIService;
@@ -78,5 +79,28 @@ public class VamAPIServiceImpl implements IVamAPIService {
                 .stream()
                 .filter(student -> student.getEmail().equals(user.getEmail()))
                 .findFirst());
+    }
+
+    /**
+     * Получить движение контингента для студента
+     * @param studentId идентификатор студента в ВАМ
+     * @return движение контингента студента
+     */
+    @Override
+    public Optional<StudentFlowsDTO> getStudentFlows(String studentId) {
+        return Optional.ofNullable(
+                devVamApiClient
+                        .get()
+                        .uri(String.join("", "/students/", studentId, "/contingent_flows"))
+                        .retrieve()
+                        .bodyToMono(StudentFlowsDTO.class)
+                        .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
+                        .onErrorResume(WebClientResponseException.class,
+                                ex -> ex.getRawStatusCode() == 404 ? Mono.empty() : Mono.error(ex))
+                        .onErrorResume(WebClientResponseException.class,
+                                ex -> ex.getRawStatusCode() == 503 ? Mono.empty() : Mono.error(ex))
+                        .retryWhen(Retry.fixedDelay(5, Duration.ofMillis(REQUEST_TIMEOUT)))
+                        .block()
+        );
     }
 }
