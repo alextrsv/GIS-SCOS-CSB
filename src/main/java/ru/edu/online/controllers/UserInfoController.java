@@ -53,7 +53,11 @@ public class UserInfoController {
      * @return роль
      */
     @GetMapping("/role")
-    public ResponseEntity<UserRole> getRole(Principal principal) {
+    public ResponseEntity<UserRole> getRole(Principal principal,
+                                            @RequestParam(required = false) String userId) {
+        if (Optional.ofNullable(userId).isPresent()) {
+            return ResponseEntity.ok(userDetailsService.getUserRole(userId));
+        }
         return ResponseEntity.ok(userDetailsService.getUserRole(principal.getName()));
     }
 

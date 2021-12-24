@@ -16,10 +16,8 @@ import ru.edu.online.services.IVamAPIService;
 import ru.edu.online.utils.UserUtils;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Сервис данных пользователя
@@ -131,7 +129,13 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
      */
     private boolean hasRole(String userId, ScosUserRole role) {
         return scosAPIService.getUserDetails(userId).map(
-                        userDTO -> userDTO.getRoles().contains(role.getValue())
+                        userDTO -> userDTO
+                                .getEmployments()
+                                .stream()
+                                .map(EmploymentDTO::getRoles)
+                                .flatMap(Collection::stream)
+                                .collect(Collectors.toList())
+                                .contains(role.getValue())
                 )
                 .orElse(false);
     }
