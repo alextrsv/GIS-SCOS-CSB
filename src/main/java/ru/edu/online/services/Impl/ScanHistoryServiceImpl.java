@@ -35,7 +35,8 @@ public class ScanHistoryServiceImpl implements IScanHistoryService {
                         new Timestamp(new Date().getTime()),
                         scanHistoryDTO.getRole(),
                         scanHistoryDTO.getFullName().toLowerCase(Locale.ROOT),
-                        scanHistoryDTO.getPhotoURL()
+                        scanHistoryDTO.getPhotoURL(),
+                        scanHistoryDTO.getStatus()
                 ));
 
         return Optional.of(sh);
