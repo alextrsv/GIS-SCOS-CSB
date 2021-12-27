@@ -11,6 +11,7 @@ import ru.edu.online.entities.dto.*;
 import ru.edu.online.repositories.IValidateStudentCacheRepository;
 import ru.edu.online.services.IDynamicQRUserService;
 import ru.edu.online.services.IQRUserService;
+import ru.edu.online.services.IVamAPIService;
 import ru.edu.online.utils.HashingUtil;
 
 import java.util.ArrayList;
@@ -23,15 +24,22 @@ public class StudentServiceImpl implements IQRUserService {
     private final GisScosApiRestClient gisScosApiRestClient;
 
     private final VamRestClient vamRestClient;
+    /** Сервис для работы с АПИ ВАМа */
+    private final IVamAPIService vamAPIService;
 
     private final IDynamicQRUserService dynamicQRUserService;
 
     private final IValidateStudentCacheRepository studentCacheRepository;
 
     @Autowired
-    public StudentServiceImpl(GisScosApiRestClient gisScosApiRestClient, VamRestClient vamRestClient, IDynamicQRUserService dynamicQRUserService, IValidateStudentCacheRepository studentCacheRepository) {
+    public StudentServiceImpl(GisScosApiRestClient gisScosApiRestClient,
+                              VamRestClient vamRestClient,
+                              IVamAPIService vamAPIService,
+                              IDynamicQRUserService dynamicQRUserService,
+                              IValidateStudentCacheRepository studentCacheRepository) {
         this.gisScosApiRestClient = gisScosApiRestClient;
         this.vamRestClient = vamRestClient;
+        this.vamAPIService = vamAPIService;
         this.dynamicQRUserService = dynamicQRUserService;
         this.studentCacheRepository = studentCacheRepository;
     }
@@ -53,14 +61,13 @@ public class StudentServiceImpl implements IQRUserService {
         StudentDTO studentDTO = (StudentDTO) qrUser;
         PermanentStudentQRDTO permanentStudentQRDTO = new PermanentStudentQRDTO();
 
-        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getScos_id())); // id из SCOS
+        permanentStudentQRDTO.setUserId(String.valueOf(studentDTO.getScos_id()));   // id из SCOS
         permanentStudentQRDTO.setSurname(studentDTO.getSurname());
         permanentStudentQRDTO.setName(studentDTO.getName());
         permanentStudentQRDTO.setMiddle_name( studentDTO.getMiddle_name());
-        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));  //by organizationId
-        permanentStudentQRDTO.setStatus("status");
+        permanentStudentQRDTO.setOrganization(getOrganizationsName(studentDTO));    // by organizationId
+        permanentStudentQRDTO.setStatus(getStudentFlowStatus(studentDTO.getId()));  // Получаем текущий статус студента
         permanentStudentQRDTO.setRole("student");
-//        permanentStudentQRDTO.setStud_bilet(studentDTO.getId().toString().substring(0, 10));
         permanentStudentQRDTO.setStud_bilet(
                 studentCacheRepository.findAllByEmailAndScosId(
                         studentDTO.getEmail(),
@@ -97,6 +104,43 @@ public class StudentServiceImpl implements IQRUserService {
         return HashingUtil.getHash(getFullStaticQRPayload(qrUser).toString());
     }
 
+    /**
+     * Получить статус студента по его академической мобильности
+     * @param studentId идентификатор студента в ВАМ
+     * @return статус flow студента.
+     *
+     * Возможные значения:
+     * ENROLLMENT           - зачисление
+     * DEDUCTION            - отчисление
+     * SUBBATICAL_TAKING    - академ
+     * UNDEFINED            - не определено
+     */
+    private String getStudentFlowStatus(String studentId) {
+        Optional<StudentFlowsDTO> studentFlows = vamAPIService.getStudentFlows(studentId);
+
+        Optional<ContingentFlowDTO> flow =
+                studentFlows.orElseThrow()
+                        .getResults()
+                        .stream()
+                        .filter(f -> f.getFlow_type().equals("DEDUCTION")).findAny();
+        if (flow.isPresent()) {
+            return "DEDUCTION";
+        }
+
+        flow = studentFlows.orElseThrow()
+                .getResults()
+                .stream()
+                .filter(f -> f.getFlow_type().equals("SUBBATICAL_TAKING")).findAny(); // Академ
+        if (flow.isPresent()) {
+            return "SUBBATICAL_TAKING";
+        }
+
+        flow = studentFlows.orElseThrow()
+                .getResults()
+                .stream()
+                .filter(f -> f.getFlow_type().equals("ENROLLMENT")).findAny();
+        return flow.map(contingentFlowDTO -> "ENROLLMENT").orElse("UNDEFINED");
+    }
 
     private String getOrganizationsName(StudentDTO studentDTO) {
         return gisScosApiRestClient.makeGetOrganizationRequest(studentDTO.getOrganization_id()).get().getShort_name();
