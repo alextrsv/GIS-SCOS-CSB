@@ -356,7 +356,7 @@ public class UserDetailsServiceImpl implements IUserDetailsService {
         flow = studentFlows.orElseThrow()
                 .getResults()
                 .stream()
-                .filter(f -> f.getFlow_type().equals("SUBBATICAL_TAKING")).findAny();
+                .filter(f -> f.getFlow_type().equals("SUBBATICAL_TAKING")).findAny(); // Академ
         if (flow.isPresent()) {
             return setFlowToUserProfile(flow.get(), userProfile);
         }
