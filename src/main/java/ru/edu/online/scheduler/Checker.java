@@ -81,7 +81,7 @@ public class Checker extends Thread {
     private void addNewQR(DynamicQRUser dynamicQRUser, String organizationUUID) {
         DynamicQR newQR = new DynamicQR();
         newQR.setCreationDate(LocalDate.now());
-        newQR.setEndDate(newQR.getCreationDate().plusDays(1));
+        newQR.setEndDate(LocalDate.now().plusDays(1));
         newQR.setUniversityId(organizationUUID);
         newQR.setUserId(dynamicQRUser.getUserId());
         newQR.setContent(makeNewContent(organizationUUID));
@@ -97,6 +97,8 @@ public class Checker extends Thread {
 
     private void updateQR(DynamicQR dynamicQR)  {
         dynamicQR.setContent(makeNewContent(dynamicQR.getUniversityId()));
+        dynamicQR.setCreationDate(LocalDate.now());
+        dynamicQR.setEndDate(LocalDate.now().plusDays(1));
         dynamicQR.setStatus(QRStatus.UPDATED);
         dynamicQRRepository.save(dynamicQR);
     }
