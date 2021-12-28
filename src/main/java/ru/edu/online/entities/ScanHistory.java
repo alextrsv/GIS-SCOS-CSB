@@ -37,14 +37,18 @@ public class ScanHistory {
     private String fullName;
     /** ссылка на фото */
     private String photoURL;
+    /** Статус просканированного студента (может быть уже отчислен) */
+    private String status;
 
     public ScanHistory(UUID userId, UUID securityId, Timestamp creationDate,
-                       UserRole role, String fullName, String photoURL){
+                       UserRole role, String fullName, String photoURL,
+                       String status){
         this.userId = userId;
         this.securityId = securityId;
         this.creationDate = creationDate;
         this.role = role;
         this.fullName = fullName;
         this.photoURL = photoURL;
+        this.status = status;
     }
 }
