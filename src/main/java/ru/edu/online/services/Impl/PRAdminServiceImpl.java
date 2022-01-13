@@ -195,13 +195,15 @@ public class PRAdminServiceImpl implements IPRAdminService {
 
     /**
      * Получить заявки для администратора
-     * @param status стутус заявок
-     * @param page номер страницы (по умолчанию по 5 заявок для админа)
-     * @param search поиск по заявкам. Возможен по названию ООВО и номеру заявки
+     * @param status    стутус заявок
+     * @param page      номер страницы (по умолчанию по 5 заявок для админа)
+     * @param pageSize  размер страницы
+     * @param search    поиск по заявкам. Возможен по названию ООВО и номеру заявки
+     * @param userId    идентификатор администратора
      * @return отобранные по критериям заявки
      */
     @Override
-    public Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(PRStatusForAdmin status,
+    public Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(String status,
                                                                       Long page,
                                                                       Long pageSize,
                                                                       String search,
@@ -215,7 +217,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
                     request.getStatus() == PRStatus.ACCEPTED && request.getChangeLog().isEmpty()
             );
 
-            switch (status) {
+            switch (PRStatusForAdmin.of(status)) {
                 case PROCESSED:
                     return Optional.of(getProcessedPassRequests(allUniversityRequests, page, pageSize, search));
                 case IN_PROCESSING:
@@ -224,6 +226,10 @@ public class PRAdminServiceImpl implements IPRAdminService {
                     return Optional.of(getPassRequestsForProcessing(allUniversityRequests, page, pageSize, search));
                 case EXPIRED:
                     return Optional.of(getExpiredPassRequests(allUniversityRequests, page, pageSize, search));
+                case CREATED:
+                    return Optional.of(getCreatedPassRequests(allUniversityRequests, page, pageSize, search, userId));
+                default:
+                    return Optional.empty();
             }
         }
         return Optional.empty();
@@ -231,13 +237,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
 
     /**
      * Получение заявок для обработки.
-     * @param requests заявки
-     * @param page номер страницы
-     * @param pageSize размер страницы
-     * @param search поиск
+     * @param requests  заявки
+     * @param page      номер страницы
+     * @param pageSize  размер страницы
+     * @param search    поиск
      * @return список заявок в обработке
      */
-    public ResponseDTO<PassRequest> getPassRequestsForProcessing(
+    private ResponseDTO<PassRequest> getPassRequestsForProcessing(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -254,13 +260,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
 
     /**
      * Получение заявок в обработке.
-     * @param requests заявки
-     * @param page номер страницы
-     * @param pageSize размер страницы
-     * @param search поиск
+     * @param requests  заявки
+     * @param page      номер страницы
+     * @param pageSize  размер страницы
+     * @param search    поиск
      * @return список заявок в обработке
      */
-    public ResponseDTO<PassRequest> getPassRequestsInProcessing(
+    private ResponseDTO<PassRequest> getPassRequestsInProcessing(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -278,13 +284,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
 
     /**
      * Получение просроченных заявок.
-     * @param requests заявки
-     * @param page номер страницы
-     * @param pageSize размер страницы
-     * @param search поиск
+     * @param requests  заявки
+     * @param page      номер страницы
+     * @param pageSize  размер страницы
+     * @param search    поиск
      * @return список обработанных заявок
      */
-    public ResponseDTO<PassRequest> getExpiredPassRequests(
+    private ResponseDTO<PassRequest> getExpiredPassRequests(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -301,13 +307,13 @@ public class PRAdminServiceImpl implements IPRAdminService {
 
     /**
      * Получение обработанных заявок.
-     * @param requests заявки
-     * @param page номер страницы
-     * @param pageSize размер страницы
-     * @param search поиск
+     * @param requests  заявки
+     * @param page      номер страницы
+     * @param pageSize  размер страницы
+     * @param search    поиск
      * @return список обработанных заявок
      */
-    public ResponseDTO<PassRequest> getProcessedPassRequests(
+    private ResponseDTO<PassRequest> getProcessedPassRequests(
             List<PassRequest> requests,
             Long page,
             Long pageSize,
@@ -319,6 +325,38 @@ public class PRAdminServiceImpl implements IPRAdminService {
                         PRStatus.ACCEPTED,
                         PRStatus.REJECTED_BY_TARGET_ORGANIZATION,
                 },
+                requests,
+                page,
+                pageSize,
+                search
+        );
+    }
+
+    /**
+     * Получение созданных администратором заявок.
+     * @param requests  заявки
+     * @param page      номер страницы
+     * @param pageSize  размер страницы
+     * @param search    поиск
+     * @return список обработанных заявок
+     */
+    private ResponseDTO<PassRequest> getCreatedPassRequests(
+            List<PassRequest> requests,
+            Long page,
+            Long pageSize,
+            String search,
+            String adminId) {
+
+        log.info("collect created requests by admin");
+
+        // Оставляем только те заявки, которые были созданы админом
+        requests = requests
+                .stream()
+                .filter(request -> Objects.equals(adminId, request.getAuthorId()))
+                .collect(Collectors.toList());
+
+        return getPRByStatusWithPaginationAndSearchForUniversity(
+                PRStatus.values(),
                 requests,
                 page,
                 pageSize,
@@ -564,7 +602,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
     }
 
     /**
-     * Получить азявку по id
+     * Получить заявку по id
      * @param id id заявки
      * @return заявка
      */
