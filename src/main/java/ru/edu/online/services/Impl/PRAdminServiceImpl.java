@@ -227,7 +227,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
                 case EXPIRED:
                     return Optional.of(getExpiredPassRequests(allUniversityRequests, page, pageSize, search));
                 case CREATED:
-                    return Optional.of(getCreatedPassRequests(allUniversityRequests, page, pageSize, search, userId));
+                    return Optional.of(getCreatedPassRequests(page, pageSize, search, userId));
                 default:
                     return Optional.empty();
             }
@@ -334,14 +334,12 @@ public class PRAdminServiceImpl implements IPRAdminService {
 
     /**
      * Получение созданных администратором заявок.
-     * @param requests  заявки
      * @param page      номер страницы
      * @param pageSize  размер страницы
      * @param search    поиск
      * @return список обработанных заявок
      */
     private ResponseDTO<PassRequest> getCreatedPassRequests(
-            List<PassRequest> requests,
             Long page,
             Long pageSize,
             String search,
@@ -349,11 +347,7 @@ public class PRAdminServiceImpl implements IPRAdminService {
 
         log.info("collect created requests by admin");
 
-        // Оставляем только те заявки, которые были созданы админом
-        requests = requests
-                .stream()
-                .filter(request -> Objects.equals(adminId, request.getAuthorId()))
-                .collect(Collectors.toList());
+        List<PassRequest> requests = passRequestRepository.findAllByAuthorId(adminId);
 
         return getPRByStatusWithPaginationAndSearchForUniversity(
                 PRStatus.values(),
