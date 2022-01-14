@@ -6,8 +6,6 @@ import ru.edu.online.entities.dto.PRDTO;
 import ru.edu.online.entities.dto.PRUserDTO;
 import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.dto.UserDTO;
-import ru.edu.online.entities.enums.PRStatus;
-import ru.edu.online.entities.enums.PRStatusForAdmin;
 
 import java.util.List;
 import java.util.Map;
@@ -19,9 +17,9 @@ public interface IPRAdminService {
 
     Optional<List<PassRequestUser>> addUserToPassRequest(PRUserDTO passRequestUserDTO);
 
-    Optional<Map<PRStatus, Integer>> getPassRequestsCountByStatusForAdmin(String userId);
+    Optional<Map<String, Integer>> getPassRequestsCountByStatusForAdmin(String userId);
 
-    Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(PRStatusForAdmin status,
+    Optional<ResponseDTO<PassRequest>> getPassRequestsForAdmin(String status,
                                                                Long page,
                                                                Long pageSize,
                                                                String search,

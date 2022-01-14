@@ -3,17 +3,19 @@ package ru.edu.online.entities.enums;
 import java.util.stream.Stream;
 
 /**
- * Статусы заявок для администратора.
- * FOR_PROCESSING - для обработки
- * IN_PROCESSING - в обработке
- * PROCESSED - обработаны
- * EXPIRED - Просрочены
+ * Статусы заявок для получения администратору ООВО.
+ * FOR_PROCESSING   - для обработки
+ * IN_PROCESSING    - в обработке
+ * PROCESSED        - обработаны
+ * EXPIRED          - просрочены
+ * CREATED          - создана
  */
 public enum PRStatusForAdmin {
     FOR_PROCESSING("forProcessing"),
     IN_PROCESSING("inProcessing"),
     PROCESSED("processed"),
-    EXPIRED("expired")
+    EXPIRED("expired"),
+    CREATED("created")
     ;
 
     private final String status;

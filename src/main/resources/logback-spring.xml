@@ -23,7 +23,7 @@
     </appender>
 
     <logger name="org.springframework" level="INFO"/>
-    <logger name="gisscos.studentcard" level="INFO"/>
+    <logger name="csb" level="INFO"/>
     <root level="ERROR">
         <appender-ref ref="FILE-ROLLING"/>
         <appender-ref ref="STDOUT"/>

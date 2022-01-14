@@ -12,7 +12,6 @@ import ru.edu.online.entities.dto.PRDTO;
 import ru.edu.online.entities.dto.PRUserDTO;
 import ru.edu.online.entities.dto.ResponseDTO;
 import ru.edu.online.entities.enums.PRStatus;
-import ru.edu.online.entities.enums.PRStatusForAdmin;
 import ru.edu.online.entities.enums.PRType;
 import ru.edu.online.entities.enums.UserRole;
 import ru.edu.online.services.IPRAdminService;
@@ -182,7 +181,7 @@ public class PRController {
      * @return мапа: статус - количество
      */
     @GetMapping("/count/get/admin/status")
-    public ResponseEntity<Map<PRStatus, Integer>> getPassRequestCountByStatusForAdmin(
+    public ResponseEntity<Map<String, Integer>> getPassRequestCountByStatusForAdmin(
             Principal principal) {
 
         if (userDetailsService.isUniversity(principal.getName())
@@ -214,7 +213,7 @@ public class PRController {
         if (userDetailsService.isUniversity(principal.getName())
                 || userDetailsService.isSuperUser(principal.getName())) {
             return passRequestAdminService.getPassRequestsForAdmin(
-                            PRStatusForAdmin.of(status),
+                            status,
                             page,
                             pageSize,
                             search,

@@ -14,7 +14,6 @@ spring:
         jwt:
           jwk-set-uri: ${JWT_CERTS_URL}
           issuer-uri: ${JWT_ISSUER_URL}
-
   servlet:
     multipart:
       max-file-size: 200MB
