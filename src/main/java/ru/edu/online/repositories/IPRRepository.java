@@ -11,15 +11,11 @@ import java.util.UUID;
 @Repository
 public interface IPRRepository extends JpaRepository<PassRequest, UUID> {
 
-    List<PassRequest> findAllByAuthorUniversityId(String universityId);
-
     List<PassRequest> findAllByAuthorId(String authorId);
 
     List<PassRequest> findAllByTargetUniversityIdAndStatus(String targetUniversityId, PRStatus status);
 
     List<PassRequest> findAllByTargetUniversityId(String targetUniversityId);
-
-    List<PassRequest> findAllByStatus(PRStatus status);
 
     Long countAllByNumberGreaterThan(Long number);
 }
