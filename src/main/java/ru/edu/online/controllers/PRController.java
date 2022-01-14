@@ -181,7 +181,7 @@ public class PRController {
      * @return мапа: статус - количество
      */
     @GetMapping("/count/get/admin/status")
-    public ResponseEntity<Map<PRStatus, Integer>> getPassRequestCountByStatusForAdmin(
+    public ResponseEntity<Map<String, Integer>> getPassRequestCountByStatusForAdmin(
             Principal principal) {
 
         if (userDetailsService.isUniversity(principal.getName())

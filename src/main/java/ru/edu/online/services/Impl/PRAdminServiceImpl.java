@@ -172,8 +172,8 @@ public class PRAdminServiceImpl implements IPRAdminService {
      * @return мапа: статус - количество
      */
     @Override
-    public Optional<Map<PRStatus, Integer>> getPassRequestsCountByStatusForAdmin(String userId) {
-        Map<PRStatus, Integer> requestsCountByStatus = new HashMap<>();
+    public Optional<Map<String, Integer>> getPassRequestsCountByStatusForAdmin(String userId) {
+        Map<String, Integer> requestsCountByStatus = new HashMap<>();
         Optional<String> adminUniversityId =
                 scosAPIService.getUserOrganizationGlobalId(userId);
         if (adminUniversityId.isPresent()) {
@@ -184,18 +184,19 @@ public class PRAdminServiceImpl implements IPRAdminService {
             );
             for (PRStatus status : PRStatus.values()) {
                 requestsCountByStatus.put(
-                        status,
+                        status.toString(),
                         (int) allUniversityRequests.stream().filter(passRequest -> passRequest.getStatus() == status).count()
                 );
             }
         }
 
+        requestsCountByStatus.put("CREATED_BY_ADMIN", passRequestRepository.countAllByAuthorId(userId));
         return Optional.of(requestsCountByStatus);
     }
 
     /**
      * Получить заявки для администратора
-     * @param status    стутус заявок
+     * @param status    статус заявок
      * @param page      номер страницы (по умолчанию по 5 заявок для админа)
      * @param pageSize  размер страницы
      * @param search    поиск по заявкам. Возможен по названию ООВО и номеру заявки
