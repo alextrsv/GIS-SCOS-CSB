@@ -19,6 +19,9 @@ spring:
       max-file-size: 200MB
       max-request-size: 200MB
 
+whitelist:
+  ip: ${VALID_IP_LIST}
+
 server:
   address: ${BIND_IP_ADDRESS}
   port: ${BIND_PORT}

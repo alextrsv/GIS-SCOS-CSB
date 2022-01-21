@@ -1,8 +1,11 @@
 package ru.edu.online.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +21,7 @@ import ru.edu.online.services.IScosAPIService;
 import ru.edu.online.services.IUserDetailsService;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -26,6 +30,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/user")
 public class UserInfoController {
+
+    @Value("${whitelist.ip}")
+    List<String> whiteList;
 
     /** Сервис заявок администратора */
     private final IPRAdminService passRequestAdminService;
@@ -53,10 +60,19 @@ public class UserInfoController {
      * @return роль
      */
     @GetMapping("/role")
-    public ResponseEntity<UserRole> getRole(Principal principal,
+    public ResponseEntity<UserRole> getRole(Principal principal, Authentication auth,
                                             @RequestParam(required = false) String userId) {
         if (Optional.ofNullable(userId).isPresent()) {
             return ResponseEntity.ok(userDetailsService.getUserRole(userId));
+        }
+
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
+            WebAuthenticationDetails authDetails = (WebAuthenticationDetails) auth.getDetails();
+            if (whiteList.contains(authDetails.getRemoteAddress())) {
+                return ResponseEntity.ok(userDetailsService.getUserRole(principal.getName()));
+            }
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(userDetailsService.getUserRole(principal.getName()));
     }
