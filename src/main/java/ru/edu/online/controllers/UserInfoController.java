@@ -66,7 +66,8 @@ public class UserInfoController {
             return ResponseEntity.ok(userDetailsService.getUserRole(userId));
         }
 
-        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN) {
+        if (userDetailsService.getUserRole(principal.getName()) == UserRole.ADMIN ||
+                userDetailsService.getUserRole(principal.getName()) == UserRole.SECURITY) {
             WebAuthenticationDetails authDetails = (WebAuthenticationDetails) auth.getDetails();
             if (whiteList.contains(authDetails.getRemoteAddress())) {
                 return ResponseEntity.ok(userDetailsService.getUserRole(principal.getName()));
