@@ -176,6 +176,7 @@ public class PRUserServiceImpl implements IPRUserService {
                             targetUniversityId)
                     )
                     .collect(Collectors.toList());
+            processedRequests.addAll(requestsOfUniversity);
 
             for (PassRequest request : requestsOfUniversity) {
                 for (PassRequest requestToCompare : requestsOfUniversity) {
@@ -190,6 +191,8 @@ public class PRUserServiceImpl implements IPRUserService {
                         continue;
 
                     if (!processedRequests.contains(uniteRequests(request, requestToCompare))) {
+                        processedRequests.remove(request);
+                        processedRequests.remove(requestToCompare);
                         processedRequests.add(uniteRequests(request, requestToCompare));
                     }
                 }
