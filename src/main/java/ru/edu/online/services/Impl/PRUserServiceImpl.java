@@ -129,21 +129,101 @@ public class PRUserServiceImpl implements IPRUserService {
     public Optional<ResponseDTO<PassRequest>> getAcceptedPassRequests(String authorId) {
         log.info("getting accepted passRequests for user with id {}", authorId);
         List<PassRequest> requests =
-                passRequestRepository.findAllByAuthorId(authorId);
+                passRequestRepository.findAllByAuthorIdAndStatus(authorId, PRStatus.ACCEPTED);
         // Добавление всех групповых заявок, в которых фигурирует пользователь
         requests.addAll(passRequestUserRepository.getByScosId(authorId)
                 .stream()
                 .map(PassRequestUser::getPassRequestId)
                 .map(this::getPassRequestById)
                 .map(Optional::get)
+                .filter(request -> request.getStatus() == PRStatus.ACCEPTED)
                 .collect(Collectors.toList()));
 
         return Optional.of(getPRByStatusWithPaginationForUser(
-                requests,
+                resolveRequestsDates(requests),
                 new PRStatus[]{PRStatus.ACCEPTED},
                 (long) 1,
                 (long) requests.size()
         ));
+    }
+
+    /**
+     * Обработка дат доступов из заявок для корректного отображения доступов.
+     *
+     * Метод формурует заяки таким образом, чтобы при наложении дат доступа
+     * формировалась одна заявка вместо двух во избежание появления двух
+     * "наслаивающихся" доступов.
+     *
+     * @param requests список одобренных заявок. Должен состоять из одиночных
+     *                 и групповых заявок, в которых находится пользователь.
+     *
+     * @return список заявок с корректными датами для отображения доступов
+     */
+    private List<PassRequest> resolveRequestsDates(List<PassRequest> requests) {
+
+        Set<String> targetUniversityIds = requests
+                .stream()
+                .map(PassRequest::getTargetUniversityId)
+                .collect(Collectors.toSet());
+
+        List<PassRequest> requestsOfUniversity;
+        List<PassRequest> processedRequests = new ArrayList<>();
+        for (String targetUniversityId : targetUniversityIds) {
+            requestsOfUniversity = requests
+                    .stream()
+                    .filter(request -> Objects.equals(
+                            request.getTargetUniversityId(),
+                            targetUniversityId)
+                    )
+                    .collect(Collectors.toList());
+            processedRequests.addAll(requestsOfUniversity);
+
+            for (PassRequest request : requestsOfUniversity) {
+                for (PassRequest requestToCompare : requestsOfUniversity) {
+
+                    // Проверка на совпадение заявок
+                    if (request.equals(requestToCompare))
+                        continue;
+
+                    // Необходимое и достаточное условие несовпадения дат
+                    if (request.getEndDate().isBefore(requestToCompare.getStartDate()) ||
+                            requestToCompare.getEndDate().isBefore(request.getStartDate()))
+                        continue;
+
+                    if (!processedRequests.contains(uniteRequests(request, requestToCompare))) {
+                        processedRequests.remove(request);
+                        processedRequests.remove(requestToCompare);
+                        processedRequests.add(uniteRequests(request, requestToCompare));
+                    }
+                }
+            }
+        }
+        return processedRequests;
+    }
+
+    /**
+     * Объединение заявок в одну на основании дат допуска для отображения
+     * @param firstRequest первая заявка
+     * @param secondRequest вторая заявка
+     * @return заявка с общими датами
+     */
+    private PassRequest uniteRequests(PassRequest firstRequest, PassRequest secondRequest) {
+        // Если первая заявка начала действовать раньше второй
+        if (firstRequest.getStartDate().isBefore(secondRequest.getStartDate())) {
+            // Если первая заявка заканчивается раньше второй
+            if (firstRequest.getEndDate().isBefore(secondRequest.getEndDate())) {
+                firstRequest.setEndDate(secondRequest.getEndDate());
+                return firstRequest;
+            }
+            return firstRequest;
+        } else {
+            // Если вторая заявка заканчивается раньше первой
+            if (secondRequest.getEndDate().isBefore(firstRequest.getEndDate())) {
+                secondRequest.setEndDate(firstRequest.getEndDate());
+                return secondRequest;
+            }
+            return secondRequest;
+        }
     }
 
     /**

@@ -13,6 +13,8 @@ public interface IPRRepository extends JpaRepository<PassRequest, UUID> {
 
     List<PassRequest> findAllByAuthorId(String authorId);
 
+    List<PassRequest> findAllByAuthorIdAndStatus(String authorId, PRStatus status);
+
     Integer countAllByAuthorId(String authorId);
 
     List<PassRequest> findAllByTargetUniversityIdAndStatus(String targetUniversityId, PRStatus status);
